@@ -614,7 +614,7 @@
   <h2 id="shareTitle">Share</h2>
   <p class="sub">Anyone with the link can watch this printer's camera and progress. They can't control it.</p>
   <div class="share-new">
-    <label>Link works for <select id="shareExp"><option value="1h">1 hour</option><option value="1d" selected>1 day</option><option value="7d">7 days</option><option value="never">until I turn it off</option></select></label>
+    <label>Link works for <select id="shareExp"><option value="1h">1 hour</option><option value="1d" selected>1 day</option><option value="7d">7 days</option><option value="print" id="shareExpPrint">until the print ends</option><option value="never">until I turn it off</option></select></label>
     <button class="primary" id="shareCreate">Create link</button>
   </div>
   <div class="share-list" id="shareList"></div>
@@ -1458,6 +1458,9 @@ let shareId = null;
 async function openShare(id) {
   const p = printers.get(id); if (!p) return;
   shareId = id; $("#shareTitle").textContent = `Share ${p.name}`;
+  const live = ["printing", "paused"].includes(p.state), po = $("#shareExpPrint");
+  po.disabled = !live; po.title = live ? "" : "Only while a print is running";
+  if (!live && $("#shareExp").value === "print") $("#shareExp").value = "1d";
   await loadShares(); $("#shareDlg").showModal();
 }
 async function loadShares() {
@@ -1466,7 +1469,7 @@ async function loadShares() {
     $("#shareList").innerHTML = shares.length ? shares.map((sh, i) => `<div class="share-item">
         <input readonly value="${esc(sh.url)}" aria-label="Share link">
         <button data-copy="${i}">Copy</button><button class="revoke" data-revoke="${i}">Turn off</button>
-        <span class="exp">${sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}</span>
+        <span class="exp">${sh.until_print ? "Works until the print ends" : sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}</span>
       </div>`).join("") : `<p class="muted" style="margin:0">No active links for this printer.</p>`;
     for (const b of $("#shareList").querySelectorAll("[data-copy]")) b.onclick = () => copyText(shares[+b.dataset.copy].url, b);
     for (const b of $("#shareList").querySelectorAll("[data-revoke]")) b.onclick = async () => {

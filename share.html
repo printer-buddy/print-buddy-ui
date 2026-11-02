@@ -24,6 +24,11 @@
   .box { border-radius: 12px; overflow: hidden; background: var(--card); border: 1px solid var(--line); }
   .cam { position: relative; aspect-ratio: 16 / 9; background: #000; }
   .cam img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .cam:fullscreen, .cam:-webkit-full-screen { aspect-ratio: auto; width: 100vw; height: 100vh; }
+  .full { position: absolute; right: 10px; bottom: 10px; z-index: 1; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+          padding: 0; border: 0; border-radius: 8px; background: rgba(0, 0, 0, .55); color: #fff; cursor: pointer; }
+  .full:hover { background: rgba(0, 0, 0, .8); }
+  .full svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .nocam { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-weight: 700; }
   .bar { height: 6px; background: var(--track); } .bar > div { height: 100%; width: 0; transition: width .5s; }
   .info { padding: 18px; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; }
@@ -47,7 +52,8 @@
   <section id="view" hidden>
     <div class="head"><h1 id="name"></h1><span class="tag" id="tag"></span></div>
     <div class="box" style="margin-top:14px">
-      <div class="cam"><img id="img" alt="Live view of the printer" hidden><div class="nocam" id="nocam">No camera</div></div>
+      <div class="cam"><img id="img" alt="Live view of the printer" hidden><div class="nocam" id="nocam">No camera</div>
+        <button type="button" class="full" id="full" title="Full screen" aria-label="Full screen" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
       <div class="bar"><div id="bar"></div></div>
       <div class="info">
         <span class="pct" id="pct"></span>
@@ -84,7 +90,7 @@ let camMode = null, snapTimer = null;
 function setCamera(p) {
   const online = p.connection === "online", idx = Math.min(p.main_cam || 0, Math.max(0, (p.cams || []).length - 1));
   const ok = p.has_webcam && online;
-  $("#img").hidden = !ok; $("#nocam").hidden = ok;
+  $("#img").hidden = !ok; $("#nocam").hidden = ok; $("#full").hidden = !ok;
   $("#nocam").textContent = online ? "No camera" : "Printer is offline";
   if (!ok) { camMode = null; clearInterval(snapTimer); return; }
   const live = p.video_live && p.cams?.[idx]?.live;
@@ -133,6 +139,12 @@ async function refresh() {
   $("#expires").textContent = p.expires_at ? `This link stops working ${new Date(p.expires_at * 1000).toLocaleString()}.` : "";
   setCamera(p);
 }
+$("#full").onclick = () => {
+  const c = $(".cam");
+  if (document.fullscreenElement || document.webkitFullscreenElement) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  else (c.requestFullscreen || c.webkitRequestFullscreen)?.call(c);
+};
+$(".cam").ondblclick = () => $("#full").click();
 refresh(); setInterval(refresh, 3000);
 </script>
 </body>
