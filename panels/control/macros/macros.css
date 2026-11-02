@@ -1,6 +1,6 @@
 .pb-macs { display: flex; flex-wrap: wrap; gap: 6px; }
 .pb-mac { display: inline-flex; }
-:is(#page, #home).bd .pb-mac button { height: 28px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+:is(#page, #home).bd .pb-mac button { height: 28px; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
 :is(#page, #home).bd .pb-mac .x { display: none; padding: 0 8px; margin-left: -1px; }
 .pb-macedit .pb-mac .x { display: inline-block !important; }
 .pb-maclinks { margin-top: 8px; display: flex; gap: 12px; }
