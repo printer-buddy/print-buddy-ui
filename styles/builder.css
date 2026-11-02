@@ -246,6 +246,18 @@ html[data-theme="light"] .bd-menu { background: #fff; border-color: #dcdce2; }
 .pb-banner button { margin-left: auto; min-height: 0; height: 28px; background: transparent; border: 0; color: var(--text); }
 .pb-settings .pb-settop { display: flex; align-items: center; gap: 10px; }
 .pb-settings h2 { margin: 0; }
+.panel.pb-settings { position: fixed; z-index: 801; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(720px, calc(100% - 32px));
+                     height: min(640px, calc(100vh - 32px)); overflow: auto; margin: 0; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.panel.pb-settings select { appearance: none; -webkit-appearance: none; font: inherit; font-weight: 600; min-height: 40px; padding: 0 38px 0 12px;
+                            border: 1px solid var(--line); border-radius: 8px; background-color: var(--card2); color: var(--text); cursor: pointer;
+                            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1.5l5 5 5-5' fill='none' stroke='%238E8A99' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+                            background-repeat: no-repeat; background-position: right 13px center; transition: border-color .15s, box-shadow .15s; }
+.panel.pb-settings select:hover { border-color: var(--muted); }
+.panel.pb-settings select:focus-visible { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255, 138, 31, .25); }
+.panel.pb-settings select:disabled { opacity: .5; cursor: default; }
+.panel.pb-settings select option { background: var(--card2); color: var(--text); }
+html[data-theme="light"] .panel.pb-settings select { background-color: #fff; color: #1c1b20; border-color: #dcdce2; }
+html[data-theme="light"] .panel.pb-settings select option { background: #fff; color: #1c1b20; }
 .pb-settabs { display: flex; gap: 4px; margin: 12px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .pb-settabs button { background: transparent; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: var(--muted); }
 .pb-settabs button[aria-selected="true"] { color: var(--text); border-bottom-color: var(--orange); }

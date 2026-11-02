@@ -72,10 +72,13 @@
       <label class="pb-chk"><input type="checkbox" data-c="pb-title" data-def="1"> Show print progress in the browser tab title</label>
       <p class="pb-muted">These are saved in this browser. "Time left" is for everyone using this box.</p></div>
     <div data-body="about"><dl class="pb-kv pb-about"></dl></div>`;
-  $(".top").after(panel);
+  const scrim = el("div", "pb-scrim"); scrim.hidden = true;
+  document.body.append(scrim, panel);
   panel.querySelector("[data-body=alerts]").append($("#notifyPanel"));
   panel.querySelector("[data-body=ai]").append($("#aiPanel"));
-  const close = () => { panel.hidden = true; };
+  const close = () => { panel.hidden = scrim.hidden = true; };
+  scrim.onclick = close;
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !panel.hidden && !document.querySelector("dialog[open]")) close(); });
   panel.querySelector("[data-a=close]").onclick = close;
   $("#notifyClose").onclick = close; $("#aiClose").onclick = close;
   const theme = panel.querySelector("[data-a=theme]");
@@ -104,5 +107,5 @@
     }
   }
   for (const b of panel.querySelectorAll("[data-tab]")) b.onclick = () => tab(b.dataset.tab);
-  gear.onclick = () => { if (!panel.hidden) return close(); panel.hidden = false; tab("alerts"); panel.scrollIntoView({ block: "nearest" }); };
+  gear.onclick = () => { if (!panel.hidden) return close(); panel.hidden = scrim.hidden = false; tab("alerts"); };
 })();
