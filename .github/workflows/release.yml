@@ -6,13 +6,27 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Stable version to release, e.g. 1.2 (empty = nightly)
+        description: "Stable version like 1.2.0. Leave blank for the next one. An existing version rolls main back to it."
         required: false
-  push:
-    tags: ["v*"]
+        default: ""
+      bump:
+        description: "When the version is blank, raise the last one by"
+        type: choice
+        options:
+          - "x.x.0 -> x.x.1"
+          - "x.0.0 -> x.1.0"
+          - "0.0.0 -> 1.0.0"
+        default: "x.x.0 -> x.x.1"
+      test:
+        description: "Test run: build and show the notes, publish nothing"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
+  copilot-requests: write
+
+concurrency: release
 
 env:
   PART: ui
@@ -24,52 +38,133 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
 
-      - name: Stable or nightly?
-        id: check
-        env:
-          WANT: ${{ inputs.version }}
+      - name: Check the code
         run: |
-          if [ "$GITHUB_REF_TYPE" = tag ]; then
-            echo "version=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
-            echo "go=1" >> "$GITHUB_OUTPUT"
-          elif [ -n "$WANT" ]; then
-            echo "version=v${WANT#v}" >> "$GITHUB_OUTPUT"
-            echo "go=1" >> "$GITHUB_OUTPUT"
-          elif ! gh release view "$PART-nightly" --repo "$MAIN_REPO" --json body -q .body 2>/dev/null | grep -q "$GITHUB_SHA"; then
-            echo "go=1" >> "$GITHUB_OUTPUT"
+          python3 -m compileall -q tools
+          find . -name '*.js' -not -path './vendor/*' -not -path './.git/*' -print0 | xargs -0 -n1 node --check
+
+      - name: Plan
+        id: plan
+        env:
+          VERSION: ${{ inputs.version }}
+          BUMP: ${{ inputs.bump }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          KIND=stable; [ "$EVENT" = schedule ] && KIND=nightly
+          last="$(git tag -l 'v*' | sed 's/^v//' | sort -V | tail -1)"
+          sha="$(git rev-parse HEAD)"
+          echo "last=$last" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          if [ "$KIND" = nightly ]; then
+            go=1
+            if [ "$EVENT" = schedule ] && gh release view "$PART-nightly" --repo "$MAIN_REPO" --json body -q .body 2>/dev/null | grep -q "$sha"; then go=0; fi
+            { echo "mode=nightly"; echo "go=$go"; } >> "$GITHUB_OUTPUT"
+            echo "Nightly build of $sha (go=$go)"
+            exit 0
+          fi
+          VERSION="${VERSION#v}"
+          if [ -n "$VERSION" ] && git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            mode=rollback
+          else
+            mode=release
+            if [ -z "$VERSION" ]; then
+              IFS=. read -r a b c <<< "${last:-1.0.0}"
+              a=${a:-0}; b=${b:-0}; c=${c:-0}
+              case "$BUMP" in "0.0.0"*) a=$((a+1)); b=0; c=0 ;; "x.0.0"*) b=$((b+1)); c=0 ;; *) c=$((c+1)) ;; esac
+              VERSION="$a.$b.$c"
+            fi
+          fi
+          { echo "mode=$mode"; echo "go=1"; echo "version=$VERSION"; } >> "$GITHUB_OUTPUT"
+          echo "Last release: ${last:-none}. This run: $PART-v$VERSION ($mode)"
+
+      - name: Roll main back
+        if: steps.plan.outputs.mode == 'rollback' && inputs.test != true
+        run: |
+          git push --force-with-lease origin "refs/tags/v${{ steps.plan.outputs.version }}^{commit}:refs/heads/main"
+          echo "main now points at v${{ steps.plan.outputs.version }}"
+
+      - name: List the changes
+        if: steps.plan.outputs.mode == 'release'
+        run: |
+          range="${{ steps.plan.outputs.last }}"; [ -n "$range" ] && range="v$range..HEAD" || range="HEAD"
+          git log --no-merges --pretty='- %s' $range | head -80 > changes.txt
+          [ -s changes.txt ] || echo "- No changes since the last release" > changes.txt
+          cat changes.txt
+          git log --no-merges --pretty=format:'--- %h%n%s%n%b' --stat=100 $range | head -c 60000 > details.txt
+
+      - name: Write the notes with Copilot
+        if: steps.plan.outputs.mode == 'release'
+        id: ai
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          npm install -g @github/copilot
+          cat > prompt.txt <<EOF
+          You write release notes for the web interface (the UI) of Printer Buddy, a web app for managing 3D printers. Below is the list of commits with the files each one changed. For every commit, read the real code change by running git show followed by the commit hash (you may also use git diff and git log) before you write about it, so you describe what the code does, not just what the message says. Only use those read-only git commands. Do not change anything.
+          Reply in Markdown, no preamble, grouped under these headings, leaving out any that would be empty:
+          ### New
+          ### Improved
+          ### Fixed
+          ### Behind the scenes
+          Under each, one bullet per change. Each bullet is one or two plain sentences saying what changed and what it means for someone using it. Merge related commits. No marketing language and no commit hashes. Name the actual feature, screen or setting that changed.
+          The commits (hash, subject, description and files changed):
+          $(cat details.txt)
+          EOF
+          if out="$(copilot -s -p "$(cat prompt.txt)" --allow-tool='shell(git show:*)' --allow-tool='shell(git diff:*)' --allow-tool='shell(git log:*)' 2> copilot.err)" && [ -n "$out" ]; then
+            { echo "response<<NOTES_END"; echo "$out"; echo "NOTES_END"; } >> "$GITHUB_OUTPUT"
+          else
+            echo "Copilot failed:"; cat copilot.err; exit 1
           fi
 
-      - name: Release notes
-        if: steps.check.outputs.go == '1'
-        run: |
-          echo "Built from $GITHUB_REPOSITORY@$GITHUB_SHA" > notes.md
-          needs="$(grep -v '^\s*#' needs.txt 2>/dev/null | grep . | paste -sd, - | sed 's/,/, /g' || true)"
-          if [ -n "$needs" ]; then printf '\nneeds: %s\n' "$needs" >> notes.md; fi
-
-      - name: Tag this repo
-        if: inputs.version != '' && github.ref_type != 'tag'
+      - name: Write the notes
+        if: steps.plan.outputs.go == '1' && steps.plan.outputs.mode != 'rollback'
         env:
-          VERSION: ${{ steps.check.outputs.version }}
+          AI_NOTES: ${{ steps.ai.outputs.response }}
+          MODE: ${{ steps.plan.outputs.mode }}
         run: |
-          git tag "$VERSION"
-          git push origin "$VERSION"
+          if [ "$MODE" = nightly ]; then
+            src="nightly build"; notes="Built from $GITHUB_REPOSITORY@${{ steps.plan.outputs.sha }}"
+          elif [ -n "$AI_NOTES" ]; then
+            src="written by Copilot"; notes="$AI_NOTES"
+          else
+            src="Copilot notes failed, using the commit list"; notes="$(cat changes.txt)"
+          fi
+          needs="$(grep -v '^\s*#' needs.txt 2>/dev/null | grep . | paste -sd, - | sed 's/,/, /g' || true)"
+          [ -n "$needs" ] && notes="$notes"$'\n\n'"needs: $needs"
+          printf '%s\n' "$notes" > notes.md
+          {
+            echo "### $PART ${{ steps.plan.outputs.version }}${{ inputs.test && ' (test, nothing published)' || '' }}"
+            echo "Notes: $src"
+            echo
+            echo "$notes"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Build packages
-        if: steps.check.outputs.go == '1'
+        if: steps.plan.outputs.go == '1' && steps.plan.outputs.mode != 'rollback'
         run: python3 tools/build.py dist
 
+      - name: Publish stable
+        if: steps.plan.outputs.mode == 'release' && inputs.test != true
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          git push --force-with-lease origin "HEAD:refs/heads/main"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+          gh release create "$PART-v$VERSION" dist/* --repo "$MAIN_REPO" --latest=false \
+            --title "$PART v$VERSION" --notes-file notes.md
+          GH_TOKEN="${{ github.token }}" gh release create "v$VERSION" dist/* --repo "$GITHUB_REPOSITORY" --latest \
+            --title "v$VERSION" --notes-file notes.md
+
       - name: Publish nightly
-        if: steps.check.outputs.go == '1' && steps.check.outputs.version == ''
+        if: steps.plan.outputs.mode == 'nightly' && steps.plan.outputs.go == '1' && inputs.test != true
         run: |
           gh release delete "$PART-nightly" --repo "$MAIN_REPO" --yes --cleanup-tag || true
           gh release create "$PART-nightly" dist/* --repo "$MAIN_REPO" --prerelease \
             --title "$PART nightly $(date -u +%Y-%m-%d)" --notes-file notes.md
-
-      - name: Publish stable
-        if: steps.check.outputs.version != ''
-        env:
-          VERSION: ${{ steps.check.outputs.version }}
-        run: |
-          gh release create "$PART-$VERSION" dist/* --repo "$MAIN_REPO" --latest=false \
-            --title "$PART $VERSION" --notes-file notes.md
