@@ -45,10 +45,11 @@ PB.panel("toolhead", {
       return `<div class="pb-th"><div class="pb-thhxy">${home("X", "X")}${home("Y", "Y")}</div><div class="pb-thc"><svg viewBox="0 0 ${2 * C} ${2 * C}" aria-label="Jog wheel">${rings}${tags}
           <g class="pb-thseg pb-thh" data-home="" role="button" aria-label="Home all"><circle cx="${C}" cy="${C}" r="${R0 - 3}"/><text x="${C}" y="${C}">All</text></g></svg></div>${zcol}</div>`;
     }
-    host.innerHTML = `${style === "bars" ? bars() : style === "circle" ? circle() : cross()}
+    host.innerHTML = `<div class="pb-thtc" hidden></div>${style === "bars" ? bars() : style === "circle" ? circle() : cross()}
       <div class="pb-seg"${style === "bars" ? " hidden" : ""}>${style === "circle" ? `<span class="pb-muted">Z step</span>` : ""}${STEPS.map((s, i) => `<button data-step="${s}" aria-pressed="${i === 2}">${s}</button>`).join("")}</div>
       <div class="pb-thpos">${["X", "Y", "Z"].map(a => `<label>${a}<input type="number" step="any" data-ax="${a}" aria-label="${a} position, type a number and press Enter to move there"></label>`).join("")}
         <button type="button" data-a="off" title="Turn the motors off (M84) so you can move the axes by hand">Motors off</button></div>
+      <button type="button" class="pb-toolsbtn" data-a="tools" data-head hidden aria-haspopup="true" aria-expanded="false">Tools ▾</button>
       <label class="pb-speed">Speed <input type="range" min="10" max="300" step="5" value="100"><output>100%</output></label>
       <div class="pb-note"></div>`;
     let step = STEPS[2], dragging = false, ok = false;
@@ -77,7 +78,42 @@ PB.panel("toolhead", {
     };
     range.oninput = () => { dragging = true; out.textContent = `${range.value}%`; };
     range.onchange = () => { dragging = false; gcode(`M220 S${range.value}`); };
+    const tcBox = host.querySelector(".pb-thtc");
+    let tcKey = "";
+    tcBox.onclick = e => { const b = e.target.closest("[data-tc]"); if (b && !b.disabled) gcode(b.dataset.tc); };
+    const tbtn = host.querySelector("[data-a=tools]");
+    const menu = PB.el("div", "pb-toolmenu"); menu.hidden = true; document.body.append(menu);
+    const HELP = { load: "Load filament", unload: "Unload filament", clean: "Clean nozzle", park: "Park toolhead" };
+    let toolsKey = "";
+    const busy = new Set();
+    const shut = () => { menu.hidden = true; tbtn.setAttribute("aria-expanded", "false"); };
+    tbtn.onclick = () => {
+      if (!menu.hidden) return shut();
+      const r = tbtn.getBoundingClientRect(), below = innerHeight - r.bottom - 12;
+      menu.hidden = false; tbtn.setAttribute("aria-expanded", "true");
+      menu.style.left = `${Math.max(8, Math.min(r.left, innerWidth - menu.offsetWidth - 8))}px`;
+      if (below >= 200 || below >= r.top) { menu.style.bottom = "auto"; menu.style.top = `${r.bottom + 4}px`; menu.style.maxHeight = `${below}px`; }
+      else { menu.style.top = "auto"; menu.style.bottom = `${innerHeight - r.top + 4}px`; menu.style.maxHeight = `${r.top - 12}px`; }
+    };
+    menu.onclick = e => {
+      const b = e.target.closest("[data-cmd]");
+      if (!b || b.disabled) return;
+      shut();
+      const c = b.dataset.cmd;
+      if (!confirm(`Run ${b.dataset.label}?`)) return;
+      busy.add(c);
+      gcode(c).finally(() => busy.delete(c));
+      toast(`Sent ${b.dataset.label}`);
+    };
+    const outside = e => { if (!menu.hidden && !menu.contains(e.target) && !tbtn.contains(e.target)) shut(); };
+    const onKey = e => { if (e.key === "Escape" && !menu.hidden) shut(); };
+    const onScroll = e => { if (!menu.hidden && !menu.contains(e.target)) shut(); };
+    document.addEventListener("pointerdown", outside, true);
+    document.addEventListener("keydown", onKey);
+    addEventListener("scroll", onScroll, true);
+    addEventListener("resize", shut);
     return {
+      open() { busy.clear(); },
       update(p) {
         const live = p.connection === "online" && p.klippy_state === "ready", printing = p.state === "printing" || p.state === "paused";
         const pos = p.position || [], homed = (p.homed_axes || "").toUpperCase();
@@ -89,9 +125,50 @@ PB.panel("toolhead", {
           b.classList.toggle("need", need); b.setAttribute("title", `Home ${b.dataset.home || "all"}${need ? " (not homed)" : ""}`);
         }
         for (const e of host.querySelectorAll("button")) e.disabled = !ok;
+        const tc = p.tool_changes || [];
+        tcBox.hidden = !tc.length;
+        const tk = JSON.stringify(tc);
+        if (tk !== tcKey) {
+          tcKey = tk;
+          const per = tc.length ? Math.ceil(tc.length / Math.ceil(tc.length / 6)) : 1, rows = [];
+          for (let i = 0; i < tc.length; i += per) rows.push(tc.slice(i, i + per));
+          tcBox.innerHTML = rows.map(r => `<div class="pb-thtcrow">${r.map(x =>
+            `<button type="button" data-tc="${esc(x.name)}"${x.active ? ' class="on"' : ""} title="${esc(x.description)}">${x.color ? `<i style="background:${esc(x.color)}"></i>` : ""}${esc(x.name)}</button>`).join("")}</div>`).join("");
+        }
+        for (const b of tcBox.querySelectorAll("button")) b.disabled = !(live && p.state !== "printing");
+        const t = p.tools;
+        tbtn.hidden = !t;
+        if (t) {
+          const k = JSON.stringify(t);
+          if (k !== toolsKey) {
+            toolsKey = k;
+            const H = Object.keys(t.helpers || {}).filter(id => HELP[id]).map(id =>
+              `<button type="button" data-h="${id}" data-cmd="${esc(t.helpers[id])}" data-label="${HELP[id]}">${HELP[id]}</button>`);
+            menu.innerHTML = H.join("") + (H.length ? "<hr>" : "") + (t.calibrate || []).map(c =>
+              `<button type="button" data-cmd="${esc(c)}" data-label="${esc(c)}">${esc(c)}</button>`).join("");
+          }
+          const allHomed = ["X", "Y", "Z"].every(a => homed.includes(a)), probing = !!(p.manual_probe || {}).active, screws = !!(p.bed_screws || {}).active;
+          const toolsOn = live && p.state !== "printing";
+          for (const b of menu.querySelectorAll("button")) {
+            const h = b.dataset.h, c = b.dataset.cmd;
+            const off = h === "load" || h === "unload" ? !p.can_extrude
+              : h === "park" ? !allHomed
+              : h ? false
+              : c === "PROBE_ACCURACY" || c === "PROBE_CALIBRATE" ? !allHomed
+              : c === "BED_SCREWS_ADJUST" ? !allHomed || screws
+              : !allHomed || probing;
+            b.disabled = !toolsOn || off || busy.has(c);
+          }
+          tbtn.disabled = !toolsOn;
+          if (!toolsOn) shut();
+        } else shut();
         range.disabled = !live;
         if (!dragging && p.speed_factor != null) { range.value = Math.round(p.speed_factor * 100); out.textContent = `${range.value}%`; }
         host.querySelector(".pb-note").textContent = printing ? "Moving is off while a print is running." : homed.length < 3 ? "Home before jogging." : "";
+      },
+      destroy() {
+        document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", onKey);
+        removeEventListener("scroll", onScroll, true); removeEventListener("resize", shut); menu.remove();
       },
     };
   },
