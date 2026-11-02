@@ -101,6 +101,7 @@
     };
     const changed = () => { save(); build(); };
     const used = t => layout.tabs.some(tab => tab.rows.some(r => r.cols.some(c => c.some(it => it.t === t))));
+    const placed = t => layout.tabs.reduce((n, tab) => n + tab.rows.reduce((m, r) => m + r.cols.reduce((k, c) => k + c.filter(it => it.t === t).length, 0), 0), 0);
     const fresh = () => clean(structuredClone(o.base));
     layout = fresh();
     const items = tab => tab.rows.flatMap(r => r.cols.flat());
@@ -313,9 +314,9 @@
 
     function library(pick) {
       lib.innerHTML = `<h3>Add a panel</h3><div class="bd-libgrid">${Object.values(reg).map(d => {
-        const taken = d.single && used(d.type);
+        const taken = d.single && used(d.type), n = placed(d.type);
         return `<button type="button" class="${d.cls}" data-t="${esc(d.type)}"${taken ? " disabled" : ""}>${d.icon}<span>${esc(d.title)}</span>
-          <small>${taken ? "already placed" : esc(d.desc || "")}</small></button>`;
+          <small>${taken ? "already placed" : esc(d.desc || "")}</small>${n ? `<i class="bd-libn" title="On your layout ${n} time${n > 1 ? "s" : ""}">${n}</i>` : ""}</button>`;
       }).join("")}</div><div class="bd-libfoot"><button type="button" data-a="close">Cancel</button></div>`;
       for (const b of lib.querySelectorAll("[data-t]")) b.onclick = () => { lib.close(); pick(b.dataset.t); };
       lib.querySelector("[data-a=close]").onclick = () => lib.close();

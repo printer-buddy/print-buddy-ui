@@ -88,6 +88,8 @@ html:not([data-theme="light"]) body { background: #121214; }
                      border: 1px solid #2c2c31; border-radius: 4px; color: var(--text); font-weight: 600; cursor: pointer; }
 .bd-libgrid button:hover:not(:disabled) { border-color: var(--orange); }
 .bd-libgrid button:disabled { opacity: .4; cursor: default; }
+.bd-libgrid button { position: relative; }
+.bd-libn { position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--orange); color: #1A1005; font: 900 11px/18px Lato, system-ui, sans-serif; font-style: normal; text-align: center; }
 .bd-libgrid .pb-ic { width: 22px; height: 22px; }
 .bd-libgrid small { color: var(--muted); font-weight: 400; }
 .bd-libfoot { display: flex; justify-content: flex-end; margin-top: 12px; }

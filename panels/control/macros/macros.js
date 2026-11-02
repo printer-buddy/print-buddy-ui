@@ -1,3 +1,4 @@
+const CHEV = PB.icon('<path d="M6 9l6 6 6-6"/>');
 PB.panel("macros", {
   title: "Macros", desc: "Your printer's macros as buttons", cls: "adv",
   icon: PB.icon('<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>'),
@@ -14,20 +15,23 @@ PB.panel("macros", {
     }
     function draw() {
       const hid = hidden(), shown = list.filter(m => !hid.includes(m.name));
-      box.innerHTML = shown.length ? shown.map(m => `<span class="pb-mac"><button type="button" data-mac="${esc(m.name)}" title="${esc(m.description || m.name)}">${esc(m.name.replaceAll("_", " "))}</button><button type="button" class="x" data-hide="${esc(m.name)}" title="Hide">${PB.ic.x}</button></span>`).join("")
+      box.innerHTML = shown.length ? shown.map(m => `<span class="pb-mac"><button type="button" data-mac="${esc(m.name)}" title="${esc(m.description || m.name)}">${esc(m.name.replaceAll("_", " "))}</button>${m.params?.length ? `<button type="button" class="arr" data-par="${esc(m.name)}" title="Parameters: ${esc(m.params.map(x => x.name).join(", "))}">${CHEV}</button>` : ""}<button type="button" class="x" data-hide="${esc(m.name)}" title="Hide">${PB.ic.x}</button></span>`).join("")
         : `<span class="pb-muted">${list.length ? "All macros are hidden." : "No macros on this printer."}</span>`;
       const show = host.querySelector("[data-a=show]");
       show.hidden = !hid.length; show.textContent = `Show hidden (${hid.length})`;
       for (const b of box.querySelectorAll("[data-mac]")) {
         const m = list.find(x => x.name === b.dataset.mac);
-        if (m?.params?.length) { b.textContent += " …"; b.title = `${m.description || m.name}\nParameters: ${m.params.map(x => x.name).join(", ")}`; }
         b.onclick = () => {
           const p = PB.current(); if (!p) return;
           if ((p.state === "printing" || p.state === "paused") && !confirm(`Run ${b.dataset.mac} while a print is running?`)) return;
-          if (m?.params?.length) return form(m);
           gcode(b.dataset.mac); toast(`Sent ${b.dataset.mac}`);
         };
       }
+      for (const b of box.querySelectorAll("[data-par]")) b.onclick = () => {
+        const p = PB.current(); if (!p) return;
+        if ((p.state === "printing" || p.state === "paused") && !confirm(`Run ${b.dataset.par} while a print is running?`)) return;
+        form(list.find(x => x.name === b.dataset.par), b);
+      };
       for (const b of box.querySelectorAll("[data-hide]")) b.onclick = () => {
         const all = PB.store.get("pb-macros-hidden", {}); (all[pid] ||= []).push(b.dataset.hide); PB.store.set("pb-macros-hidden", all); draw();
       };
