@@ -1,2 +1,3 @@
 .pb-col2 { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.pb-col2 label { justify-content: space-between; }
+.pb-col2 label { display: grid; grid-template-columns: minmax(0, 1fr) 110px 52px; align-items: center; gap: 10px; }
+.pb-col2 label input { width: 100%; min-width: 0; }
