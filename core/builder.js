@@ -20,11 +20,11 @@
   const PAGE_DEFAULT = { v: 4, tabs: [
     { id: "dash", name: "Dashboard", rows: [{ s: "1-1", cols: [
         [P("dash", "status"), P("dash", "spoolman"), P("dash", "camera"), P("dash", "toolhead"), P("dash", "zoffset"), P("dash", "extruder"),
-         P("dash", "macros"), P("dash", "fans"), H("dash", "fsensors"), P("dash", "limits")],
+         P("dash", "macros"), P("dash", "fans"), H("dash", "fsensors"), H("dash", "mmu"), P("dash", "limits")],
         [P("dash", "thermals"), P("dash", "console"), P("dash", "files"), H("dash", "queue"), P("dash", "gcodeview"), H("dash", "bedmesh"),
          P("dash", "exclude"), P("dash", "ai")]] }],
       phone: ["status", "camera", "thermals", "toolhead", "zoffset", "extruder", "macros", "fans", "console", "files", "gcodeview",
-              "exclude", "ai", "spoolman", "limits", "fsensors", "queue", "bedmesh"].map(t => `dash-${t}`) },
+              "exclude", "ai", "spoolman", "limits", "fsensors", "mmu", "queue", "bedmesh"].map(t => `dash-${t}`) },
     { id: "jobs", name: "Jobs", rows: [{ s: "2-1", cols: [[P("jobs", "files")], [P("jobs", "queue")]] },
                                       { s: "1", cols: [[P("jobs", "gcodeview")]] }] },
     { id: "history", name: "History", rows: [{ s: "1", cols: [[P("history", "history")]] }] },
