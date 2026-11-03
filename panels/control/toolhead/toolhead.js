@@ -125,17 +125,27 @@ PB.panel("toolhead", {
           b.classList.toggle("need", need); b.setAttribute("title", `Home ${b.dataset.home || "all"}${need ? " (not homed)" : ""}`);
         }
         for (const e of host.querySelectorAll("button")) e.disabled = !ok;
-        const tc = p.tool_changes || [];
+        const tg = p.toolchanger;
+        const tsel = t => t.number >= 0 ? `SELECT_TOOL T=${t.number}` : `SELECT_TOOL TOOL=${t.name}`;
+        const tc = tg ? tg.tools.map(t => ({ cmd: tsel(t), label: t.number >= 0 ? `T${t.number}` : t.name, active: !!t.active || (t.number >= 0 && t.number === tg.number),
+            temp: t.temp != null, desc: `Select ${t.name}` }))
+          : (p.tool_changes || []).map(x => ({ cmd: x.name, label: x.name, active: x.active, color: x.color, desc: x.description }));
         tcBox.hidden = !tc.length;
-        const tk = JSON.stringify(tc);
+        const tstat = tg && tg.status && tg.status !== "ready" ? tg.status : "";
+        const tk = JSON.stringify([tc, tstat]);
         if (tk !== tcKey) {
           tcKey = tk;
           const per = tc.length ? Math.ceil(tc.length / Math.ceil(tc.length / 6)) : 1, rows = [];
           for (let i = 0; i < tc.length; i += per) rows.push(tc.slice(i, i + per));
-          tcBox.innerHTML = rows.map(r => `<div class="pb-thtcrow">${r.map(x =>
-            `<button type="button" data-tc="${esc(x.name)}"${x.active ? ' class="on"' : ""} title="${esc(x.description)}">${x.color ? `<i style="background:${esc(x.color)}"></i>` : ""}${esc(x.name)}</button>`).join("")}</div>`).join("");
+          const STAT = { changing: "Changing tool…", error: "Toolchanger error", uninitialized: "Toolchanger not initialized", initializing: "Initializing toolchanger…" };
+          tcBox.innerHTML = (tstat ? `<div class="pb-thtcst ${esc(tstat)}">${esc(STAT[tstat] || tstat)}</div>` : "") + rows.map(r => `<div class="pb-thtcrow">${r.map(x =>
+            `<button type="button" data-tc="${esc(x.cmd)}"${x.active ? ' class="on"' : ""} title="${esc(x.desc)}">${x.color ? `<i style="background:${esc(x.color)}"></i>` : ""}${esc(x.label)}${x.temp ? `<small data-tt="${esc(x.cmd)}"></small>` : ""}</button>`).join("")}</div>`).join("");
         }
-        for (const b of tcBox.querySelectorAll("button")) b.disabled = !(live && p.state !== "printing");
+        if (tg) for (const t of tg.tools) {
+          const s = tcBox.querySelector(`[data-tt="${CSS.escape(tsel(t))}"]`);
+          if (s) s.textContent = t.temp != null ? `${Math.round(t.temp)}°` : "";
+        }
+        for (const b of tcBox.querySelectorAll("button")) b.disabled = !(live && p.state !== "printing" && !(tg && tg.status === "changing"));
         const t = p.tools;
         tbtn.hidden = !t;
         if (t) {

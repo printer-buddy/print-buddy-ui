@@ -48,3 +48,7 @@ html[data-theme="light"] .pb-toolmenu button:hover:not(:disabled) { background: 
 .pb-thtcrow button { flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 6px; font-weight: 700; letter-spacing: .04em; }
 .pb-thtcrow button i { flex: none; width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .35); }
 .pb-thtcrow button.on { border-color: var(--orange); color: var(--orange); }
+.pb-thtcrow button small { font-size: 11px; font-weight: 600; opacity: .85; }
+.pb-thtcst { font-size: 12px; font-weight: 700; color: var(--muted); }
+.pb-thtcst.changing, .pb-thtcst.initializing { color: var(--orange); }
+.pb-thtcst.error { color: var(--red-text); }
