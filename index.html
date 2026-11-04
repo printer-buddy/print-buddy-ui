@@ -345,6 +345,7 @@
 <link rel="stylesheet" href="/static/panels/machine/updates/updates.css">
 <link rel="stylesheet" href="/static/panels/machine/devices/devices.css">
 <link rel="stylesheet" href="/static/panels/machine/sensors/sensors.css">
+<link rel="stylesheet" href="/static/panels/machine/database/database.css">
 <link rel="stylesheet" href="/static/panels/machine/explorer/explorer.css">
 <link rel="stylesheet" href="/static/panels/machine/console/console.css">
 <link rel="stylesheet" href="/static/panels/machine/ksensors/ksensors.css">
@@ -459,7 +460,11 @@
       <input name="host" placeholder="192.168.1.50" required aria-label="IP address" style="flex:2 1 160px">
       <input name="port" placeholder="7125" inputmode="numeric" aria-label="Port" style="flex:1 1 80px">
       <input name="api_key" placeholder="API key (if needed)" aria-label="API key" style="flex:2 1 160px">
+      <input name="name" placeholder="Name (optional)" aria-label="Name" style="flex:2 1 160px" hidden>
+      <input name="serial" placeholder="Serial number" aria-label="Serial number" autocomplete="off" style="flex:2 1 160px" hidden>
+      <input name="access_code" placeholder="Access code" aria-label="Access code" autocomplete="off" style="flex:1 1 120px" hidden>
       <button class="primary">Add</button>
+      <label style="flex:1 1 100%;display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" name="bambu" style="width:auto;min-height:0"> Bambu Lab printer (needs LAN mode; the access code is on the printer's screen)</label>
     </form>
   </section>
 
@@ -1124,12 +1129,21 @@ $("#addSelected").onclick = async () => {
 };
 
 $("#manualBtn").onclick = () => $("#manual").hidden = !$("#manual").hidden;
+$("#manualForm").elements.bambu.onchange = e => {
+  const on = e.target.checked, el = e.target.form.elements;
+  for (const k of ["name", "serial", "access_code"]) el[k].hidden = !on;
+  for (const k of ["port", "api_key"]) el[k].hidden = on;
+  el.host.placeholder = on ? "Printer IP address" : "192.168.1.50";
+};
 $("#manualForm").onsubmit = async e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(e.target));
+  const body = f.bambu ? { host: f.host.trim(), name: (f.name || "").trim(), bambu: { serial: (f.serial || "").trim(), access_code: (f.access_code || "").trim() } }
+                       : { host: f.host.trim(), port: f.port || 7125, api_key: f.api_key };
   try {
-    const v = await api("/api/printers", { method: "POST", body: JSON.stringify({ host: f.host.trim(), port: f.port || 7125, api_key: f.api_key }) });
-    printers.set(v.id, v); render(); e.target.reset(); $("#manual").hidden = true; toast(`Added ${v.name}`);
+    if (f.bambu) toast("Connecting to the Bambu printer…");
+    const v = await api("/api/printers", { method: "POST", body: JSON.stringify(body) });
+    printers.set(v.id, v); render(); e.target.reset(); e.target.elements.bambu.onchange({ target: e.target.elements.bambu }); $("#manual").hidden = true; toast(`Added ${v.name}`);
   } catch (err) { toast(err.message); }
 };
 
@@ -1896,6 +1910,7 @@ render();
 <script src="/static/panels/machine/updates/updates.js"></script>
 <script src="/static/panels/machine/devices/devices.js"></script>
 <script src="/static/panels/machine/sensors/sensors.js"></script>
+<script src="/static/panels/machine/database/database.js"></script>
 <script src="/static/panels/machine/explorer/explorer.js"></script>
 <script src="/static/panels/machine/console/filters.js"></script>
 <script src="/static/panels/machine/console/help.js"></script>
