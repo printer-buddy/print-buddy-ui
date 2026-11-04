@@ -14,3 +14,21 @@
 .pb-macmenu input { height: 30px; min-height: 0; background: #2a2a2f; color: var(--text); border: 1px solid #3a3a40; border-radius: 4px; padding: 0 8px; font: inherit; }
 .pb-macmenu button { height: 32px; min-height: 0; }
 html[data-theme="light"] .pb-macmenu input { background: #fff; color: #1c1b20; border-color: #dcdce2; }
+.pb-macgroups { display: flex; flex-direction: column; gap: 10px; }
+.pb-maccath { display: flex; align-items: center; gap: 6px; width: 100%; justify-content: flex-start; background: none; border: 0; padding: 0; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+:is(#page, #home).bd .pb-maccath, :is(#page, #home).bd .pb-maccath:hover:not(:disabled) { background: none; padding: 0; height: auto; justify-content: flex-start; }
+.pb-maccath .pb-ic { width: 14px; height: 14px; transition: transform .15s; }
+.pb-maccath small { font-weight: 400; opacity: .7; }
+.pb-maccat.fold .pb-maccath .pb-ic { transform: rotate(-90deg); }
+.pb-maccat.fold .pb-macs { display: none; }
+.pb-orgdlg { width: min(560px, 94vw); max-height: 86vh; overflow: auto; }
+.pb-orgcats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.pb-orgcat, .pb-orgadd { display: flex; gap: 6px; }
+.pb-orgcat input, .pb-orgadd input { flex: 1; min-width: 0; height: 32px; min-height: 0; }
+.pb-orghead, .pb-orgrow { display: grid; grid-template-columns: minmax(0, 1fr) 150px 44px; gap: 10px; align-items: center; }
+.pb-orghead { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 0 0 6px; }
+.pb-orglist { max-height: 46vh; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+.pb-orgrow { padding: 3px 0; border-top: 1px solid var(--line); }
+.pb-orgname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.pb-orgrow select { height: 30px; min-height: 0; }
+.pb-orgrow input[type=checkbox] { width: 18px; height: 18px; min-height: 0; justify-self: center; }
