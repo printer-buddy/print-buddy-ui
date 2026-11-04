@@ -5,8 +5,13 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
     inputs:
+      kind:
+        description: "What to publish"
+        type: choice
+        options: [stable, nightly]
+        default: stable
       version:
-        description: "Stable version like 1.2.0. Leave blank for the next one. An existing version rolls main back to it."
+        description: "Stable only: version like 1.2.0. Leave blank for the next one. An existing version rolls main back to it."
         required: false
         default: ""
       bump:
@@ -30,7 +35,7 @@ concurrency: release
 
 env:
   PART: ui
-  MAIN_REPO: sterling5241/printer-buddy
+  MAIN_REPO: printer-buddy/printer-buddy
   GH_TOKEN: ${{ secrets.MAIN_REPO_TOKEN }}
 
 jobs:
@@ -50,11 +55,12 @@ jobs:
       - name: Plan
         id: plan
         env:
+          KIND: ${{ inputs.kind }}
           VERSION: ${{ inputs.version }}
           BUMP: ${{ inputs.bump }}
           EVENT: ${{ github.event_name }}
         run: |
-          KIND=stable; [ "$EVENT" = schedule ] && KIND=nightly
+          [ "$EVENT" = schedule ] && KIND=nightly
           last="$(git tag -l 'v*' | sed 's/^v//' | sort -V | tail -1)"
           sha="$(git rev-parse HEAD)"
           echo "last=$last" >> "$GITHUB_OUTPUT"

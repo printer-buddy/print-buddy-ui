@@ -1,6 +1,6 @@
 # Print Buddy UI
 
-The web interface for [Printer Buddy](https://github.com/sterling5241/printer-buddy): the dashboard, printer pages
+The web interface for [Printer Buddy](https://github.com/printer-buddy/printer-buddy): the dashboard, printer pages
 and every panel. Printer Buddy's installer fetches it next to the main app (`print-buddy-ui/`), which serves it at
 `/static/`. Set `PB_UI_DIR` to use a copy somewhere else.
 
