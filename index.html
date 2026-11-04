@@ -1238,7 +1238,7 @@ function renderPage() {
 $("#pgPause").onclick = () => doAction(pageId, printers.get(pageId)?.state === "paused" ? "resume" : "pause");
 $("#pgCancel").onclick = () => doAction(pageId, "cancel");
 $("#pgStop").onclick = () => doAction(pageId, "estop");
-$("#pgFull").onclick = () => $("#pgCam").requestFullscreen?.();
+$("#pgFull").onclick = () => document.fullscreenElement ? document.exitFullscreen() : $("#pgCam").requestFullscreen?.();
 window.addEventListener("hashchange", route);
 
 const TABS = { status: ["#tabStatus", "#pgStatus"], control: ["#tabControl", "#pgControl"], console: ["#tabConsole", "#pgConsole"], timelapse: ["#tabTimelapse", "#pgTimelapse"] };
@@ -1539,7 +1539,7 @@ function camProbe() {
   const cam = $("#pgCam"), img = $("#pgImg");
   let probe = cam.querySelector(".ai-probe");
   if (!probe) { probe = document.createElement("div"); probe.className = "ai-probe"; probe.innerHTML = "<i></i>"; cam.append(probe); }
-  for (const k of ["inset", "left", "top", "width", "height", "transform"]) probe.style[k] = img.style[k];
+  for (const k of ["inset", "left", "top", "width", "height", "transform", "scale", "translate"]) probe.style[k] = img.style[k];
   const ew = probe.offsetWidth, eh = probe.offsetHeight, nw = img.naturalWidth, nh = img.naturalHeight;
   const s = (getComputedStyle(img).objectFit === "cover" ? Math.max : Math.min)(ew / nw, eh / nh);
   const cw = nw * s, ch = nh * s;
@@ -1908,6 +1908,7 @@ render();
 <script src="/static/core/extras/error-card.js"></script>
 <script src="/static/core/extras/drop-upload.js"></script>
 <script src="/static/core/extras/shortcuts.js"></script>
+<script src="/static/core/extras/camzoom.js"></script>
 <script src="/static/core/extras/prompts.js"></script>
 <script src="/static/core/extras/calibration.js"></script>
 <script src="/static/core/extras/pause-layer.js"></script>

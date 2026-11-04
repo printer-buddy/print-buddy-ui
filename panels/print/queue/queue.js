@@ -6,8 +6,8 @@ PB.panel("queue", {
     host.innerHTML = `<div class="pb-tool"><span class="pb-qstate pb-muted"></span><span class="bd-sp"></span>
         <button type="button" class="pb-pri" data-a="start">Start queue</button><button type="button" data-a="pause">Pause queue</button>
         <button type="button" data-a="ref" data-head title="Refresh" aria-label="Refresh">${PB.ic.refresh}</button></div>
-      <div class="pb-msg pb-muted"></div><div class="pb-list"></div>`;
-    const q = s => host.querySelector(s), list = q(".pb-list"), msg = q(".pb-msg");
+      <div class="pb-msg pb-muted"></div><div class="pb-list"></div><div class="pb-qtot"></div>`;
+    const q = s => host.querySelector(s), list = q(".pb-list"), msg = q(".pb-msg"), tot = q(".pb-qtot");
     let jobs = [], state = null, timer = null, pid = null;
     const STATE = { ready: "Waiting: starts the next job when the printer is free", paused: "Paused: nothing starts on its own",
                     loading: "Loading the next job…", starting: "Starting the next job…" };
@@ -31,8 +31,24 @@ PB.panel("queue", {
       const names = gs.flatMap(g => Array(g.n ?? g.jobs.length).fill(g.filename));
       return names.length ? call("add", { filenames: names, reset: true }) : call("remove", { job_ids: jobs.map(j => j.id) });
     }
+    const hms = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), r = s % 60; return `${h ? h + "h " : ""}${m || h ? m + "m " : ""}${r}s`; };
+    function totals() {
+      let mm = 0, g = 0, sec = 0, unknown = 0;
+      for (const j of jobs) {
+        if (j.time == null && j.filament == null && j.weight == null) unknown++;
+        mm += j.filament || 0; g += j.weight || 0; sec += j.time || 0;
+      }
+      const p = PB.current(), running = p && (p.state === "printing" || p.state === "paused") && p.eta != null;
+      const eta = new Date(Date.now() + ((running ? p.eta : 0) + sec) * 1000), today = eta.toDateString() === new Date().toDateString();
+      const at = eta.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const chips = [unknown ? `<span class="pb-qchip warn">No file info for ${unknown} job${unknown > 1 ? "s" : ""}</span>` : "",
+        mm || g ? `<span class="pb-qchip">Filament: ${(mm / 1000).toFixed(2)} m / ${g.toFixed(2)} g</span>` : "",
+        sec ? `<span class="pb-qchip">Print time: ${hms(sec)}</span><span class="pb-qchip">ETA: ${today ? at : eta.toLocaleDateString([], { day: "numeric", month: "short" }) + " " + at}</span>` : ""];
+      tot.innerHTML = jobs.length ? chips.join("") : "";
+    }
     function draw() {
       setButtons();
+      totals();
       const gs = groups();
       msg.textContent = jobs.length ? `${jobs.length} job${jobs.length > 1 ? "s" : ""} queued` : "The queue is empty. Add files with + Queue in the Files panel.";
       list.innerHTML = gs.map((g, i) => `<div class="pb-li">
