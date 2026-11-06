@@ -133,6 +133,14 @@
   #shareDlg .sub { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
   #shareDlg select { font: inherit; min-height: 44px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card2); color: var(--text); }
   .share-new { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .share-chat { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .share-chat h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .share-chat h3 button { margin-left: auto; min-height: 0; padding: 4px 10px; font-size: 12px; }
+  .share-msgs { height: 150px; overflow-y: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }
+  .share-msgs .none { color: var(--muted); margin: auto; }
+  .share-msgs b { color: var(--lilac); } .share-msgs .owner b { color: var(--orange); }
+  .share-chat form { display: flex; gap: 8px; margin-top: 8px; }
+  .share-chat form input { flex: 1; min-width: 0; }
   .share-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
   .share-item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
   .share-item input { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
@@ -464,7 +472,9 @@
       <input name="serial" placeholder="Serial number" aria-label="Serial number" autocomplete="off" style="flex:2 1 160px" hidden>
       <input name="access_code" placeholder="Access code" aria-label="Access code" autocomplete="off" style="flex:1 1 120px" hidden>
       <button class="primary">Add</button>
-      <label style="flex:1 1 100%;display:flex;align-items:center;gap:8px;font-size:14px"><input type="checkbox" name="bambu" style="width:auto;min-height:0"> Bambu Lab printer (needs LAN mode; the access code is on the printer's screen)</label>
+      <label style="flex:1 1 100%;display:flex;align-items:center;gap:8px;font-size:14px">Printer type
+        <select name="kind" style="width:auto;flex:0 1 auto"><option value="klipper">Klipper (Moonraker)</option><option value="bambu">Bambu Lab (needs LAN mode)</option><option value="cc1">Elegoo Centauri Carbon</option><option value="cc2">Elegoo Centauri Carbon 2</option></select></label>
+      <p class="muted" id="kindHint" style="flex:1 1 100%;margin:0;font-size:13px" hidden></p>
     </form>
   </section>
 
@@ -621,9 +631,15 @@
   <p class="sub">Anyone with the link can watch this printer's camera and progress. They can't control it.</p>
   <div class="share-new">
     <label>Link works for <select id="shareExp"><option value="1h">1 hour</option><option value="1d" selected>1 day</option><option value="7d">7 days</option><option value="print" id="shareExpPrint">until the print ends</option><option value="never">until I turn it off</option></select></label>
+    <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" id="shareChatOn" checked style="width:auto;min-height:0"> Chat</label>
     <button class="primary" id="shareCreate">Create link</button>
   </div>
   <div class="share-list" id="shareList"></div>
+  <div class="share-chat">
+    <h3>Chat <label style="font-weight:400;font-size:13px;display:inline-flex;align-items:center;gap:6px"><input type="checkbox" id="chatAllow" checked style="width:auto;min-height:0"> Allow chat</label><button type="button" id="chatClear">Clear chat</button></h3>
+    <div class="share-msgs" id="shareMsgs" aria-live="polite"></div>
+    <form id="shareChatForm"><input id="shareChatText" maxlength="300" placeholder="Say something as Owner…" autocomplete="off" aria-label="Message"><button class="primary">Send</button></form>
+  </div>
   <div class="row" style="justify-content:flex-end; margin-top:14px"><button id="shareClose">Close</button></div>
 </dialog>
 
@@ -1129,21 +1145,30 @@ $("#addSelected").onclick = async () => {
 };
 
 $("#manualBtn").onclick = () => $("#manual").hidden = !$("#manual").hidden;
-$("#manualForm").elements.bambu.onchange = e => {
-  const on = e.target.checked, el = e.target.form.elements;
-  for (const k of ["name", "serial", "access_code"]) el[k].hidden = !on;
-  for (const k of ["port", "api_key"]) el[k].hidden = on;
-  el.host.placeholder = on ? "Printer IP address" : "192.168.1.50";
+const KINDS = {
+  klipper: { show: ["port", "api_key"], host: "192.168.1.50", hint: "" },
+  bambu: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The access code is on its screen." },
+  cc1: { show: ["name"], host: "Printer IP address", hint: "Only the IP is needed. Printer Buddy finds the rest. Pause, resume, stop and start work; temperatures and fans can't be changed from here." },
+  cc2: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The serial number and access code are on its screen." },
+};
+$("#manualForm").elements.kind.onchange = e => {
+  const el = e.target.form.elements, k = KINDS[e.target.value];
+  for (const n of ["port", "api_key", "name", "serial", "access_code"]) el[n].hidden = !k.show.includes(n);
+  el.host.placeholder = k.host;
+  $("#kindHint").textContent = k.hint; $("#kindHint").hidden = !k.hint;
 };
 $("#manualForm").onsubmit = async e => {
   e.preventDefault();
-  const f = Object.fromEntries(new FormData(e.target));
-  const body = f.bambu ? { host: f.host.trim(), name: (f.name || "").trim(), bambu: { serial: (f.serial || "").trim(), access_code: (f.access_code || "").trim() } }
-                       : { host: f.host.trim(), port: f.port || 7125, api_key: f.api_key };
+  const f = Object.fromEntries(new FormData(e.target)), host = f.host.trim(), name = (f.name || "").trim();
+  const extra = { serial: (f.serial || "").trim(), access_code: (f.access_code || "").trim() };
+  const body = f.kind === "bambu" ? { host, name, bambu: extra }
+    : f.kind === "cc1" ? { host, name, elegoo: { model: "cc1" } }
+    : f.kind === "cc2" ? { host, name, elegoo: { model: "cc2", ...extra } }
+    : { host, port: f.port || 7125, api_key: f.api_key };
   try {
-    if (f.bambu) toast("Connecting to the Bambu printer…");
+    if (f.kind !== "klipper") toast("Connecting to the printer…");
     const v = await api("/api/printers", { method: "POST", body: JSON.stringify(body) });
-    printers.set(v.id, v); render(); e.target.reset(); e.target.elements.bambu.onchange({ target: e.target.elements.bambu }); $("#manual").hidden = true; toast(`Added ${v.name}`);
+    printers.set(v.id, v); render(); e.target.reset(); e.target.elements.kind.onchange({ target: e.target.elements.kind }); $("#manual").hidden = true; toast(`Added ${v.name}`);
   } catch (err) { toast(err.message); }
 };
 
@@ -1477,14 +1502,59 @@ async function openShare(id) {
   po.disabled = !live; po.title = live ? "" : "Only while a print is running";
   if (!live && $("#shareExp").value === "print") $("#shareExp").value = "1d";
   await loadShares(); $("#shareDlg").showModal();
+  ownerChat.start(id);
 }
+// the owner's side of a share link's chat: the same room, polled only while this window is open
+const ownerChat = (() => {
+  let id = null, last = 0, epoch = null, timer = null;
+  const box = () => $("#shareMsgs");
+  const empty = () => { const e = document.createElement("div"); e.className = "none"; e.textContent = "No messages yet."; box().replaceChildren(e); };
+  const add = m => {
+    const b = box(), stick = b.scrollHeight - b.scrollTop - b.clientHeight < 40;
+    b.querySelector(".none")?.remove();
+    const d = document.createElement("div"), n = document.createElement("b"), t = document.createElement("span");
+    d.className = m.owner ? "owner" : ""; n.textContent = m.name; t.textContent = " " + m.text; d.append(n, t); b.append(d);
+    if (stick) b.scrollTop = b.scrollHeight;
+  };
+  async function poll() {
+    if (id === null) return;
+    const mine = id;
+    let j;
+    try { j = await api(`/api/printers/${mine}/chat?after=${last}`); } catch { return; }
+    if (mine !== id) return;
+    if (epoch !== null && j.epoch !== epoch) { epoch = j.epoch; last = 0; empty(); return poll(); }
+    epoch = j.epoch;
+    setEnabled(j.enabled !== false);
+    for (const m of j.messages) { add(m); last = Math.max(last, m.id); }
+  }
+  function setEnabled(on) {
+    $("#chatAllow").checked = on;
+    $("#shareChatText").disabled = !on; $("#shareChatForm button").disabled = !on; $("#chatClear").disabled = !on;
+    $("#shareChatText").placeholder = on ? "Say something as Owner…" : "Chat is turned off";
+  }
+  return {
+    start(pid) { id = pid; last = 0; epoch = null; empty(); clearInterval(timer); poll(); timer = setInterval(poll, 3000); },
+    stop() { id = null; clearInterval(timer); },
+    async send(text) { await api(`/api/printers/${id}/chat`, { method: "POST", body: JSON.stringify({ text }) }); await poll(); },
+    async clear() { await api(`/api/printers/${id}/chat`, { method: "DELETE" }); await poll(); },
+    async allow(on) { await api(`/api/printers/${id}/chat`, { method: "PATCH", body: JSON.stringify({ enabled: on }) }); setEnabled(on); if (!on) empty(); },
+  };
+})();
+$("#shareChatForm").onsubmit = async e => {
+  e.preventDefault();
+  const t = $("#shareChatText").value.trim(); if (!t) return;
+  try { await ownerChat.send(t); $("#shareChatText").value = ""; } catch (err) { toast(err.message); }
+};
+$("#chatAllow").onchange = async e => { try { await ownerChat.allow(e.target.checked); } catch (err) { toast(err.message); e.target.checked = !e.target.checked; } };
+$("#chatClear").onclick = async () => { if (confirm("Clear the chat for everyone?")) try { await ownerChat.clear(); } catch (err) { toast(err.message); } };
+$("#shareDlg").addEventListener("close", () => ownerChat.stop());
 async function loadShares() {
   try {
     const { shares } = await api(`/api/printers/${shareId}/shares`);
     $("#shareList").innerHTML = shares.length ? shares.map((sh, i) => `<div class="share-item">
         <input readonly value="${esc(sh.url)}" aria-label="Share link">
         <button data-copy="${i}">Copy</button><button class="revoke" data-revoke="${i}">Turn off</button>
-        <span class="exp">${sh.until_print ? "Works until the print ends" : sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}</span>
+        <span class="exp">${sh.until_print ? "Works until the print ends" : sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}${sh.chat === false ? " · no chat" : ""}</span>
       </div>`).join("") : `<p class="muted" style="margin:0">No active links for this printer.</p>`;
     for (const b of $("#shareList").querySelectorAll("[data-copy]")) b.onclick = () => copyText(shares[+b.dataset.copy].url, b);
     for (const b of $("#shareList").querySelectorAll("[data-revoke]")) b.onclick = async () => {
@@ -1500,7 +1570,7 @@ async function copyText(text, btn) {
 }
 $("#shareCreate").onclick = async () => {
   try {
-    const sh = await api(`/api/printers/${shareId}/shares`, { method: "POST", body: JSON.stringify({ expires: $("#shareExp").value }) });
+    const sh = await api(`/api/printers/${shareId}/shares`, { method: "POST", body: JSON.stringify({ expires: $("#shareExp").value, chat: $("#shareChatOn").checked }) });
     await loadShares();
     try { await navigator.clipboard.writeText(sh.url); toast("Link created and copied"); } catch { toast("Link created"); }
   } catch (e) { toast(e.message); }

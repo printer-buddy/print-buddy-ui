@@ -42,6 +42,20 @@
   dt { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
   dd { margin: 0; font-size: 20px; font-weight: 900; }
   .note { color: var(--muted); font-size: 13px; text-align: center; }
+  .chatbtn { margin-left: auto; font: inherit; font-weight: 700; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card2); color: var(--text); cursor: pointer; }
+  .chatbtn[aria-expanded="true"] { background: var(--orange); border-color: var(--orange); color: #1A1005; }
+  .chat { margin-top: 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); overflow: hidden; }
+  .msgs { height: 220px; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; overflow-wrap: anywhere; }
+  .msgs .none { color: var(--muted); margin: auto; text-align: center; }
+  .msg b { color: var(--lilac); }
+  .msg.owner b { color: var(--orange); }
+  .cform { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
+  .cform input { min-width: 0; font: inherit; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  .cform #chatName { flex: 0 1 130px; }
+  .cform #chatText { flex: 1 1 auto; }
+  .cform button { font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 8px; border: 0; background: var(--purple); color: #fff; cursor: pointer; }
+  .chat .note { margin: 0; padding: 0 12px 8px; text-align: left; min-height: 0; }
+  .chat .note:empty { display: none; }
   .gone { text-align: center; padding: 80px 16px; }
   .gone h1 { margin-bottom: 10px; }
 </style>
@@ -50,7 +64,7 @@
 <main>
   <div class="brand">Printer <span>Buddy</span> · shared view</div>
   <section id="view" hidden>
-    <div class="head"><h1 id="name"></h1><span class="tag" id="tag"></span></div>
+    <div class="head"><h1 id="name"></h1><span class="tag" id="tag"></span><button type="button" class="chatbtn" id="chatBtn" aria-expanded="false" aria-controls="chat">Chat</button></div>
     <div class="box" style="margin-top:14px">
       <div class="cam"><img id="img" alt="Live view of the printer" hidden><div class="nocam" id="nocam">No camera</div>
         <button type="button" class="full" id="full" title="Full screen" aria-label="Full screen" hidden><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button></div>
@@ -66,6 +80,15 @@
         </dl>
       </div>
     </div>
+    <section class="chat" id="chat" hidden aria-label="Chat">
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <form class="cform" id="chatForm">
+        <input id="chatName" maxlength="24" placeholder="Your name" autocomplete="nickname" aria-label="Your name">
+        <input id="chatText" maxlength="300" placeholder="Say something…" autocomplete="off" aria-label="Message">
+        <button type="submit">Send</button>
+      </form>
+      <p class="note" id="chatErr" role="status"></p>
+    </section>
     <p class="note" id="expires"></p>
   </section>
   <section class="gone" id="gone" hidden>
@@ -138,6 +161,10 @@ async function refresh() {
   $("#bed").innerHTML = online ? fmtTT(p.bed, p.bed_target) : "—";
   $("#expires").textContent = p.expires_at ? `This link stops working ${new Date(p.expires_at * 1000).toLocaleString()}.` : "";
   setCamera(p);
+  const chatOn = p.chat !== false;
+  $("#chatBtn").hidden = !chatOn;
+  if (!chatOn) { $("#chat").hidden = true; clearInterval(chatTimer); }
+  else if (mem.get("pb-chat-open") === "1" && $("#chat").hidden) setChat(true);
 }
 $("#full").onclick = () => {
   const c = $(".cam");
@@ -145,6 +172,49 @@ $("#full").onclick = () => {
   else (c.requestFullscreen || c.webkitRequestFullscreen)?.call(c);
 };
 $(".cam").ondblclick = () => $("#full").click();
+// chat: a room shared by everyone watching this printer; polls only while the box is open
+const mem = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch {} } };
+let cid = mem.get("pb-chat-cid");
+if (!cid) { cid = Array.from(crypto.getRandomValues(new Uint8Array(12)), b => b.toString(16).padStart(2, "0")).join(""); mem.set("pb-chat-cid", cid); }
+let chatLast = 0, chatEpoch = null, chatTimer = null;
+$("#chatName").value = mem.get("pb-chat-name") || "";
+function showMsg(m) {
+  const box = $("#msgs"), stick = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+  box.querySelector(".none")?.remove();
+  const d = document.createElement("div"), n = document.createElement("b"), t = document.createElement("span");
+  d.className = "msg" + (m.owner ? " owner" : ""); n.textContent = m.name; t.textContent = " " + m.text;
+  d.append(n, t); box.append(d);
+  if (stick) box.scrollTop = box.scrollHeight;
+}
+function emptyChat() { const e = document.createElement("div"); e.className = "none"; e.textContent = "No messages yet. Say hello!"; $("#msgs").replaceChildren(e); }
+async function pollChat() {
+  if ($("#chat").hidden || document.hidden) return;
+  let j;
+  try { const r = await fetch(`${base}/chat?after=${chatLast}`, { cache: "no-store" }); if (!r.ok) return; j = await r.json(); } catch { return; }
+  if (chatEpoch !== null && j.epoch !== chatEpoch) { chatEpoch = j.epoch; chatLast = 0; emptyChat(); return pollChat(); }
+  chatEpoch = j.epoch;
+  for (const m of j.messages) { showMsg(m); chatLast = Math.max(chatLast, m.id); }
+}
+function setChat(open) {
+  $("#chat").hidden = !open; $("#chatBtn").setAttribute("aria-expanded", String(open)); mem.set("pb-chat-open", open ? "1" : "0");
+  clearInterval(chatTimer);
+  if (open) { if (!$("#msgs").children.length) emptyChat(); pollChat(); chatTimer = setInterval(pollChat, 3000); $("#chatText").focus({ preventScroll: true }); }
+}
+$("#chatBtn").onclick = () => setChat($("#chat").hidden);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) pollChat(); });
+$("#chatForm").onsubmit = async e => {
+  e.preventDefault();
+  const text = $("#chatText").value.trim(), name = $("#chatName").value.trim();
+  if (!text) return;
+  mem.set("pb-chat-name", name); $("#chatErr").textContent = "";
+  try {
+    const r = await fetch(`${base}/chat`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, text, cid }) });
+    if (!r.ok) { const j = await r.json().catch(() => null); $("#chatErr").textContent = j?.error || "Couldn't send that."; return; }
+    $("#chatText").value = "";
+    pollChat();
+  } catch { $("#chatErr").textContent = "Couldn't send that."; }
+};
+if (mem.get("pb-chat-open") === "1") setChat(true);
 refresh(); setInterval(refresh, 3000);
 </script>
 </body>
