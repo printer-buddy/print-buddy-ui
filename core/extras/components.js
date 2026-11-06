@@ -29,10 +29,10 @@ PB.components = (() => {
       <div class="pb-lbtn">${extra || ""}${update ? btn : needs?.length ? `<span class="pb-chip failed">Waiting</span>` : `<span class="pb-chip done">Up to date</span>`}</div></div>`;
   const select = (attrs, value, options) => `<select ${attrs}>${options.map(o => `<option${o === value ? " selected" : ""}>${o}</option>`).join("")}</select>`;
 
-  async function load(box) {
+  async function load(box, fresh = false) {
     box.innerHTML = `<p class="pb-muted">Checking…</p>`;
     let c;
-    try { c = await api("/api/components"); } catch (e) { box.innerHTML = `<p class="pb-muted">${esc(e.message)}</p>`; return; }
+    try { c = await api(fresh ? "/api/components?fresh=1" : "/api/components"); } catch (e) { box.innerHTML = `<p class="pb-muted">${esc(e.message)}</p>`; return; }
     const nightly = c.channel === "nightly";
     const any = c.core.update || c.parts.some(p => p.update) || c.ai.update;
     box.innerHTML = `<div class="pb-tool"><span class="bd-sp"></span>
@@ -47,7 +47,7 @@ PB.components = (() => {
       ${row("AI model", c.ai.installed || (c.ai.kind === "off" ? "off" : ""), c.ai.latest, c.ai.update,
           select("data-ai", c.ai.kind, c.ai.kinds), `<button type="button" data-up="ai">Update</button>`, c.ai.needs)}
       <div class="pb-sub-h">Printers</div><div class="pb-compprinters"><p class="pb-muted">Checking printers…</p></div>`;
-    box.querySelector("[data-a=check]").onclick = () => load(box);
+    box.querySelector("[data-a=check]").onclick = () => load(box, true);
     box.querySelector("[data-a=all]")?.addEventListener("click", () => act(box, { update: c.core.update ? "core" : c.parts.some(p => p.update) ? "parts" : "ai" }, "Update Printer Buddy now? It restarts when done."));
     for (const b of box.querySelectorAll("[data-up]")) b.onclick = () => act(box, { update: b.dataset.up }, "Update now? Printer Buddy restarts when done.");
     for (const s of box.querySelectorAll("[data-tier]")) s.onchange = () => act(box, { part: s.dataset.tier, tier: s.value },
