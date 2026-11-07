@@ -54,6 +54,8 @@
   .cform #chatName { flex: 0 1 130px; }
   .cform #chatText { flex: 1 1 auto; }
   .cform button { font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 8px; border: 0; background: var(--purple); color: #fff; cursor: pointer; }
+  .msg.flag { color: var(--orange); border-left: 3px solid var(--orange); padding-left: 8px; }
+  .cform .flagbtn { background: transparent; border: 1px solid var(--line); color: var(--text); padding: 8px 10px; }
   .chat .note { margin: 0; padding: 0 12px 8px; text-align: left; min-height: 0; }
   .chat .note:empty { display: none; }
   .gone { text-align: center; padding: 80px 16px; }
@@ -86,6 +88,7 @@
         <input id="chatName" maxlength="24" placeholder="Your name" autocomplete="nickname" aria-label="Your name">
         <input id="chatText" maxlength="300" placeholder="Say something…" autocomplete="off" aria-label="Message">
         <button type="submit">Send</button>
+        <button type="button" class="flagbtn" id="flagBtn" title="Ask the owner to look at the printer. What you typed is sent as the reason.">Flag</button>
       </form>
       <p class="note" id="chatErr" role="status"></p>
     </section>
@@ -182,7 +185,7 @@ function showMsg(m) {
   const box = $("#msgs"), stick = box.scrollHeight - box.scrollTop - box.clientHeight < 40;
   box.querySelector(".none")?.remove();
   const d = document.createElement("div"), n = document.createElement("b"), t = document.createElement("span");
-  d.className = "msg" + (m.owner ? " owner" : ""); n.textContent = m.name; t.textContent = " " + m.text;
+  d.className = "msg" + (m.owner ? " owner" : "") + (m.kind === "flag" ? " flag" : ""); n.textContent = m.kind === "flag" ? "⚑ " + m.name : m.name; t.textContent = " " + m.text;
   d.append(n, t); box.append(d);
   if (stick) box.scrollTop = box.scrollHeight;
 }
@@ -213,6 +216,17 @@ $("#chatForm").onsubmit = async e => {
     $("#chatText").value = "";
     pollChat();
   } catch { $("#chatErr").textContent = "Couldn't send that."; }
+};
+$("#flagBtn").onclick = async () => {
+  const note = $("#chatText").value.trim().slice(0, 100), name = $("#chatName").value.trim();
+  if (!confirm("Alert the owner that something may be wrong with this print?")) return;
+  mem.set("pb-chat-name", name); $("#chatErr").textContent = "";
+  try {
+    const r = await fetch(`${base}/flag`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, note, cid }) });
+    if (!r.ok) { const j = await r.json().catch(() => null); $("#chatErr").textContent = j?.error || "Couldn't flag that."; return; }
+    $("#chatText").value = "";
+    pollChat();
+  } catch { $("#chatErr").textContent = "Couldn't flag that."; }
 };
 if (mem.get("pb-chat-open") === "1") setChat(true);
 refresh(); setInterval(refresh, 3000);

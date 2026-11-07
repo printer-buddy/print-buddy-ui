@@ -138,6 +138,8 @@
   .share-chat h3 button { margin-left: auto; min-height: 0; padding: 4px 10px; font-size: 12px; }
   .share-msgs { height: 150px; overflow-y: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }
   .share-msgs .none { color: var(--muted); margin: auto; }
+  .share-msgs .blocked { color: var(--muted); font-style: italic; }
+  .share-msgs .flag { color: var(--orange); border-left: 3px solid var(--orange); padding-left: 8px; }
   .share-msgs b { color: var(--lilac); } .share-msgs .owner b { color: var(--orange); }
   .share-chat form { display: flex; gap: 8px; margin-top: 8px; }
   .share-chat form input { flex: 1; min-width: 0; }
@@ -639,6 +641,18 @@
     <h3>Chat <label style="font-weight:400;font-size:13px;display:inline-flex;align-items:center;gap:6px"><input type="checkbox" id="chatAllow" checked style="width:auto;min-height:0"> Allow chat</label><button type="button" id="chatClear">Clear chat</button></h3>
     <div class="share-msgs" id="shareMsgs" aria-live="polite"></div>
     <form id="shareChatForm"><input id="shareChatText" maxlength="300" placeholder="Say something as Owner…" autocomplete="off" aria-label="Message"><button class="primary">Send</button></form>
+    <details class="chat-opts" id="chatOpts" style="margin-top:10px">
+      <summary>Alerts and blocked words</summary>
+      <label class="field" style="margin-top:8px">Notify me with a push
+        <select id="chatAlert"><option value="off">Never</option><option value="flags">Only when a viewer flags the print</option><option value="all">For every message (at most one per 20 seconds)</option></select>
+      </label>
+      <p class="hint" id="chatAlertHint"></p>
+      <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin-top:8px"><input type="checkbox" id="chatBuiltin" checked style="width:auto;min-height:0"> Also block the built-in list of swear words and slurs</label>
+      <label class="field">Your own blocked words (one per line, # for notes)
+        <textarea id="chatBlocked" rows="5" spellcheck="false" style="font-family:monospace"></textarea>
+      </label>
+      <button type="button" id="chatSave">Save</button>
+    </details>
   </div>
   <div class="row" style="justify-content:flex-end; margin-top:14px"><button id="shareClose">Close</button></div>
 </dialog>
@@ -1513,7 +1527,7 @@ const ownerChat = (() => {
     const b = box(), stick = b.scrollHeight - b.scrollTop - b.clientHeight < 40;
     b.querySelector(".none")?.remove();
     const d = document.createElement("div"), n = document.createElement("b"), t = document.createElement("span");
-    d.className = m.owner ? "owner" : ""; n.textContent = m.name; t.textContent = " " + m.text; d.append(n, t); b.append(d);
+    d.className = m.owner ? "owner" : m.kind === "flag" ? "flag" : m.kind === "blocked" ? "blocked" : ""; n.textContent = m.kind === "flag" ? "⚑ " + m.name : m.name; t.textContent = m.kind === "blocked" ? " tried to send (blocked): " + m.text : " " + m.text; d.append(n, t); b.append(d);
     if (stick) b.scrollTop = b.scrollHeight;
   };
   async function poll() {
@@ -1548,6 +1562,17 @@ $("#shareChatForm").onsubmit = async e => {
 $("#chatAllow").onchange = async e => { try { await ownerChat.allow(e.target.checked); } catch (err) { toast(err.message); e.target.checked = !e.target.checked; } };
 $("#chatClear").onclick = async () => { if (confirm("Clear the chat for everyone?")) try { await ownerChat.clear(); } catch (err) { toast(err.message); } };
 $("#shareDlg").addEventListener("close", () => ownerChat.stop());
+$("#chatOpts").addEventListener("toggle", async e => {
+  if (!e.target.open) return;
+  try {
+    const s = await api("/api/chat/settings");
+    $("#chatAlert").value = s.alert; $("#chatBlocked").value = s.blocked; $("#chatBuiltin").checked = s.builtin;
+    $("#chatAlertHint").textContent = s.notifications ? "" : "Set up a notification service in Settings first, or nothing can be sent.";
+  } catch (err) { toast(err.message); }
+});
+$("#chatSave").onclick = async () => {
+  try { await api("/api/chat/settings", { method: "PUT", body: JSON.stringify({ alert: $("#chatAlert").value, blocked: $("#chatBlocked").value, builtin: $("#chatBuiltin").checked }) }); toast("Saved"); } catch (err) { toast(err.message); }
+};
 async function loadShares() {
   try {
     const { shares } = await api(`/api/printers/${shareId}/shares`);
