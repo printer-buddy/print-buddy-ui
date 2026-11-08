@@ -35,7 +35,10 @@ PB.panel("fans", {
         || `<p class="pb-muted">No fans or outputs found.</p>`;
       for (const row of ctl.querySelectorAll("[data-id]")) {
         const id = row.dataset.id, r = row.querySelector("input[type=range]"), c = row.querySelector("input[type=color]"), t = row.querySelector(".pb-switch");
-        if (t) t.onchange = () => gcode(`SET_PIN PIN=${fanName(id)} VALUE=${t.checked ? 1 : 0}`);
+        if (t) t.onchange = () => {
+          if (nativePrinter() && fanName(id).toLowerCase() === "chamber_light") command("light", { on: t.checked });
+          else gcode(`SET_PIN PIN=${fanName(id)} VALUE=${t.checked ? 1 : 0}`);
+        };
         if (r) {
           r.oninput = () => { busy.add(id); row.querySelector("output").textContent = `${r.value}%`; };
           r.onchange = () => {

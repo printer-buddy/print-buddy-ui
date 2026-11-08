@@ -1409,6 +1409,13 @@ async function gcode(script) {
   try { await api(`/api/printers/${p.id}/gcode`, { method: "POST", body: JSON.stringify({ script }) }); }
   catch (e) { toast(`${p.name}: ${e.message}`); }
 }
+// Bambu / Elegoo controls: a plain action straight to the printer, no fake gcode. Klipper still uses gcode().
+function nativePrinter() { return printers.get(pageId)?.kind !== "moonraker"; }
+async function command(action, params) {
+  const p = printers.get(pageId); if (!p) return;
+  try { await api(`/api/printers/${p.id}/command`, { method: "POST", body: JSON.stringify({ action, ...params }) }); }
+  catch (e) { toast(`${p.name}: ${e.message}`); }
+}
 const setHeater = (heater, t) => gcode(`SET_HEATER_TEMPERATURE HEATER=${heater} TARGET=${Math.max(0, Math.round(t))}`);
 $("#ctlNozzleSet").onclick = () => { const v = +$("#ctlNozzle").value; if ($("#ctlNozzle").value !== "") setHeater("extruder", v); };
 $("#ctlBedSet").onclick = () => { const v = +$("#ctlBed").value; if ($("#ctlBed").value !== "") setHeater("heater_bed", v); };
