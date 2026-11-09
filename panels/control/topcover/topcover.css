@@ -1,0 +1,7 @@
+.pb-tc-mats { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; margin-bottom: 10px; }
+.pb-tc-mat { display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; }
+.pb-tc-swatch { width: 26px; height: 26px; border-radius: 50%; background: var(--c); border: 2px solid var(--bd-line);
+                box-shadow: inset 0 0 0 7px rgba(0, 0, 0, .18); }
+.pb-tc-no { font-size: 10px; color: var(--muted); }
+.pb-tc-v { font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-tc-pur .pb-speed { margin-bottom: 6px; }
