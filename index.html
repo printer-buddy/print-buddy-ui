@@ -164,7 +164,8 @@
   .setup-line .soon { color: var(--orange); }
   .fps { position: absolute; top: 10px; right: 62px; padding: 4px 8px; border-radius: 6px; background: rgba(11,11,13,.8);
          font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); pointer-events: none; }
-  .qv-cam .fps, .pg-cam .fps, .ctl-cam .fps { right: auto; left: 12px; top: 12px; }
+  .qv-cam .fps, .pg-cam .fps { right: auto; left: 12px; top: 12px; }
+  .ctl-cam .fps, .pb-card .pg-cam .fps { right: 12px; left: auto; top: auto; bottom: 12px; }
   img[hidden] ~ .fps, .grid.list .fps { display: none; }
   .ctl-camsec { grid-column: 1 / -1; padding: 0 !important; overflow: hidden; }
   .ctl-cam { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 440px; background: #000; overflow: hidden; }
@@ -336,9 +337,8 @@
 <link rel="stylesheet" href="/static/panels/print/timelapse/timelapse.css">
 <link rel="stylesheet" href="/static/panels/print/spoolman/spoolman.css">
 <link rel="stylesheet" href="/static/panels/print/ai/ai.css">
-<link rel="stylesheet" href="/static/panels/control/toolhead/toolhead.css">
-<link rel="stylesheet" href="/static/panels/control/zoffset/zoffset.css">
-<link rel="stylesheet" href="/static/panels/control/extruder/extruder.css">
+<link rel="stylesheet" href="/static/panels/control/tool/tool.css">
+<link rel="stylesheet" href="/static/panels/print/jobs/jobs.css">
 <link rel="stylesheet" href="/static/panels/control/thermals/thermals.css">
 <link rel="stylesheet" href="/static/panels/control/fans/fans.css">
 <link rel="stylesheet" href="/static/panels/control/macros/macros.css">
@@ -1370,7 +1370,7 @@ const conHistory = [];
 let conHistPos = -1;
 function conAdd(id, kind, text) {
   const log = conLogs.get(id) || [];
-  log.push({ kind, text });
+  log.push({ kind, text, t: Date.now() });
   if (log.length > 500) log.splice(0, log.length - 500);
   conLogs.set(id, log);
   if (id === pageId && !$("#pgConsole").hidden) {
@@ -1411,7 +1411,7 @@ async function gcode(script) {
   catch (e) { toast(`${p.name}: ${e.message}`); }
 }
 // Bambu / Elegoo controls: a plain action straight to the printer, no fake gcode. Klipper still uses gcode().
-function nativePrinter() { return printers.get(pageId)?.kind !== "moonraker"; }
+function nativePrinter() { const k = printers.get(pageId)?.kind; return k === "bambu" || k === "elegoo"; }
 async function command(action, params) {
   const p = printers.get(pageId); if (!p) return;
   try { await api(`/api/printers/${p.id}/command`, { method: "POST", body: JSON.stringify({ action, ...params }) }); }
@@ -1988,9 +1988,8 @@ render();
 <script src="/static/panels/print/timelapse/timelapse.js"></script>
 <script src="/static/panels/print/spoolman/spoolman.js"></script>
 <script src="/static/panels/print/ai/ai.js"></script>
-<script src="/static/panels/control/toolhead/toolhead.js"></script>
-<script src="/static/panels/control/zoffset/zoffset.js"></script>
-<script src="/static/panels/control/extruder/extruder.js"></script>
+<script src="/static/panels/control/tool/tool.js"></script>
+<script src="/static/panels/print/jobs/jobs.js"></script>
 <script src="/static/panels/control/thermals/presets.js"></script>
 <script src="/static/panels/control/thermals/thermals.js"></script>
 <script src="/static/panels/control/fans/fans.js"></script>

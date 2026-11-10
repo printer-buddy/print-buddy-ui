@@ -15,11 +15,6 @@
 .pb-macmenu button { height: 32px; min-height: 0; }
 html[data-theme="light"] .pb-macmenu input { background: #fff; color: #1c1b20; border-color: #dcdce2; }
 .pb-macgroups { display: flex; flex-direction: column; gap: 10px; }
-.pb-maccath { display: flex; align-items: center; gap: 6px; width: 100%; justify-content: flex-start; background: none; border: 0; padding: 0; margin-bottom: 6px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-:is(#page, #home).bd .pb-maccath, :is(#page, #home).bd .pb-maccath:hover:not(:disabled) { background: none; padding: 0; height: auto; justify-content: flex-start; }
-.pb-maccath .pb-ic { width: 14px; height: 14px; transition: transform .15s; }
-.pb-maccath small { font-weight: 400; opacity: .7; }
-.pb-maccat.fold .pb-maccath .pb-ic { transform: rotate(-90deg); }
 .pb-maccat.fold .pb-macs { display: none; }
 .pb-orgdlg { width: min(560px, 94vw); max-height: 86vh; overflow: auto; }
 .pb-orgcats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
@@ -32,3 +27,23 @@ html[data-theme="light"] .pb-macmenu input { background: #fff; color: #1c1b20; b
 .pb-orgname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
 .pb-orgrow select { height: 30px; min-height: 0; }
 .pb-orgrow input[type=checkbox] { width: 18px; height: 18px; min-height: 0; justify-self: center; }
+
+/* Fluidd's Macros card: bigger buttons, group headers with a count, a gear and a fold chevron */
+.pb-macgroups { gap: 0; }
+.pb-maccat + .pb-maccat { border-top: 1px solid var(--bd-line); }
+.pb-maccath { display: flex; align-items: center; gap: 10px; min-height: 48px; }
+.pb-mcn { font-size: 16px; font-weight: 500; }
+.pb-mcc { display: inline-grid; place-items: center; min-width: 28px; height: 22px; padding: 0 8px; border-radius: 11px; background: rgba(255, 255, 255, .18); font-size: 12px; font-weight: 500; }
+:is(#page, #home).bd .pb-maccath button { width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; color: var(--muted); display: inline-grid; place-items: center; }
+:is(#page, #home).bd .pb-maccath button:hover:not(:disabled) { background: var(--bd-hover); color: var(--text); }
+.pb-maccath button svg { width: 20px; height: 20px; }
+.pb-mcf svg { transform: rotate(180deg); }
+.pb-maccat.fold .pb-mcf svg { transform: none; }
+.pb-macs { gap: 8px; padding-bottom: 14px; }
+:is(#page, #home).bd .pb-mac button { height: 36px; padding: 0 16px; font-size: 14px; font-weight: 700; letter-spacing: .0893em; background: rgba(255, 255, 255, .18); border: 0; border-radius: 4px; color: var(--text); }
+:is(#page, #home).bd .pb-mac button:hover:not(:disabled) { background: rgba(255, 255, 255, .26); }
+:is(#page, #home).bd .pb-mac .arr { padding: 0 6px; margin-left: 1px; background: rgba(255, 255, 255, .1); border-radius: 0 4px 4px 0; }
+:is(#page, #home).bd .pb-mac:has(.arr) > [data-mac] { border-radius: 4px 0 0 4px; }
+:is(#page, #home).bd .pb-mac .arr .pb-ic { width: 16px; height: 16px; }
+html[data-theme="light"] :is(#page, #home).bd .pb-mac button { background: rgba(0, 0, 0, .08); }
+html[data-theme="light"] .pb-mcc { background: rgba(0, 0, 0, .12); }

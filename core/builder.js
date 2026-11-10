@@ -19,12 +19,12 @@
   const H = (tab, t, o) => ({ ...P(tab, t, o), h: true });
   const PAGE_DEFAULT = { v: 4, tabs: [
     { id: "dash", name: "Dashboard", rows: [{ s: "1-1", cols: [
-        [P("dash", "status"), P("dash", "spoolman"), P("dash", "camera"), P("dash", "toolhead"), P("dash", "zoffset"), P("dash", "extruder"),
-         P("dash", "macros"), P("dash", "fans"), H("dash", "fsensors"), H("dash", "mmu"), H("dash", "topcover"), P("dash", "limits")],
-        [P("dash", "thermals"), P("dash", "console"), P("dash", "files"), H("dash", "queue"), P("dash", "gcodeview"), H("dash", "bedmesh"),
-         P("dash", "exclude"), P("dash", "ai")]] }],
-      phone: ["status", "camera", "thermals", "toolhead", "zoffset", "extruder", "macros", "fans", "console", "files", "gcodeview",
-              "exclude", "ai", "spoolman", "limits", "fsensors", "mmu", "topcover", "queue", "bedmesh"].map(t => `dash-${t}`) },
+        [P("dash", "status"), P("dash", "spoolman"), H("dash", "mmu"), P("dash", "camera"), P("dash", "tool"),
+         P("dash", "macros"), P("dash", "fans"), H("dash", "fsensors"), H("dash", "topcover"), P("dash", "limits")],
+        [P("dash", "thermals"), P("dash", "console"), P("dash", "jobs"), H("dash", "queue"), P("dash", "gcodeview"), H("dash", "bedmesh"),
+         P("dash", "ai")]] }],
+      phone: ["status", "spoolman", "mmu", "camera", "tool", "macros", "fans", "fsensors", "topcover", "limits",
+              "thermals", "console", "jobs", "queue", "gcodeview", "bedmesh", "ai"].map(t => `dash-${t}`) },
     { id: "jobs", name: "Jobs", rows: [{ s: "2-1", cols: [[P("jobs", "files")], [P("jobs", "queue")]] },
                                       { s: "1", cols: [[P("jobs", "gcodeview")]] }] },
     { id: "history", name: "History", rows: [{ s: "1", cols: [[P("history", "history")]] }] },
@@ -55,7 +55,7 @@
   themeBtn.onclick = () => PB.setTheme(THEMES[(THEMES.indexOf(PB.store.get("pb-theme", "auto")) + 1) % 3]);
   dark.addEventListener("change", PB.applyTheme);
   PB.applyTheme();
-  actions.append(themeBtn, editBtn, el("span", "bd-divider"), $("#pgPause"), $("#pgCancel"), $("#pgStop"));
+  actions.append(themeBtn, editBtn, el("span", "bd-divider"), $("#pgStop"));
   top.append(head.querySelector(".pg-back"), $("#pgName"), $("#pgTag"), el("span", "bd-sp"), actions);
   head.replaceWith(top);
   page.querySelector(".pg-tabs").hidden = true;
@@ -80,7 +80,7 @@
     if (rail) { rail.setAttribute("aria-label", "Tabs"); o.wrap.append(rail); }
     o.wrap.append(main);
 
-    let layout = null, active = PB.store.get(o.tabKey, o.base.tabs[0].id), saveTimer = null, preview = false;
+    let migrated = false, layout = null, active = PB.store.get(o.tabKey, o.base.tabs[0].id), saveTimer = null, preview = false;
     const insts = new Map();
     const clean = l => {
       if (!l || !Array.isArray(l.tabs) || !l.tabs.length) return null;
@@ -92,7 +92,30 @@
         })),
         phone: Array.isArray(t.phone) ? t.phone.map(String) : [],
       }));
-      return l.tabs.length ? l : null;
+      if (!l.tabs.length) return null;
+      const OLD = ["toolhead", "zoffset", "extruder"], all = l.tabs.flatMap(t => t.rows.flatMap(r => r.cols.flat()));
+      if (all.some(it => OLD.includes(it.t))) {
+        const keep = (all.find(it => it.t === "toolhead") || {}).o || {}, gone = new Set();
+        let done = false;
+        for (const tab of l.tabs) for (const row of tab.rows) row.cols = row.cols.map(col => col.flatMap(it => {
+          if (!OLD.includes(it.t)) return [it];
+          if (done) { gone.add(it.id); return []; }
+          done = true; return [{ ...it, t: "tool", o: keep }];
+        }));
+        for (const tab of l.tabs) tab.phone = tab.phone.filter(id => !gone.has(id));
+        migrated = true;
+      }
+      for (const tab of l.tabs) if (tab.id === "dash") for (const row of tab.rows) for (const col of row.cols) for (const it of col) if (it.t === "files") { it.t = "jobs"; it.o = {}; migrated = true; }
+      if (!l.noexcl) {
+        l.noexcl = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "dash");
+        if (tab) {
+          const gone = new Set();
+          for (const row of tab.rows) row.cols = row.cols.map(col => col.filter(it => { if (it.t === "exclude") { gone.add(it.id); return false; } return true; }));
+          tab.phone = (tab.phone || []).filter(id => !gone.has(id));
+        }
+      }
+      return l;
     };
     const save = () => {
       clearTimeout(saveTimer);
@@ -283,7 +306,7 @@
         <span class="pb-tools"><button type="button" data-a="eye" title="${item.h ? "Show this panel" : "Hide this panel"}" aria-pressed="${!item.h}">${item.h ? PB.ic.eyeOff : PB.ic.eye}</button>
         <button type="button" data-a="set" title="Panel settings">${PB.ic.cog}</button><button type="button" data-a="menu" title="More" aria-haspopup="menu">${PB.ic.more}</button></span>
         ${def.gear && (def.settings?.length || def.edit) ? `<button type="button" class="pb-qset" title="${esc(def.title)} settings">${PB.ic.cog}</button>` : ""}
-        <button type="button" class="pb-tog" aria-label="Collapse">${icon('<path d="M6 9l6 6 6-6"/>')}</button>`);
+        <button type="button" class="pb-tog" aria-label="Collapse">${icon('<path d="M6 15l6-6 6 6"/>')}</button>`);
       const body = el("div", "pb-body");
       card.append(head, body);
       // buttons a panel marks data-head go in its title strip; its own host.querySelector(...) still finds them
@@ -313,7 +336,7 @@
     }
 
     function library(pick) {
-      lib.innerHTML = `<h3>Add a panel</h3><div class="bd-libgrid">${Object.values(reg).map(d => {
+      lib.innerHTML = `<h3>Add a panel</h3><div class="bd-libgrid">${Object.values(reg).filter(d => !d.internal).map(d => {
         const taken = d.single && used(d.type), n = placed(d.type);
         return `<button type="button" class="${d.cls}" data-t="${esc(d.type)}"${taken ? " disabled" : ""}>${d.icon}<span>${esc(d.title)}</span>
           <small>${taken ? "already placed" : esc(d.desc || "")}</small>${n ? `<i class="bd-libn" title="On your layout ${n} time${n > 1 ? "s" : ""}">${n}</i>` : ""}</button>`;
@@ -339,7 +362,7 @@
     });
     if (rail) PB.onRoute(p => { if (p) PB.shown(insts.get(active) || []); });
     build();
-    api(o.url).then(r => { const l = clean(r.layout); if (l) { layout = l; build(); } }).catch(() => {});
+    api(o.url).then(r => { const l = clean(r.layout); if (l) { layout = l; build(); if (migrated) { migrated = false; save(); } } }).catch(() => {});
     return { build, showTab, setEditing };
   }
 

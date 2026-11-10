@@ -1,10 +1,11 @@
 const CHEV = PB.icon('<path d="M6 9l6 6 6-6"/>');
+const GEAR = PB.icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>');
 PB.panel("macros", {
   title: "Macros", desc: "Your printer's macros as buttons, in groups you choose", cls: "adv",
   icon: PB.icon('<path d="M13 2L3 14h9l-1 8 10-12h-9z"/>'),
   create(host) {
     host.innerHTML = `<div class="pb-macgroups"><span class="pb-muted">Loading…</span></div>
-      <div class="pb-maclinks"><button type="button" class="pb-link" data-a="edit">Hide some…</button><button type="button" class="pb-link" data-a="org">Organize…</button><button type="button" class="pb-link" data-a="show" hidden></button></div>`;
+      <div class="pb-maclinks"><button type="button" class="pb-link" data-a="edit">Hide some…</button><button type="button" class="pb-link" data-a="show" hidden></button></div>`;
     const box = host.querySelector(".pb-macgroups");
     let list = [], count = -1, pid = null, wasBusy = null;
     const store = k => PB.store.get(k, {});
@@ -19,7 +20,7 @@ PB.panel("macros", {
     }
     const macBtn = (m, locked) => {
       const dis = locked ? " disabled" : "", tip = locked ? "Locked while a print is running" : m.description || m.name;
-      return `<span class="pb-mac"><button type="button" data-mac="${esc(m.name)}"${dis} title="${esc(tip)}">${esc(m.name.replaceAll("_", " "))}</button>${m.params?.length ? `<button type="button" class="arr" data-par="${esc(m.name)}"${dis} title="Parameters: ${esc(m.params.map(x => x.name).join(", "))}">${CHEV}</button>` : ""}<button type="button" class="x" data-hide="${esc(m.name)}" title="Hide">${PB.ic.x}</button></span>`;
+      return `<span class="pb-mac"><button type="button" data-mac="${esc(m.name)}"${dis} title="${esc(tip)}">${esc(m.name)}</button>${m.params?.length ? `<button type="button" class="arr" data-par="${esc(m.name)}"${dis} title="Parameters: ${esc(m.params.map(x => x.name).join(", "))}">${CHEV}</button>` : ""}<button type="button" class="x" data-hide="${esc(m.name)}" title="Hide">${PB.ic.x}</button></span>`;
     };
     function draw() {
       const hid = hidden(), c = cfg(), lockNow = busy();
@@ -28,7 +29,10 @@ PB.panel("macros", {
         ...c.cats.map(k => ({ ...k, macros: shown.filter(m => c.assign[m.name] === k.id) }))].filter(g => g.macros.length);
       box.innerHTML = groups.length ? groups.map(g => {
         const body = `<div class="pb-macs">${g.macros.map(m => macBtn(m, lockNow && c.lock[m.name])).join("")}</div>`;
-        return g.id ? `<div class="pb-maccat${c.fold[g.id] ? " fold" : ""}"><button type="button" class="pb-maccath" data-fold="${esc(g.id)}" aria-expanded="${!c.fold[g.id]}">${CHEV}<span>${esc(g.name)}</span><small>${g.macros.length}</small></button>${body}</div>` : body;
+        const key = g.id || "_", name = g.id ? g.name : "Uncategorized";
+        return `<div class="pb-maccat${c.fold[key] ? " fold" : ""}"><div class="pb-maccath"><span class="pb-mcn">${esc(name)}</span><span class="pb-mcc">${g.macros.length}</span>
+          <button type="button" class="pb-mcg" data-a="org" title="Organize the macros" aria-label="Organize the macros">${GEAR}</button><span class="bd-sp"></span>
+          <button type="button" class="pb-mcf" data-fold="${esc(key)}" aria-expanded="${!c.fold[key]}" title="${c.fold[key] ? "Show" : "Hide"} this group" aria-label="Fold this group">${CHEV}</button></div>${body}</div>`;
       }).join("") : `<span class="pb-muted">${list.length ? "All macros are hidden." : "No macros on this printer."}</span>`;
       const show = host.querySelector("[data-a=show]");
       show.hidden = !hid.length; show.textContent = `Show hidden (${hid.length})`;
@@ -123,7 +127,7 @@ PB.panel("macros", {
     });
 
     host.querySelector("[data-a=edit]").onclick = e => { const on = host.classList.toggle("pb-macedit"); e.target.textContent = on ? "Done" : "Hide some…"; };
-    host.querySelector("[data-a=org]").onclick = () => { if (list.length) organize(); else toast("No macros to organize yet"); };
+    box.addEventListener("click", e => { if (e.target.closest(".pb-mcg")) { if (list.length) organize(); else toast("No macros to organize yet"); } });
     host.querySelector("[data-a=show]").onclick = () => { const all = store("pb-macros-hidden"); delete all[pid]; PB.store.set("pb-macros-hidden", all); draw(); };
     return {
       open() { pid = null; count = -1; wasBusy = null; },

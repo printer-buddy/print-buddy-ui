@@ -1,5 +1,5 @@
 PB.panel("fans", {
-  title: "Fans & outputs", desc: "Fan speeds, pins, LEDs and power devices", cls: "adv",
+  title: "Outputs", desc: "Fan speeds, pins, LEDs and power devices", cls: "adv",
   icon: PB.icon('<circle cx="12" cy="12" r="2"/><path d="M12 10c0-4 1-7 4-7 2 0 2 3 0 5M14 12c4 0 7 1 7 4 0 2-3 2-5 0M12 14c0 4-1 7-4 7-2 0-2-3 0-5M10 12c-4 0-7-1-7-4 0-2 3-2 5 0"/>'),
   settings: [{ k: "power", label: "Show power devices", type: "check", def: true }],
   create(host, cfg) {
@@ -25,26 +25,30 @@ PB.panel("fans", {
     }
     function build(p) {
       const fans = (p.sensors || []).filter(s => s.kind === "fan"), outs = p.outputs || [];
-      ctl.innerHTML = fans.map(f => `<label class="pb-speed" data-id="${esc(f.id)}"><span class="pb-lab">${esc(f.name)}</span>
-          ${settable(f) ? `<input type="range" min="0" max="100" step="1">` : ""}<output${settable(f) ? "" : ' class="pb-auto"'}></output></label>`).join("")
-        + outs.map(o => o.kind === "pin" && o.onoff ? `<label class="pb-speed" data-id="${esc(o.id)}"><span class="pb-lab">${esc(o.name)}</span>
+      const sl = (id, name) => `<label class="pb-fo" data-id="${esc(id)}"><span class="pb-lab">${esc(name)}<small class="pb-rpm"></small></span>
+          <input type="range" min="0" max="100" step="1"><span class="pb-fv"><input type="number" class="pb-fnum" min="0" max="100" step="1"><i>%</i></span></label>`;
+      ctl.innerHTML = fans.map(f => settable(f) ? sl(f.id, f.name) : `<div class="pb-fo" data-id="${esc(f.id)}"><span class="pb-lab">${esc(f.name)}<small class="pb-rpm"></small></span><output class="pb-auto"></output></div>`).join("")
+        + outs.map(o => o.kind === "pin" && o.onoff ? `<label class="pb-fo" data-id="${esc(o.id)}"><span class="pb-lab">${esc(o.name)}</span>
           <input type="checkbox" class="pb-switch" role="switch"><output></output></label>`
-          : o.kind === "pin" ? `<label class="pb-speed" data-id="${esc(o.id)}"><span class="pb-lab">${esc(o.name)}</span>
-          <input type="range" min="0" max="100" step="1"><output></output></label>`
-          : `<label class="pb-speed" data-id="${esc(o.id)}"><span class="pb-lab">${esc(o.name)}</span><input type="color"><output></output></label>`).join("")
+          : o.kind === "pin" ? sl(o.id, o.name)
+          : `<label class="pb-fo" data-id="${esc(o.id)}"><span class="pb-lab">${esc(o.name)}</span><input type="color"><output></output></label>`).join("")
         || `<p class="pb-muted">No fans or outputs found.</p>`;
       for (const row of ctl.querySelectorAll("[data-id]")) {
-        const id = row.dataset.id, r = row.querySelector("input[type=range]"), c = row.querySelector("input[type=color]"), t = row.querySelector(".pb-switch");
+        const id = row.dataset.id, r = row.querySelector("input[type=range]"), nf = row.querySelector(".pb-fnum"), c = row.querySelector("input[type=color]"), t = row.querySelector(".pb-switch");
         if (t) t.onchange = () => {
           if (nativePrinter() && fanName(id).toLowerCase() === "chamber_light") command("light", { on: t.checked });
           else gcode(`SET_PIN PIN=${fanName(id)} VALUE=${t.checked ? 1 : 0}`);
         };
         if (r) {
-          r.oninput = () => { busy.add(id); row.querySelector("output").textContent = `${r.value}%`; };
-          r.onchange = () => {
+          const send = () => {
             busy.delete(id);
             if (id.startsWith("output_pin ")) gcode(`SET_PIN PIN=${fanName(id)} VALUE=${(r.value / 100).toFixed(2)}`); else setFan(id, +r.value);
           };
+          r.oninput = () => { busy.add(id); nf.value = r.value; };
+          r.onchange = send;
+          nf.onfocus = () => busy.add(id);
+          nf.onblur = () => busy.delete(id);
+          nf.onchange = () => { r.value = Math.min(100, Math.max(0, Math.round(+nf.value || 0))); nf.value = r.value; send(); };
         }
         if (c) c.onchange = () => {
           const v = [1, 3, 5].map(i => (parseInt(c.value.slice(i, i + 2), 16) / 255).toFixed(3));
@@ -79,13 +83,15 @@ PB.panel("fans", {
         for (const f of fans) {
           const row = ctl.querySelector(`[data-id="${CSS.escape(f.id)}"]`); if (!row || busy.has(f.id)) continue;
           const pct = Math.round((f.speed || 0) * 100);
-          row.querySelector("output").textContent = !live ? "—" : settable(f) ? `${pct}%` : pct ? `${pct} %` : "Off";
-          const r = row.querySelector("input[type=range]"); if (r) { r.value = pct; r.disabled = !live; }
+          const rpm = row.querySelector(".pb-rpm"); rpm.textContent = f.rpm ? `${Math.round(f.rpm)} rpm` : "";
+          const out = row.querySelector("output"); if (out) out.textContent = !live ? "—" : pct ? `${pct} %` : "Off";
+          const r = row.querySelector("input[type=range]"), nf = row.querySelector(".pb-fnum");
+          if (r) { r.value = pct; r.disabled = !live; nf.value = pct; nf.disabled = !live; }
         }
         for (const o of outs) {
           const row = ctl.querySelector(`[data-id="${CSS.escape(o.id)}"]`); if (!row || busy.has(o.id)) continue;
           if (o.kind === "pin" && o.onoff) { const t = row.querySelector(".pb-switch"); t.checked = (o.value || 0) > 0; t.disabled = !live; row.querySelector("output").textContent = t.checked ? "On" : "Off"; }
-          else if (o.kind === "pin") { const pct = Math.round((o.value || 0) * 100); row.querySelector("output").textContent = `${pct}%`; const r = row.querySelector("input"); r.value = pct; r.disabled = !live; }
+          else if (o.kind === "pin") { const pct = Math.round((o.value || 0) * 100); const r = row.querySelector("input[type=range]"), nf = row.querySelector(".pb-fnum"); r.value = pct; nf.value = pct; r.disabled = nf.disabled = !live; }
           else { const c = row.querySelector("input"); if (document.activeElement !== c) c.value = "#" + o.color.slice(0, 3).map(x => Math.round((x || 0) * 255).toString(16).padStart(2, "0")).join(""); c.disabled = !live; }
         }
       },

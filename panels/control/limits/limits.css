@@ -1,3 +1,7 @@
-.pb-col2 { display: grid; grid-template-columns: 1fr; gap: 6px; }
-.pb-col2 label { display: grid; grid-template-columns: minmax(0, 1fr) 110px 52px; align-items: center; gap: 10px; }
-.pb-col2 label input { width: 100%; min-width: 0; }
+.pb-lim { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); column-gap: 24px; }
+.pb-lim .pb-lab { min-width: 150px; }
+.pb-fnumw { width: 56px; }
+.pb-fv i { min-width: 34px; }
+:is(#page, #home).bd .pb-rst { flex: 0 0 auto; width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; color: var(--muted); display: inline-grid; place-items: center; }
+:is(#page, #home).bd .pb-rst:hover:not(:disabled) { background: var(--bd-hover); color: var(--text); }
+.pb-rst svg { width: 18px; height: 18px; }

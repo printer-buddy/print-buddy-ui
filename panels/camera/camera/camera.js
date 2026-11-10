@@ -1,5 +1,5 @@
 PB.panel("camera", {
-  title: "Camera", desc: "Live camera with grid and full screen", single: true, flush: true,
+  title: "Cameras", desc: "Live camera with grid and full screen", single: true, flush: true,
   gear: true,
   settings: [
     { k: "cam", label: "Camera", type: "select", def: "main", options: [["main", "Main camera"], [0, "Camera 1"], [1, "Camera 2"], [2, "Camera 3"], [3, "Camera 4"], ["grid", "All (grid)"]] },

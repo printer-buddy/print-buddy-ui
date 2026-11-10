@@ -9,17 +9,19 @@ PB.panel("spoolman", {
     const name = s => [s.filament?.vendor?.name, s.filament?.name].filter(Boolean).join(" ") || `Spool ${s.id}`;
     const left = s => s.remaining_weight != null ? `${Math.round(s.remaining_weight)} g left` : s.remaining_length != null ? `${(s.remaining_length / 1000).toFixed(1)} m left` : "";
     const sw = s => `<span class="pb-swatch" style="background:#${esc(s.filament?.color_hex || "555")}"></span>`;
+    const card = host.closest(".pb-card"), unsupported = on => card?.classList.toggle("pb-unsupported", on);
     async function load() {
       if (pageId === null) return;
       loaded = true; msg.textContent = "Loading…";
       try {
         const st = await PB.rpc("server.spoolman.status");
+        unsupported(!st?.spoolman_connected);
         if (!st?.spoolman_connected) { msg.textContent = "Spoolman isn't connected (check [spoolman] in moonraker.conf)."; q(".pb-spool").innerHTML = ""; list.innerHTML = ""; return; }
         active = st.spool_id ?? (await PB.rpc("server.spoolman.get_spool_id"))?.spool_id ?? null;
         const r = await PB.rpc("server.spoolman.proxy", { request_method: "GET", path: "/v1/spool", use_v2_response: true });
         spools = (Array.isArray(r) ? r : r?.response || []).filter(s => !s.archived);
         draw();
-      } catch (e) { msg.textContent = e.message.includes("not found") ? "Spoolman isn't set up in moonraker.conf." : e.message; }
+      } catch (e) { unsupported(true); msg.textContent = e.message.includes("not found") ? "Spoolman isn't set up in moonraker.conf." : e.message; }
     }
     function draw() {
       const a = spools.find(s => s.id === active), term = q(".pb-sfind").value.trim().toLowerCase();
