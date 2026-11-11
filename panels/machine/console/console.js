@@ -3,6 +3,7 @@ PB.panel("console", {
   icon: PB.icon('<path d="M4 17l6-5-6-5M12 19h8"/>'),
   settings: [
     { k: "height", label: "Height", type: "select", def: 300, options: [[120, "Small"], [180, "Medium"], [300, "Like Fluidd (300)"], [480, "Tall"], [640, "Very tall"]] },
+    { k: "page", label: "Fill the page height", type: "check", def: false },
     { k: "temps", label: "Hide temperature reports (ok T:… B:…)", type: "check", def: true },
     { k: "lines", label: "Lines kept on screen", type: "select", def: 200, options: [[80, "80"], [200, "200"], [500, "500"]] },
   ],
@@ -33,7 +34,8 @@ PB.panel("console", {
     fsBtn.onclick = () => railBtn()?.click();
     const dl = PB.el("datalist"); dl.id = "pb-cmds-" + Math.random().toString(36).slice(2, 7); host.append(dl);
     const q = s => host.querySelector(s), logEl = q(".pb-log"), input = q(".pb-cin input"), form = q("form"), search = q(".pb-csearch input");
-    logEl.style.height = `${cfg.height}px`;
+    logEl.style.height = cfg.page ? "calc(100vh - 230px)" : `${cfg.height}px`;
+    if (cfg.page) logEl.style.minHeight = "300px";
     let filters = [], auto = true, hist = -1, help = {}, flipped = !!PB.store.get("pb-console-flip", false), term = "";
     const atLatest = () => flipped ? logEl.scrollTop <= 4 : logEl.scrollTop + logEl.clientHeight >= logEl.scrollHeight - 4;
     const toLatest = () => { logEl.scrollTop = flipped ? 0 : logEl.scrollHeight; };

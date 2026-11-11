@@ -3,13 +3,13 @@ PB.panel("history", {
   icon: PB.icon('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 3"/>'),
   settings: [
     { k: "thumbs", label: "Show thumbnails", type: "check", def: true },
-    { k: "totals", label: "Show totals", type: "check", def: true },
+    { k: "totals", label: "Show totals", type: "check", def: false },
     { k: "maint", label: "Show maintenance reminders", type: "check", def: true },
   ],
   create(host, cfg) {
     host.innerHTML = `<div class="pb-tool"><div class="pb-totals pb-muted"></div><span class="bd-sp"></span>
-        <button type="button" data-a="charts" data-head title="Charts" aria-label="Charts" aria-pressed="false">${PB.ic.chart}</button><button type="button" data-a="maint" data-head title="Maintenance reminders" aria-label="Maintenance">${PB.ic.wrench}</button><button type="button" data-a="csv" title="Download the whole history as a spreadsheet (CSV)" data-head aria-label="Download CSV">${PB.ic.download}</button></div>
-      <div class="pb-hcharts" hidden><div class="pb-hc1"></div><div class="pb-hc2"></div><div class="pb-hcnums pb-muted"></div></div>
+        <input type="search" class="pb-hsearch" placeholder="Search" aria-label="Search the history"><button type="button" data-a="cols" data-head title="Columns" aria-label="Columns" aria-pressed="false">${PB.icon('<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/>')}</button><button type="button" data-a="all" data-head title="Load all" aria-label="Load all">${PB.icon('<path d="M7 6l5 5 5-5M7 13l5 5 5-5"/>')}</button><button type="button" data-a="rmall" data-head title="Remove all" aria-label="Remove all">${PB.ic.trash}</button><button type="button" data-a="charts" data-head title="Charts" aria-label="Charts" aria-pressed="false">${PB.ic.chart}</button><button type="button" data-a="maint" data-head title="Maintenance reminders" aria-label="Maintenance">${PB.ic.wrench}</button><button type="button" data-a="csv" title="Download the whole history as a spreadsheet (CSV)" data-head aria-label="Download CSV">${PB.ic.download}</button></div>
+      <div class="pb-hcolmenu" hidden></div><div class="pb-hcharts" hidden><div class="pb-hc1"></div><div class="pb-hc2"></div><div class="pb-hcnums pb-muted"></div></div>
       <div class="pb-maint"></div><div class="pb-msg pb-muted" aria-live="polite"></div>
       <div class="pb-list"></div><button type="button" class="pb-more" hidden>Load more</button>`;
     const q = s => host.querySelector(s), list = q(".pb-list"), msg = q(".pb-msg"), more = q(".pb-more");
@@ -36,24 +36,26 @@ PB.panel("history", {
         jobs = jobs.concat(r.jobs); count = r.count; draw();
       } catch (e) { if (id === pageId) msg.textContent = e.message.includes("history") ? "This printer's Moonraker has no print history turned on." : e.message; }
     }
-    const COLS = [["filename", "File"], ["start_time", "Started"], ["print_duration", "Duration"], ["filament_used", "Filament"], ["status", "Result"]];
-    let sortKey = "start_time", sortDir = -1;
+    const COLS = [["filename", "File"], ["start_time", "Started"], ["end_time", "Ended"], ["print_duration", "Duration"], ["filament_used", "Filament"], ["status", "Result"]];
+    let sortKey = "start_time", sortDir = -1, ft = "", hiddenCols = new Set(["end_time"]);
+    try { const s = JSON.parse(localStorage.getItem("pb-hcols") || "null"); if (Array.isArray(s)) hiddenCols = new Set(s); } catch {}
+    const V = k => !hiddenCols.has(k);
     function draw() {
       msg.textContent = jobs.length ? `${jobs.length} of ${count} prints` : "No prints recorded yet.";
       if (!jobs.length) { list.innerHTML = ""; more.hidden = true; return; }
-      const rows = [...jobs].sort((a, b) => {
+      const cols = COLS.filter(([k]) => V(k)), rows = jobs.filter(j => !ft || String(j.filename || "").toLowerCase().includes(ft)).sort((a, b) => {
         const x = a[sortKey], y = b[sortKey];
         return (typeof x === "string" || typeof y === "string" ? String(x ?? "").localeCompare(String(y ?? "")) : (x ?? -1) - (y ?? -1)) * sortDir;
       });
-      list.innerHTML = `<div class="pb-tablewrap"><table class="pb-htable"><thead><tr>${cfg.thumbs ? "<th></th>" : ""}${COLS.map(([k, l]) =>
+      list.innerHTML = `<div class="pb-tablewrap"><table class="pb-htable"><thead><tr>${cfg.thumbs ? "<th></th>" : ""}${cols.map(([k, l]) =>
           `<th><button type="button" data-sort="${k}" aria-sort="${k === sortKey ? (sortDir > 0 ? "ascending" : "descending") : "none"}">${l}${k === sortKey ? (sortDir > 0 ? " ▲" : " ▼") : ""}</button></th>`).join("")}<th></th></tr></thead>
         <tbody>${rows.map(j => {
           const [label, cls] = RESULT[j.status] || [j.status || "—", ""];
           return `<tr>${cfg.thumbs ? `<td class="pb-tthumb"><img class="pb-lthumb" loading="lazy" alt="" src="${PB.thumbUrl(pageId, j.filename)}"></td>` : ""}
             <td class="pb-tname" title="${esc(j.filename)}"><button type="button" class="pb-hname" data-job="${esc(j.id)}">${esc(j.filename)}</button>
-              ${notes[j.id] ? `<div class="pb-hnote" title="Note">${PB.ic.note}${esc(notes[j.id].slice(0, 80))}</div>` : ""}</td><td class="num">${fmtDate(j.start_time)}</td>
-            <td class="num">${j.print_duration ? fmtDur(j.print_duration) : "—"}</td><td class="num">${fmtFil(j.filament_used)}</td>
-            <td><span class="pb-chip ${cls}">${esc(label)}</span></td>
+              ${notes[j.id] ? `<div class="pb-hnote" title="Note">${PB.ic.note}${esc(notes[j.id].slice(0, 80))}</div>` : ""}</td>${V("start_time") ? `<td class="num">${fmtDate(j.start_time)}</td>` : ""}${V("end_time") ? `<td class="num">${j.end_time ? fmtDate(j.end_time) : "—"}</td>` : ""}
+            ${V("print_duration") ? `<td class="num">${j.print_duration ? fmtDur(j.print_duration) : "—"}</td>` : ""}${V("filament_used") ? `<td class="num">${fmtFil(j.filament_used)}</td>` : ""}
+            ${V("status") ? `<td><span class="pb-chip ${cls}">${esc(label)}</span></td>` : ""}
             <td class="pb-tbtn">${j.exists ? `<button type="button" data-print="${esc(j.filename)}"${busy ? " disabled" : ""}>Reprint</button>` : ""}</td></tr>`;
         }).join("")}</tbody></table></div>`;
       for (const img of list.querySelectorAll(".pb-lthumb")) img.onerror = () => img.classList.add("none");
@@ -66,6 +68,25 @@ PB.panel("history", {
       more.hidden = jobs.length >= count;
     }
     more.onclick = () => load(false);
+    q(".pb-hsearch").oninput = e => { ft = e.target.value.trim().toLowerCase(); draw(); };
+    const cm = q(".pb-hcolmenu");
+    q("[data-a=cols]").onclick = () => {
+      cm.hidden = !cm.hidden; q("[data-a=cols]").setAttribute("aria-pressed", !cm.hidden);
+      cm.innerHTML = COLS.filter(([k]) => k !== "filename").map(([k, l]) => `<label class="pb-jbck"><input type="checkbox" data-col="${k}"${V(k) ? " checked" : ""}> ${l}</label>`).join("");
+      for (const i of cm.querySelectorAll("[data-col]")) i.onchange = () => {
+        if (i.checked) hiddenCols.delete(i.dataset.col); else hiddenCols.add(i.dataset.col);
+        try { localStorage.setItem("pb-hcols", JSON.stringify([...hiddenCols])); } catch {}
+        draw();
+      };
+    };
+    q("[data-a=all]").onclick = async () => {
+      const id = pageId; if (id === null) return; msg.textContent = "Loading…";
+      try { const all = await fetchAll(id); if (id !== pageId) return; jobs = all; count = all.length; draw(); } catch (e) { msg.textContent = e.message; }
+    };
+    q("[data-a=rmall]").onclick = async () => {
+      const id = pageId; if (id === null || !confirm("Remove all of this printer's print history? This can't be undone.")) return;
+      try { await api(`/api/printers/${id}/history/reset`, { method: "POST", body: JSON.stringify({ what: "all" }) }); allJobs = null; toast("History removed"); load(true); } catch (e) { toast(e.message); }
+    };
     const dlg = PB.el("dialog", "bd-lib pb-xd pb-hdlg"); document.body.append(dlg);
     let allJobs = null;
     async function fetchAll(id) {

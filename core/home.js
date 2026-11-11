@@ -93,9 +93,10 @@
   async function tab(name) {
     for (const b of panel.querySelectorAll("[data-tab]")) b.setAttribute("aria-selected", String(b.dataset.tab === name));
     for (const d of panel.querySelectorAll("[data-body]")) d.hidden = d.dataset.body !== name;
-    if (name === "alerts") { $("#notifyPanel").hidden = false; try { await loadNotify(); } catch (e) { toast(e.message); } }
-    if (name === "ai") { $("#aiPanel").hidden = false; await loadAI(); if (aiCfg) fillAIForm(); }
+    if (name === "alerts") { panel.querySelector("[data-body=alerts]").append($("#notifyPanel")); $("#notifyPanel").hidden = false; try { await loadNotify(); } catch (e) { toast(e.message); } }
+    if (name === "ai") { panel.querySelector("[data-body=ai]").append($("#aiPanel")); $("#aiPanel").hidden = false; await loadAI(); if (aiCfg) fillAIForm(); }
     if (name === "look") {
+      const thm = document.querySelector(".pb-thm"); if (thm) panel.querySelector("[data-body=look]").append(thm);
       theme.value = PB.store.get("pb-theme", "auto"); keys.checked = !!PB.store.get("pb-keys", false); clock.value = PB.store.get("pb-clock", "auto");
       for (const c of panel.querySelectorAll("[data-c]")) c.checked = !!PB.store.get(c.dataset.c, !!c.dataset.def);
       api("/api/ui/eta").then(r => { eta.value = r.mode; }).catch(() => {});

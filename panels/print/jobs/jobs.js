@@ -1,9 +1,10 @@
 // The Jobs card, laid out like Fluidd's: a toolbar (folder path, icons, search) over a sortable table of G-code files and folders.
 // Click a file for its menu (print, queue, preview, download, rename, duplicate, remove); click a folder to open it.
 PB.panel("jobs", {
-  title: "Jobs", desc: "G-code files and folders (like Fluidd's Jobs card)", cls: "adv", flush: true,
+  title: "Jobs", desc: "G-code files and folders (like Fluidd's Jobs card)", cls: "adv", flush: true, gear: true,
+  settings: [{ k: "page", label: "Fill the page height", type: "check", def: false }],
   icon: PB.icon('<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/>'),
-  create(host) {
+  create(host, cfg) {
     const I = { thumb: PB.icon('<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/>'),
                 cols: PB.icon('<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="16" rx="1"/><rect x="17" y="4" width="4" height="16" rx="1"/>'),
                 find: PB.icon('<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'), filter: PB.icon('<path d="M3 5h18l-7 8v6l-4-2v-4z"/>'),
@@ -27,7 +28,7 @@ PB.panel("jobs", {
     const cols = new Set(Array.isArray(saved.cols) ? saved.cols : COLS.filter(c => c.on).map(c => c.k));
     let thumb = +saved.thumb || 32, hideHidden = saved.hideHidden !== false, hidePrinted = !!saved.hidePrinted;
     const keep = () => PB.store.set("pb-jobs", { cols: [...cols], thumb, hideHidden, hidePrinted });
-    host.innerHTML = `<div class="pb-jb">
+    host.innerHTML = `<div class="pb-jb${cfg.page ? " page" : ""}">
         <div class="pb-jbbar"><span class="pb-jbcrumb"></span><span class="bd-sp"></span>
           <button type="button" data-a="thumb" title="Thumbnail Size" aria-label="Thumbnail Size">${I.thumb}</button>
           <button type="button" data-a="cols" title="Columns" aria-label="Columns">${I.cols}</button>

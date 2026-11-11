@@ -1,5 +1,12 @@
-.pb-endst { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; }
+.pb-endst { display: block; }
 .pb-es { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 4px; background: rgba(127, 127, 140, .1); border: 1px solid transparent; font-size: 13px; }
 .pb-es span { color: var(--muted); font-size: 12px; }
 .pb-es.on { border-color: var(--orange); background: rgba(255, 138, 31, .12); }
 .pb-es.on span { color: var(--orange); font-weight: 700; }
+.pb-esl { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pb-esl td { padding: 0 8px; height: 40px; border-bottom: 1px solid var(--bd-line); }
+.pb-esl td.r { text-align: right; }
+.pb-esc { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 4px; background: rgba(255, 255, 255, .12); font-size: 12px; font-weight: 500; }
+.pb-esc i { width: 10px; height: 10px; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; }
+.pb-esc.on { background: var(--orange); color: #1b1b1f; }
+.pb-esc.on i { background: currentColor; }

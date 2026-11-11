@@ -14,6 +14,7 @@ PB.parts.consoleFilters = (q, cfg, S) => {   // S: { get() -> filters, set(list)
         filters = S.set(fd.querySelector("textarea").value.split("\n").map(s => s.trim()).filter(Boolean).slice(0, 50));
         fd.close();
         try { await PB.kv.set("console_filters", filters); } catch (e) { toast(`Couldn't save the filters: ${e.message}`); }
+        document.dispatchEvent(new Event("pb-console-filters"));
       };
       fd.showModal();
     };

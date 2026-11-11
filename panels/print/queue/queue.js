@@ -4,7 +4,7 @@ PB.panel("queue", {
   settings: [{ k: "thumbs", label: "Show thumbnails", type: "check", def: true }],
   create(host, cfg) {
     host.innerHTML = `<div class="pb-tool"><span class="pb-qstate pb-muted"></span><span class="bd-sp"></span>
-        <button type="button" class="pb-pri" data-a="start">Start queue</button><button type="button" data-a="pause">Pause queue</button>
+        <button type="button" class="pb-pri" data-a="start">Resume</button><button type="button" data-a="pause">Pause</button>
         <button type="button" data-a="ref" data-head title="Refresh" aria-label="Refresh">${PB.ic.refresh}</button></div>
       <div class="pb-msg pb-muted"></div><div class="pb-list"></div><div class="pb-qtot"></div>`;
     const q = s => host.querySelector(s), list = q(".pb-list"), msg = q(".pb-msg"), tot = q(".pb-qtot");
@@ -49,6 +49,7 @@ PB.panel("queue", {
     function draw() {
       setButtons();
       totals();
+      const card = host.closest(".pb-card"); if (card) { if (jobs.length) delete card.dataset.empty; else card.dataset.empty = "1"; }
       const gs = groups();
       msg.textContent = jobs.length ? `${jobs.length} job${jobs.length > 1 ? "s" : ""} queued` : "The queue is empty. Add files with + Queue in the Files panel.";
       list.innerHTML = gs.map((g, i) => `<div class="pb-li">

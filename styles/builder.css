@@ -334,3 +334,6 @@ svg.pb-ic { width: 16px; height: 16px; flex: none; vertical-align: -3px; }
 :is(#page, #home).bd :is(input[type=number], input[inputmode=decimal], .pb-thpos input)::placeholder { color: var(--muted); opacity: .7; }
 :is(#page, #home).bd :is(input[type=number], input[inputmode=decimal], .pb-thpos input):disabled { opacity: .5; }
 html[data-theme="light"] :is(#page, #home).bd :is(input[type=number], input[inputmode=decimal], .pb-thpos input) { background: #fff; color: #1c1b20; border-color: #dcdce2; }
+.pb-card[data-empty] { display: none; }
+.bd-row:has(> .bd-col > .pb-card[data-empty]:only-child) { grid-template-columns: minmax(0, 1fr) !important; }
+.bd-col:has(> .pb-card[data-empty]:only-child) { display: none; }

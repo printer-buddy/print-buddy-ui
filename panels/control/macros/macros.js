@@ -11,7 +11,7 @@ PB.panel("macros", {
     const store = k => PB.store.get(k, {});
     const hidden = () => store("pb-macros-hidden")[pid] || [];
     const cfg = () => { const c = store("pb-macros-cfg")[pid] || {}; return { cats: c.cats || [], assign: c.assign || {}, lock: c.lock || {}, fold: c.fold || {} }; };
-    const saveCfg = c => { const all = store("pb-macros-cfg"); all[pid] = c; PB.store.set("pb-macros-cfg", all); };
+    const saveCfg = c => { const all = store("pb-macros-cfg"); all[pid] = c; PB.store.set("pb-macros-cfg", all); document.dispatchEvent(new Event("pb-macros")); };
     const busy = () => { const p = PB.current(); return !!p && (p.state === "printing" || p.state === "paused"); };
     async function load(id) {
       pid = id;
@@ -129,9 +129,10 @@ PB.panel("macros", {
     host.querySelector("[data-a=edit]").onclick = e => { const on = host.classList.toggle("pb-macedit"); e.target.textContent = on ? "Done" : "Hide some…"; };
     box.addEventListener("click", e => { if (e.target.closest(".pb-mcg")) { if (list.length) organize(); else toast("No macros to organize yet"); } });
     host.querySelector("[data-a=show]").onclick = () => { const all = store("pb-macros-hidden"); delete all[pid]; PB.store.set("pb-macros-hidden", all); draw(); };
+    PB.macros = { cats: () => cfg().cats, organize: () => { if (list.length) organize(); else toast("No macros to organize yet"); } };
     return {
       open() { pid = null; count = -1; wasBusy = null; },
-      destroy() { params.destroy(); dlg.remove(); },
+      destroy() { PB.macros = null; params.destroy(); dlg.remove(); },
       update(p) {
         if ((pid !== p.id || p.macro_count !== count) && p.connection === "online") { count = p.macro_count; load(p.id); }
         const b = p.state === "printing" || p.state === "paused";

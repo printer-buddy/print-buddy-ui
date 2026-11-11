@@ -9,6 +9,10 @@
     tuning: icon('<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>'),
     console: icon('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 9l4 3-4 3M12 15h5"/>'),
     timelapse: icon('<rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-4v12l-6-4z"/>'),
+    diagnostics: icon('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'),
+    configure: icon('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+    system: icon('<path d="M4 12h4l3-8 4 16 3-8h2"/>'),
+    settings: icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
     machine: icon('<rect x="6" y="6" width="12" height="12" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>'),
   };
   const GRID = icon('<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>');
@@ -25,15 +29,15 @@
          P("dash", "ai")]] }],
       phone: ["status", "spoolman", "mmu", "camera", "tool", "macros", "fans", "fsensors", "topcover", "limits",
               "thermals", "console", "jobs", "queue", "gcodeview", "bedmesh", "ai"].map(t => `dash-${t}`) },
-    { id: "jobs", name: "Jobs", rows: [{ s: "2-1", cols: [[P("jobs", "files")], [P("jobs", "queue")]] },
-                                      { s: "1", cols: [[P("jobs", "gcodeview")]] }] },
-    { id: "history", name: "History", rows: [{ s: "1", cols: [[P("history", "history")]] }] },
-    { id: "tuning", name: "Tuning", rows: [{ s: "2-1", cols: [[P("tuning", "bedmesh")], [P("tuning", "actions"), P("tuning", "endstops"), P("tuning", "fsensors")]] }] },
-    { id: "console", name: "Console", rows: [{ s: "2-1", cols: [[P("console", "console", { height: 320 })], [P("console", "macros")]] }] },
-    { id: "timelapse", name: "Timelapses", rows: [{ s: "1", cols: [[P("timelapse", "timelapse")]] }] },
-    { id: "machine", name: "Machine", rows: [{ s: "1-1-1", cols: [[P("machine", "machine")], [P("machine", "updates")], [P("machine", "spoolman"), P("machine", "devices")]] },
-                                            { s: "1", cols: [[P("machine", "system")]] },
-                                            { s: "1", cols: [[P("machine", "config", { height: 640 })]] }] },
+    { id: "jobs", name: "Jobs", rows: [{ s: "2-1", cols: [[P("jobs", "jobs", { page: true })], [P("jobs", "queue")]] }] },
+    { id: "history", name: "History", rows: [{ s: "1", cols: [[P("history", "histats")]] }, { s: "1", cols: [[P("history", "history")]] }] },
+    { id: "tuning", name: "Tune", rows: [{ s: "2-1", cols: [[P("tuning", "bedmesh")], [P("tuning", "meshctl"), P("tuning", "endstops"), P("tuning", "fsensors"), P("tuning", "beacon")]] }] },
+    { id: "console", name: "Console", rows: [{ s: "2-1", cols: [[P("console", "console", { page: true })]] }] },
+    { id: "timelapse", name: "Timelapse", rows: [{ s: "2-1", cols: [[P("timelapse", "timelapse")], [P("timelapse", "tlstatus"), P("timelapse", "tlsettings")]] }] },
+    { id: "diagnostics", name: "Diagnostics", rows: [{ s: "1", cols: [[P("diagnostics", "ksensors"), P("diagnostics", "sensors"), P("diagnostics", "explorer")]] }] },
+    { id: "configure", name: "Configure", rows: [{ s: "1", cols: [[P("configure", "config")]] }] },
+    { id: "system", name: "System", rows: [{ s: "1-1", cols: [[P("system", "sysinfo"), P("system", "sdinfo"), P("system", "diskusage"), P("system", "database")], [P("system", "system"), P("system", "mcus")]] }] },
+    { id: "settings", name: "Settings", rows: [{ s: "1", cols: [[P("settings", "setgeneral"), P("settings", "settheme"), P("settings", "setalerts"), P("settings", "setai"), P("settings", "setconsole"), P("settings", "setjobs"), P("settings", "setmacros"), P("settings", "setcamera"), P("settings", "settool"), P("settings", "setpresets"), P("settings", "setgcode"), P("settings", "updates"), P("settings", "setcards"), P("settings", "machine"), P("settings", "devices"), P("settings", "setabout")]] }] },
   ] };
   const HOME_DEFAULT = { v: 1, tabs: [
     { id: "home", name: "Home", rows: [{ s: "1", cols: [[P("home", "fleet")]] }, { s: "1", cols: [[P("home", "printers")]] }] },
@@ -106,6 +110,169 @@
         migrated = true;
       }
       for (const tab of l.tabs) if (tab.id === "dash") for (const row of tab.rows) for (const col of row.cols) for (const it of col) if (it.t === "files") { it.t = "jobs"; it.o = {}; migrated = true; }
+      if (!l.jobspage) {
+        l.jobspage = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "jobs");
+        if (tab) for (const row of tab.rows) for (const col of row.cols) for (const it of col) {
+          if (it.t === "files") { it.t = "jobs"; it.o = { page: true }; }
+        }
+      }
+      if (!l.machsplit) {
+        l.machsplit = 1; migrated = true;
+        const i = l.tabs.findIndex(t => t.id === "machine");
+        if (i >= 0 && !l.tabs.some(t => ["diagnostics", "configure", "system", "settings"].includes(t.id))) {
+          const items = l.tabs[i].rows.flatMap(r => r.cols.flat());
+          const take = t => { const k = items.findIndex(x => x.t === t); return k >= 0 ? items.splice(k, 1)[0] : { id: rid(), t, c: false, h: false, o: {} }; };
+          const mk = (id, name, rows) => ({ id, name, rows, phone: [] });
+          const diag = mk("diagnostics", "Diagnostics", [{ s: "1", cols: [["ksensors", "sensors", "explorer"].map(take)] }]);
+          const conf = mk("configure", "Configure", [{ s: "1", cols: [["config"].map(take)] }]);
+          const sys = mk("system", "System", [{ s: "1-1", cols: [["machine", "database"].map(take), ["updates"].map(take)] }, { s: "1", cols: [["system"].map(take)] }]);
+          const sett = mk("settings", "Settings", [{ s: "1-1", cols: [["devices"].map(take), ["spoolman"].map(take)] }]);
+          sys.rows[0].cols[1].push(...items);
+          l.tabs.splice(i, 1, diag, conf, sys, sett);
+        }
+      }
+      if (!l.syslayout) {
+        l.syslayout = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "system");
+        if (tab && !tab.rows.some(r => r.cols.some(c => c.some(x => x.t === "sysinfo")))) {
+          const items = tab.rows.flatMap(r => r.cols.flat());
+          const take = t => { const k = items.findIndex(x => x.t === t); return k >= 0 ? items.splice(k, 1)[0] : { id: rid(), t, c: false, h: false, o: {} }; };
+          const left = ["machine", "updates", "database"].map(take), right = ["system", "mcus"].map(take);
+          left.push(...items);
+          tab.rows = [{ s: "1-1", cols: [left, right] }];
+          tab.phone = [];
+        }
+      }
+      if (!l.sysfluidd) {
+        l.sysfluidd = 1; migrated = true;
+        const sys = l.tabs.find(t => t.id === "system"), set = l.tabs.find(t => t.id === "settings");
+        if (sys && set) {
+          const all = sys.rows.flatMap(r => r.cols.flat());
+          const mine = t => { const k = all.findIndex(x => x.t === t); return k >= 0 ? all.splice(k, 1)[0] : null; };
+          const mv = ["machine", "updates"].map(mine).filter(Boolean);
+          if (mv.length && set.rows[0]) {
+            for (const row of sys.rows) row.cols = row.cols.map(c => c.filter(x => !mv.includes(x)));
+            set.rows[0].cols[0].unshift(...mv);
+          }
+          const left = sys.rows[0]?.cols[0];
+          if (left) {
+            const have = new Set(all.map(x => x.t));
+            const add = ["sysinfo", "diskusage", "sdinfo"].filter(t => !have.has(t)).map(t => ({ id: rid(), t, c: false, h: false, o: {} }));
+            left.unshift(...add);
+          }
+          sys.phone = []; set.phone = [];
+        }
+      }
+      if (!l.sysorder) {
+        l.sysorder = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "system");
+        if (tab) {
+          const ORDER = ["sysinfo", "sdinfo", "diskusage", "database"];
+          for (const row of tab.rows) for (const col of row.cols) if (col.some(x => x.t === "sdinfo") && col.some(x => x.t === "diskusage")) {
+            const rank = x => { const i = ORDER.indexOf(x.t); return i < 0 ? 99 : i; };
+            const idx = col.map((x, i) => i).filter(i => rank(col[i]) < 99), sorted = idx.map(i => col[i]).sort((a, b) => rank(a) - rank(b));
+            idx.forEach((i, k) => { col[i] = sorted[k]; });
+          }
+        }
+      }
+      if (!l.setall) {
+        l.setall = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "settings");
+        if (tab) {
+          const want = ["setgeneral", "settheme", "setalerts", "setai", "setconsole", "setjobs", "setmacros", "setcamera", "settool", "setpresets", "setgcode", "updates", "setcards", "machine", "devices", "setabout"];
+          const all = tab.rows.flatMap(r => r.cols.flat());
+          const col = want.map(t => { const k = all.findIndex(x => x.t === t); return k >= 0 ? all.splice(k, 1)[0] : { id: rid(), t, c: false, h: false, o: {} }; });
+          col.push(...all);
+          tab.rows = [{ s: "1", cols: [col] }]; tab.phone = [];
+        }
+      }
+      if (!l.setfluidd) {
+        l.setfluidd = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "settings");
+        if (tab && tab.rows.length && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "setconsole")))) {
+          const col = tab.rows[0].cols[0], at = col.findIndex(x => x.t === "setcards");
+          const add = ["setconsole", "setjobs", "setcamera", "settool", "setthermals", "setgcode"].map(t => ({ id: rid(), t, c: false, h: false, o: {} }));
+          col.splice(at >= 0 ? at : col.length, 0, ...add);
+        }
+      }
+      if (!l.setpage) {
+        l.setpage = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "settings");
+        if (tab && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "setgeneral")))) {
+          const items = tab.rows.flatMap(r => r.cols.flat());
+          const take = t => { const k = items.findIndex(x => x.t === t); return k >= 0 ? items.splice(k, 1)[0] : { id: rid(), t, c: false, h: false, o: {} }; };
+          const col = ["setgeneral", "settheme", "setalerts", "setai", "setcards", "spoolman", "updates", "machine", "devices"].map(take);
+          col.push(...items, take("setabout"));
+          tab.rows = [{ s: "1", cols: [col] }]; tab.phone = [];
+        }
+      }
+      if (!l.tlpage) {
+        l.tlpage = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "timelapse");
+        if (tab) {
+          if (tab.name === "Timelapses") tab.name = "Timelapse";
+          const has = t => tab.rows.some(r => r.cols.some(c => c.some(it => it.t === t)));
+          if (has("timelapse") && !has("tlsettings") && tab.rows.length === 1 && tab.rows[0].s === "1") {
+            const a = { id: rid(), t: "tlstatus", c: false, h: false, o: {} }, b = { id: rid(), t: "tlsettings", c: false, h: false, o: {} };
+            tab.rows[0].s = "2-1"; tab.rows[0].cols.push([a, b]);
+            if (tab.phone.length) tab.phone.push(a.id, b.id);
+          }
+        }
+      }
+      if (!l.conpage) {
+        l.conpage = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "console");
+        if (tab) {
+          const gone = new Set();
+          for (const row of tab.rows) row.cols = row.cols.map(col => col.filter(it => { if (it.t === "macros") { gone.add(it.id); return false; } if (it.t === "console") it.o = { ...it.o, page: true }; return true; }));
+          for (const row of tab.rows) if (row.cols.length > 1 && !row.cols.slice(1).some(c => c.length)) { row.s = "1"; row.cols = [row.cols[0]]; }
+          tab.phone = tab.phone.filter(id => !gone.has(id));
+        }
+      }
+      if (!l.tunepage) {
+        l.tunepage = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "tuning");
+        if (tab) {
+          if (tab.name === "Tuning") tab.name = "Tune";
+          const gone = new Set();
+          for (const row of tab.rows) row.cols = row.cols.map(col => col.filter(it => { if (it.t === "actions") { gone.add(it.id); return false; } return true; }));
+          tab.phone = tab.phone.filter(id => !gone.has(id));
+          if (!tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "meshctl")))) {
+            const it = { id: rid(), t: "meshctl", c: false, h: false, o: {} };
+            const col = tab.rows.flatMap(r => r.cols).find(c => c.some(x => x.t === "endstops"));
+            if (col) { col.splice(Math.max(0, col.findIndex(x => x.t === "endstops")), 0, it); if (tab.phone.length) tab.phone.push(it.id); }
+          }
+        }
+      }
+      if (!l.tunebeacon) {
+        l.tunebeacon = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "tuning");
+        if (tab && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "beacon")))) {
+          const it = { id: rid(), t: "beacon", c: false, h: false, o: {} };
+          const col = tab.rows.flatMap(r => r.cols).find(c => c.some(x => x.t === "endstops"));
+          if (col) { col.push(it); if (tab.phone.length) tab.phone.push(it.id); }
+        }
+      }
+      if (!l.histats) {
+        l.histats = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "history");
+        if (tab && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "histats")))) {
+          const it = { id: rid(), t: "histats", c: false, h: false, o: {} };
+          tab.rows.unshift({ s: "1", cols: [[it]] });
+          if (tab.phone.length) tab.phone.unshift(it.id);
+        }
+      }
+      if (!l.jobsnoprev) {
+        l.jobsnoprev = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "jobs");
+        if (tab) {
+          const gone = new Set();
+          for (const row of tab.rows) row.cols = row.cols.map(col => col.filter(it => { if (it.t === "gcodeview") { gone.add(it.id); return false; } return true; }));
+          tab.rows = tab.rows.filter(r => r.cols.some(c => c.length));
+          tab.phone = (tab.phone || []).filter(id => !gone.has(id));
+        }
+      }
       if (!l.noexcl) {
         l.noexcl = 1; migrated = true;
         const tab = l.tabs.find(t => t.id === "dash");
@@ -131,6 +298,11 @@
     const phoneItems = tab => {   // the tab's phone order; panels added since go at the end in desktop order
       const all = items(tab), seen = new Set(tab.phone);
       return [...tab.phone.map(id => all.find(i => i.id === id)).filter(Boolean), ...all.filter(i => !seen.has(i.id))];
+    };
+    if (!String(o.url || "").includes("scope=home")) PB.cardOptions = {   // the Settings page edits every card's options from one place
+      has: t => used(t),
+      get: t => { for (const tab of layout.tabs) for (const it of items(tab)) if (it.t === t) return structuredClone(it.o || {}); return {}; },
+      set: (t, v) => { for (const tab of layout.tabs) for (const it of items(tab)) if (it.t === t) it.o = structuredClone(v); const y = scrollY; changed(); requestAnimationFrame(() => scrollTo(0, y)); },
     };
     const removeItem = (tab, item) => {
       for (const r of tab.rows) for (const c of r.cols) { const i = c.indexOf(item); if (i >= 0) c.splice(i, 1); }
@@ -224,7 +396,7 @@
     }
 
     function buildRow(tab, row, ri, list) {
-      const r = el("div", "bd-row");
+      const r = el("div", `bd-row bd-row-${tab.id}`);
       r.style.gridTemplateColumns = SPLITS[row.s].map(n => `minmax(0, ${n}fr)`).join(" ");
       if (editing()) {
         const tools = el("div", "bd-rowtools", `<label>Row ${ri + 1} columns <select>${Object.keys(SPLITS).map(k => `<option value="${k}"${k === row.s ? " selected" : ""}>${SPLIT_NAMES[k]}</option>`).join("")}</select></label>
@@ -300,7 +472,7 @@
 
     function buildCard(tab, item, list, ops) {
       const def = reg[item.t] || { title: item.t, icon: "", cls: "" };
-      const card = el("section", `pb-card${def.cls ? " " + def.cls : ""}${def.flush ? " flush" : ""}${item.c ? " collapsed" : ""}${item.h ? " pb-hidden" : ""}`);
+      const card = el("section", `pb-card${def.cls ? " " + def.cls : ""}${def.flush ? " flush" : ""}${item.c ? " collapsed" : ""}${item.h ? " pb-hidden" : ""}${tab.id === "settings" ? " pb-plain" : ""}`);
       card._item = item;
       const head = el("header", "", `<span class="pb-handle" title="Drag to move" aria-hidden="true">${PB.ic.grip}</span>${def.icon || ""}<button type="button" class="pb-title">${esc(def.title)}</button>
         <span class="pb-tools"><button type="button" data-a="eye" title="${item.h ? "Show this panel" : "Hide this panel"}" aria-pressed="${!item.h}">${item.h ? PB.ic.eyeOff : PB.ic.eye}</button>

@@ -332,6 +332,7 @@
 <link rel="stylesheet" href="/static/panels/print/files/files.css">
 <link rel="stylesheet" href="/static/panels/print/queue/queue.css">
 <link rel="stylesheet" href="/static/panels/print/history/history.css">
+<link rel="stylesheet" href="/static/panels/settings/settings.css">
 <link rel="stylesheet" href="/static/panels/print/gcodeview/gcodeview.css">
 <link rel="stylesheet" href="/static/panels/print/exclude/exclude.css">
 <link rel="stylesheet" href="/static/panels/print/timelapse/timelapse.css">
@@ -612,7 +613,7 @@
   </div>
 
   <div class="tl" id="pgTimelapse" role="tabpanel" aria-labelledby="tabTimelapse" hidden>
-    <div class="hist-box">
+    <div class="hist-box" id="tlSettingsBox">
       <form class="tl-set" id="tlForm">
         <label>Take a picture <select name="tl_mode" id="tlMode"><option value="layer">every layer</option><option value="interval">every few seconds</option></select></label>
         <label id="tlEveryRow">every <select name="tl_interval"><option value="5">5 s</option><option value="10">10 s</option><option value="30">30 s</option></select></label>
@@ -621,8 +622,9 @@
       </form>
       <div class="files-msg">Settings apply to all printers and take effect on the next print. "Every layer" needs a slicer that reports layers; otherwise use "every few seconds".</div>
     </div>
-    <div class="hist-box">
-      <div id="tlStatus" class="files-msg" aria-live="polite"></div>
+    <div class="hist-box" id="tlStatusBox"><div id="tlStatus" class="files-msg" aria-live="polite"></div></div>
+    <div class="hist-box" id="tlListBox">
+      <div id="tlCount" class="files-msg" aria-live="polite"></div>
       <video id="tlPlayer" controls hidden></video>
       <div class="files-list" id="tlList"></div>
     </div>
@@ -1339,8 +1341,8 @@ async function loadTimelapses() {
   try {
     const { timelapses, recording } = await api(`/api/printers/${id}/timelapses`);
     if (id !== pageId) return;
-    $("#tlStatus").innerHTML = (recording !== null ? `<span class="tl-rec">Recording · ${recording} pictures so far</span> ` : "")
-      + (timelapses.length ? `${timelapses.length} timelapse${timelapses.length > 1 ? "s" : ""}` : (recording === null ? "No timelapses yet. One is recorded for every print." : ""));
+    $("#tlStatus").innerHTML = recording !== null ? `<span class="tl-rec">Recording · ${recording} pictures so far</span>` : "Not recording";
+    $("#tlCount").textContent = timelapses.length ? `${timelapses.length} timelapse${timelapses.length > 1 ? "s" : ""}` : "No timelapses yet. One is recorded for every print.";
     $("#tlList").innerHTML = timelapses.length ? `<table><thead><tr><th>Print</th><th>Date</th><th>Length</th><th>Size</th><th>Result</th><th></th></tr></thead><tbody>${
       timelapses.map((t, i) => {
         const [label, cls] = RESULT[{ complete: "completed", cancelled: "cancelled", error: "error", standby: "completed" }[t.result]] || [t.result, ""];
@@ -1978,7 +1980,9 @@ render();
 <script src="/static/panels/print/history/charts.js"></script>
 <script src="/static/panels/print/history/csv.js"></script>
 <script src="/static/panels/print/history/maintenance.js"></script>
+<script src="/static/panels/print/history/stats.js"></script>
 <script src="/static/panels/print/history/history.js"></script>
+<script src="/static/panels/settings/settings.js"></script>
 <script src="/static/panels/print/gcodeview/parse.js"></script>
 <script src="/static/panels/print/gcodeview/orbit.js"></script>
 <script src="/static/panels/print/gcodeview/view2d.js"></script>
@@ -1986,6 +1990,7 @@ render();
 <script src="/static/panels/print/gcodeview/gcodeview.js"></script>
 <script src="/static/panels/print/exclude/exclude.js"></script>
 <script src="/static/panels/print/timelapse/timelapse.js"></script>
+<script src="/static/panels/print/timelapse/tlcards.js"></script>
 <script src="/static/panels/print/spoolman/spoolman.js"></script>
 <script src="/static/panels/print/ai/ai.js"></script>
 <script src="/static/panels/control/tool/tool.js"></script>
@@ -1999,12 +2004,15 @@ render();
 <script src="/static/panels/control/actions/actions.js"></script>
 <script src="/static/panels/control/endstops/endstops.js"></script>
 <script src="/static/panels/control/bedmesh/bedmesh.js"></script>
+<script src="/static/panels/control/bedmesh/meshctl.js"></script>
+<script src="/static/panels/control/beacon/beacon.js"></script>
 <script src="/static/panels/control/fsensors/fsensors.js"></script>
 <script src="/static/panels/control/mmu/mmu.js"></script>
 <script src="/static/panels/control/topcover/topcover.js"></script>
 <script src="/static/panels/camera/camera/camera.js"></script>
 <script src="/static/panels/machine/machine/machine.js"></script>
 <script src="/static/panels/machine/system/system.js"></script>
+<script src="/static/panels/machine/system/sysinfo.js"></script>
 <script src="/static/panels/machine/config/highlight.js"></script>
 <script src="/static/panels/machine/config/editor.js"></script>
 <script src="/static/panels/machine/config/browse.js"></script>
