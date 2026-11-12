@@ -19,7 +19,7 @@ PB.panel("console", {
         <button type="button" data-a="clear" title="Clear" aria-label="Clear">${PB.ic.trash}</button>
         <span class="pb-csearch"><input type="text" spellcheck="false" placeholder="Search" aria-label="Search the console"><button type="button" data-a="sclear" aria-label="Clear the search" hidden>${PB.ic.x}</button><span class="pb-sicon">${I.find}</span></span></div>
       <div class="pb-log" role="log" aria-label="Klipper console"></div>
-      <form class="pb-cin"><span class="pb-cwrap"><input autocomplete="off" spellcheck="false" aria-label="G-code command" title="Enter help for commands. Tab completes. ↑ and ↓ step through history."><button type="button" class="pb-cx" aria-label="Clear the command" hidden>${PB.ic.x}</button></span><button>Send</button></form>`;
+      <form class="pb-cin"><span class="pb-cinw"><input autocomplete="off" spellcheck="false" aria-label="G-code command" title="Enter help for commands. Tab completes. ↑ and ↓ step through history."><button type="button" class="pb-cx" aria-label="Clear the command" hidden>${PB.ic.x}</button></span><button>Send</button></form>`;
     const helpBtn = PB.el("button", "", PB.ic.list); helpBtn.type = "button"; helpBtn.dataset.a = "help"; helpBtn.dataset.head = ""; helpBtn.title = "Commands: every command Klipper knows"; helpBtn.setAttribute("aria-label", "Commands");
     host.append(helpBtn);
     // like Fluidd: a ? after the title with the hints, and a button that opens the full Console tab

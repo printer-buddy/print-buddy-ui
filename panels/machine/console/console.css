@@ -8,7 +8,7 @@
 .pb-log .sent { color: var(--orange); }
 .pb-log .error { color: var(--red-text, #ff8080); }
 .pb-cin { display: flex; gap: 8px; padding: 8px; }
-.pb-cwrap { position: relative; flex: 1; min-width: 0; display: flex; }
+.pb-cinw { position: relative; flex: 1; min-width: 0; display: flex; }
 .pb-cin input { flex: 1; min-width: 0; background: transparent; border: 1px solid var(--bd-line); border-radius: 4px; color: var(--text); padding: 0 32px 0 10px; height: 40px;
                 font-family: var(--bd-mono); font-size: 16px; }
 .pb-cin input:focus { outline: 0; border-color: var(--orange); }
