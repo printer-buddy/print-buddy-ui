@@ -337,3 +337,17 @@ html[data-theme="light"] :is(#page, #home).bd :is(input[type=number], input[inpu
 .pb-card[data-empty] { display: none; }
 .bd-row:has(> .bd-col > .pb-card[data-empty]:only-child) { grid-template-columns: minmax(0, 1fr) !important; }
 .bd-col:has(> .pb-card[data-empty]:only-child) { display: none; }
+.pb-fs-tiles { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); margin-bottom: 8px; }
+.pb-fs-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .pb-fs-two { grid-template-columns: minmax(0, 1fr); } }
+.pb-fs-cap { font-size: 12.5px; margin: 4px 0 6px; }
+.pb-fs-hours { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 2px; height: 110px; align-items: end; }
+.pb-fs-hours span { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; text-align: center; }
+.pb-fs-hours i { display: flex; flex-direction: column; justify-content: flex-end; min-height: 1px; background: rgba(255, 138, 31, .55); border-radius: 2px 2px 0 0; overflow: hidden; }
+.pb-fs-hours em { display: block; background: #e5484d; }
+.pb-fs-hours small { font-size: 10px; color: var(--muted); height: 14px; }
+.bd-plate { margin: 0 0 10px; padding: 8px 12px; border-radius: 4px; font-size: 14px; }
+.bd-plate.ok { background: rgba(74, 222, 128, .12); color: #4ade80; }
+.bd-plate.warn { background: rgba(246, 195, 68, .12); color: #f6c344; }
+.bd-plate.bad { background: rgba(229, 72, 77, .14); color: #f2777a; }
+.pb-plateimg { width: 100%; max-width: 320px; border-radius: 4px; display: block; }

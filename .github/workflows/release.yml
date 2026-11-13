@@ -1,6 +1,8 @@
 name: release
 
 on:
+  push:
+    branches: [nightly]
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
@@ -60,14 +62,14 @@ jobs:
           BUMP: ${{ inputs.bump }}
           EVENT: ${{ github.event_name }}
         run: |
-          [ "$EVENT" = schedule ] && KIND=nightly
+          case "$EVENT" in schedule|push) KIND=nightly ;; esac
           last="$(git tag -l 'v*' | sed 's/^v//' | sort -V | tail -1)"
           sha="$(git rev-parse HEAD)"
           echo "last=$last" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           if [ "$KIND" = nightly ]; then
             go=1
-            if [ "$EVENT" = schedule ] && gh release view "$PART-nightly" --repo "$MAIN_REPO" --json body -q .body 2>/dev/null | grep -q "$sha"; then go=0; fi
+            if [ "$EVENT" != workflow_dispatch ] && gh release view "$PART-nightly" --repo "$MAIN_REPO" --json body -q .body 2>/dev/null | grep -q "$sha"; then go=0; fi
             { echo "mode=nightly"; echo "go=$go"; } >> "$GITHUB_OUTPUT"
             echo "Nightly build of $sha (go=$go)"
             exit 0

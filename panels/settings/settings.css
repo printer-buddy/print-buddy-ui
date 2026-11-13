@@ -37,3 +37,5 @@ html[data-theme="light"] .pb-plain .pb-fo > select, html[data-theme="light"] .pb
 .pb-plain #notifyPanel > h2, .pb-plain #aiPanel > h2 { display: none; }
 .pb-plain .pb-thm { border-top: 1px solid var(--bd-line); margin-top: 0; }
 .pb-plain .pb-cardopts, .pb-plain .pb-card > .pb-body > .pb-sit { padding: 0; }
+.pb-platebtns { display: inline-flex; flex-wrap: wrap; gap: 6px; justify-self: start; }
+.pb-plain .pb-sl .pb-plateimg { margin: 0 0 16px; }

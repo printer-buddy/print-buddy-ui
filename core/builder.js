@@ -37,10 +37,10 @@
     { id: "diagnostics", name: "Diagnostics", rows: [{ s: "1", cols: [[P("diagnostics", "ksensors"), P("diagnostics", "sensors"), P("diagnostics", "explorer")]] }] },
     { id: "configure", name: "Configure", rows: [{ s: "1", cols: [[P("configure", "config")]] }] },
     { id: "system", name: "System", rows: [{ s: "1-1", cols: [[P("system", "sysinfo"), P("system", "sdinfo"), P("system", "diskusage"), P("system", "database")], [P("system", "system"), P("system", "mcus")]] }] },
-    { id: "settings", name: "Settings", rows: [{ s: "1", cols: [[P("settings", "setgeneral"), P("settings", "settheme"), P("settings", "setalerts"), P("settings", "setai"), P("settings", "setconsole"), P("settings", "setjobs"), P("settings", "setmacros"), P("settings", "setcamera"), P("settings", "settool"), P("settings", "setpresets"), P("settings", "setgcode"), P("settings", "updates"), P("settings", "setcards"), P("settings", "machine"), P("settings", "devices"), P("settings", "setabout")]] }] },
+    { id: "settings", name: "Settings", rows: [{ s: "1", cols: [[P("settings", "setgeneral"), P("settings", "settheme"), P("settings", "setalerts"), P("settings", "setai"), P("settings", "setconsole"), P("settings", "setjobs"), P("settings", "setmacros"), P("settings", "setcamera"), P("settings", "setplate"), P("settings", "settool"), P("settings", "setpresets"), P("settings", "setgcode"), P("settings", "updates"), P("settings", "setcards"), P("settings", "machine"), P("settings", "devices"), P("settings", "setabout")]] }] },
   ] };
   const HOME_DEFAULT = { v: 1, tabs: [
-    { id: "home", name: "Home", rows: [{ s: "1", cols: [[P("home", "fleet")]] }, { s: "1", cols: [[P("home", "printers")]] }] },
+    { id: "home", name: "Home", rows: [{ s: "1", cols: [[P("home", "fleet")]] }, { s: "1", cols: [[P("home", "printers")]] }, { s: "1", cols: [[P("home", "stats")]] }] },
   ] };
 
   const page = $("#page");
@@ -117,6 +117,19 @@
           if (it.t === "files") { it.t = "jobs"; it.o = { page: true }; }
         }
       }
+      if (!l.setplate) {
+        l.setplate = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "settings");
+        if (tab && tab.rows.length && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "setplate")))) {
+          const col = tab.rows[0].cols[0], at = col.findIndex(x => x.t === "setcamera");
+          col.splice(at >= 0 ? at + 1 : col.length, 0, { id: rid(), t: "setplate", c: false, h: false, o: {} });
+        }
+      }
+      if (!l.homestats) {
+        l.homestats = 1; migrated = true;
+        const tab = l.tabs.find(t => t.id === "home");
+        if (tab && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "stats")))) tab.rows.push({ s: "1", cols: [[{ id: rid(), t: "stats", c: false, h: false, o: {} }]] });
+      }
       if (!l.machsplit) {
         l.machsplit = 1; migrated = true;
         const i = l.tabs.findIndex(t => t.id === "machine");
@@ -180,7 +193,7 @@
         l.setall = 1; migrated = true;
         const tab = l.tabs.find(t => t.id === "settings");
         if (tab) {
-          const want = ["setgeneral", "settheme", "setalerts", "setai", "setconsole", "setjobs", "setmacros", "setcamera", "settool", "setpresets", "setgcode", "updates", "setcards", "machine", "devices", "setabout"];
+          const want = ["setgeneral", "settheme", "setalerts", "setai", "setconsole", "setjobs", "setmacros", "setcamera", "setplate", "settool", "setpresets", "setgcode", "updates", "setcards", "machine", "devices", "setabout"];
           const all = tab.rows.flatMap(r => r.cols.flat());
           const col = want.map(t => { const k = all.findIndex(x => x.t === t); return k >= 0 ? all.splice(k, 1)[0] : { id: rid(), t, c: false, h: false, o: {} }; });
           col.push(...all);
@@ -192,7 +205,7 @@
         const tab = l.tabs.find(t => t.id === "settings");
         if (tab && tab.rows.length && !tab.rows.some(r => r.cols.some(c => c.some(it => it.t === "setconsole")))) {
           const col = tab.rows[0].cols[0], at = col.findIndex(x => x.t === "setcards");
-          const add = ["setconsole", "setjobs", "setcamera", "settool", "setthermals", "setgcode"].map(t => ({ id: rid(), t, c: false, h: false, o: {} }));
+          const add = ["setconsole", "setjobs", "setcamera", "setplate", "settool", "setthermals", "setgcode"].map(t => ({ id: rid(), t, c: false, h: false, o: {} }));
           col.splice(at >= 0 ? at : col.length, 0, ...add);
         }
       }

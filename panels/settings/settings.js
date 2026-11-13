@@ -118,6 +118,45 @@
   borrow("setai", "AI Detection", "Failure detection: how often to look, how sensitive, what to do", PB.icon('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2"/><path d="M12 4v4"/>'),
     () => document.querySelector("#aiPanel"), () => home("ai"), async () => { try { await loadAI(); if (aiCfg) fillAIForm(); } catch {} });
 
+  PB.panel("setplate", {
+    title: "Plate Check", desc: "Before a print you start here, compare the camera with an empty-bed picture and warn if something is still on the bed", single: true, cls: "adv",
+    icon: PB.icon('<rect x="3" y="14" width="18" height="5" rx="1"/><path d="M8 14V9h8v5"/>'),
+    create(host) {
+      host.innerHTML = row("Check the bed before printing", `<input type="checkbox" class="pb-switch" role="switch" data-k="on">`, "Only for prints started from Printer Buddy")
+        + row("Sensitivity", `<select data-k="sens"><option value="low">Low (fewer false alarms)</option><option value="medium">Medium</option><option value="high">High (catches small parts)</option></select>`)
+        + row("Empty-bed picture", `<span class="pb-platebtns"><button type="button" data-a="take">Take it now</button><button type="button" data-a="clear">Clear</button><button type="button" data-a="test">Test now</button></span>`, "Take it with the bed empty and the light as it usually is")
+        + `<div class="pb-sl"><p class="pb-muted pb-platemsg"></p><img class="pb-plateimg" alt="Empty-bed picture" hidden></div>`;
+      const q = s => host.querySelector(s), img = q(".pb-plateimg"), msg = q(".pb-platemsg");
+      const pid = () => PB.current()?.id;
+      const save = o => { const id = pid(); if (id != null) PB.store.set(`pb-plate-${id}`, { ...PB.plateOpts(id), ...o }); };
+      function fill() {
+        const id = pid(); if (id == null) return;
+        const o = PB.plateOpts(id); q("[data-k=on]").checked = !!o.on; q("[data-k=sens]").value = o.sens || "medium";
+        img.onload = () => { img.hidden = false; msg.textContent = ""; };
+        img.onerror = () => { img.hidden = true; msg.textContent = "No empty-bed picture yet. Clear the bed, then press Take it now."; };
+        img.src = `/api/printers/${id}/plate?v=${Date.now()}`;
+      }
+      q("[data-k=on]").onchange = e => save({ on: e.target.checked });
+      q("[data-k=sens]").onchange = e => save({ sens: e.target.value });
+      q("[data-a=take]").onclick = async () => {
+        const id = pid(); if (id == null || !confirm("Is the bed empty? This saves the camera picture as the empty bed.")) return;
+        try { await api(`/api/printers/${id}/plate`, { method: "PUT" }); toast("Empty-bed picture saved"); fill(); } catch (e) { toast(e.message); }
+      };
+      q("[data-a=clear]").onclick = async () => {
+        const id = pid(); if (id == null) return;
+        try { await api(`/api/printers/${id}/plate`, { method: "DELETE" }); fill(); } catch (e) { toast(e.message); }
+      };
+      q("[data-a=test]").onclick = async () => {
+        const id = pid(); if (id == null) return;
+        msg.textContent = "Checking…";
+        const r = await PB.plateCheck(id).catch(() => ({ error: "The check failed." }));
+        msg.textContent = !r ? "Turn the check on and take an empty-bed picture first." : r.error ? r.error
+          : `${r.empty ? "The bed looks empty" : "The bed doesn't look empty"}: ${Math.round(r.changed * 100)}% of the picture changed.`;
+      };
+      return { open: fill, shown: fill };
+    },
+  });
+
   PB.panel("setcards", {
     title: "Other Card Options", desc: "The options of the remaining cards (the same as each card's gear), in one list", single: true, cls: "adv",
     icon: PB.icon('<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>'),
