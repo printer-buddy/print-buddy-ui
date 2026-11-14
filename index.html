@@ -133,6 +133,16 @@
   #shareDlg .sub { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
   #shareDlg select { font: inherit; min-height: 44px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card2); color: var(--text); }
   .share-new { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .share-chat { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .share-chat h3 { margin: 0 0 8px; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .share-chat h3 button { margin-left: auto; min-height: 0; padding: 4px 10px; font-size: 12px; }
+  .share-msgs { height: 150px; overflow-y: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }
+  .share-msgs .none { color: var(--muted); margin: auto; }
+  .share-msgs .blocked { color: var(--muted); font-style: italic; }
+  .share-msgs .flag { color: var(--orange); border-left: 3px solid var(--orange); padding-left: 8px; }
+  .share-msgs b { color: var(--lilac); } .share-msgs .owner b { color: var(--orange); }
+  .share-chat form { display: flex; gap: 8px; margin-top: 8px; }
+  .share-chat form input { flex: 1; min-width: 0; }
   .share-list { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
   .share-item { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 10px; }
   .share-item input { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
@@ -154,7 +164,8 @@
   .setup-line .soon { color: var(--orange); }
   .fps { position: absolute; top: 10px; right: 62px; padding: 4px 8px; border-radius: 6px; background: rgba(11,11,13,.8);
          font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); pointer-events: none; }
-  .qv-cam .fps, .pg-cam .fps, .ctl-cam .fps { right: auto; left: 12px; top: 12px; }
+  .qv-cam .fps, .pg-cam .fps { right: auto; left: 12px; top: 12px; }
+  .ctl-cam .fps, .pb-card .pg-cam .fps { right: 12px; left: auto; top: auto; bottom: 12px; }
   img[hidden] ~ .fps, .grid.list .fps { display: none; }
   .ctl-camsec { grid-column: 1 / -1; padding: 0 !important; overflow: hidden; }
   .ctl-cam { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 440px; background: #000; overflow: hidden; }
@@ -321,14 +332,14 @@
 <link rel="stylesheet" href="/static/panels/print/files/files.css">
 <link rel="stylesheet" href="/static/panels/print/queue/queue.css">
 <link rel="stylesheet" href="/static/panels/print/history/history.css">
+<link rel="stylesheet" href="/static/panels/settings/settings.css">
 <link rel="stylesheet" href="/static/panels/print/gcodeview/gcodeview.css">
 <link rel="stylesheet" href="/static/panels/print/exclude/exclude.css">
 <link rel="stylesheet" href="/static/panels/print/timelapse/timelapse.css">
 <link rel="stylesheet" href="/static/panels/print/spoolman/spoolman.css">
 <link rel="stylesheet" href="/static/panels/print/ai/ai.css">
-<link rel="stylesheet" href="/static/panels/control/toolhead/toolhead.css">
-<link rel="stylesheet" href="/static/panels/control/zoffset/zoffset.css">
-<link rel="stylesheet" href="/static/panels/control/extruder/extruder.css">
+<link rel="stylesheet" href="/static/panels/control/tool/tool.css">
+<link rel="stylesheet" href="/static/panels/print/jobs/jobs.css">
 <link rel="stylesheet" href="/static/panels/control/thermals/thermals.css">
 <link rel="stylesheet" href="/static/panels/control/fans/fans.css">
 <link rel="stylesheet" href="/static/panels/control/macros/macros.css">
@@ -337,6 +348,8 @@
 <link rel="stylesheet" href="/static/panels/control/endstops/endstops.css">
 <link rel="stylesheet" href="/static/panels/control/bedmesh/bedmesh.css">
 <link rel="stylesheet" href="/static/panels/control/fsensors/fsensors.css">
+<link rel="stylesheet" href="/static/panels/control/mmu/mmu.css">
+<link rel="stylesheet" href="/static/panels/control/topcover/topcover.css">
 <link rel="stylesheet" href="/static/panels/camera/camera/camera.css">
 <link rel="stylesheet" href="/static/panels/machine/machine/machine.css">
 <link rel="stylesheet" href="/static/panels/machine/system/system.css">
@@ -344,6 +357,7 @@
 <link rel="stylesheet" href="/static/panels/machine/updates/updates.css">
 <link rel="stylesheet" href="/static/panels/machine/devices/devices.css">
 <link rel="stylesheet" href="/static/panels/machine/sensors/sensors.css">
+<link rel="stylesheet" href="/static/panels/machine/database/database.css">
 <link rel="stylesheet" href="/static/panels/machine/explorer/explorer.css">
 <link rel="stylesheet" href="/static/panels/machine/console/console.css">
 <link rel="stylesheet" href="/static/panels/machine/ksensors/ksensors.css">
@@ -458,7 +472,13 @@
       <input name="host" placeholder="192.168.1.50" required aria-label="IP address" style="flex:2 1 160px">
       <input name="port" placeholder="7125" inputmode="numeric" aria-label="Port" style="flex:1 1 80px">
       <input name="api_key" placeholder="API key (if needed)" aria-label="API key" style="flex:2 1 160px">
+      <input name="name" placeholder="Name (optional)" aria-label="Name" style="flex:2 1 160px" hidden>
+      <input name="serial" placeholder="Serial number" aria-label="Serial number" autocomplete="off" style="flex:2 1 160px" hidden>
+      <input name="access_code" placeholder="Access code" aria-label="Access code" autocomplete="off" style="flex:1 1 120px" hidden>
       <button class="primary">Add</button>
+      <label style="flex:1 1 100%;display:flex;align-items:center;gap:8px;font-size:14px">Printer type
+        <select name="kind" style="width:auto;flex:0 1 auto"><option value="klipper">Klipper (Moonraker)</option><option value="bambu">Bambu Lab (needs LAN mode)</option><option value="cc1">Elegoo Centauri Carbon</option><option value="cc2">Elegoo Centauri Carbon 2</option></select></label>
+      <p class="muted" id="kindHint" style="flex:1 1 100%;margin:0;font-size:13px" hidden></p>
     </form>
   </section>
 
@@ -593,7 +613,7 @@
   </div>
 
   <div class="tl" id="pgTimelapse" role="tabpanel" aria-labelledby="tabTimelapse" hidden>
-    <div class="hist-box">
+    <div class="hist-box" id="tlSettingsBox">
       <form class="tl-set" id="tlForm">
         <label>Take a picture <select name="tl_mode" id="tlMode"><option value="layer">every layer</option><option value="interval">every few seconds</option></select></label>
         <label id="tlEveryRow">every <select name="tl_interval"><option value="5">5 s</option><option value="10">10 s</option><option value="30">30 s</option></select></label>
@@ -602,8 +622,9 @@
       </form>
       <div class="files-msg">Settings apply to all printers and take effect on the next print. "Every layer" needs a slicer that reports layers; otherwise use "every few seconds".</div>
     </div>
-    <div class="hist-box">
-      <div id="tlStatus" class="files-msg" aria-live="polite"></div>
+    <div class="hist-box" id="tlStatusBox"><div id="tlStatus" class="files-msg" aria-live="polite"></div></div>
+    <div class="hist-box" id="tlListBox">
+      <div id="tlCount" class="files-msg" aria-live="polite"></div>
       <video id="tlPlayer" controls hidden></video>
       <div class="files-list" id="tlList"></div>
     </div>
@@ -615,9 +636,27 @@
   <p class="sub">Anyone with the link can watch this printer's camera and progress. They can't control it.</p>
   <div class="share-new">
     <label>Link works for <select id="shareExp"><option value="1h">1 hour</option><option value="1d" selected>1 day</option><option value="7d">7 days</option><option value="print" id="shareExpPrint">until the print ends</option><option value="never">until I turn it off</option></select></label>
+    <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" id="shareChatOn" checked style="width:auto;min-height:0"> Chat</label>
     <button class="primary" id="shareCreate">Create link</button>
   </div>
   <div class="share-list" id="shareList"></div>
+  <div class="share-chat">
+    <h3>Chat <label style="font-weight:400;font-size:13px;display:inline-flex;align-items:center;gap:6px"><input type="checkbox" id="chatAllow" checked style="width:auto;min-height:0"> Allow chat</label><button type="button" id="chatClear">Clear chat</button></h3>
+    <div class="share-msgs" id="shareMsgs" aria-live="polite"></div>
+    <form id="shareChatForm"><input id="shareChatText" maxlength="300" placeholder="Say something as Owner…" autocomplete="off" aria-label="Message"><button class="primary">Send</button></form>
+    <details class="chat-opts" id="chatOpts" style="margin-top:10px">
+      <summary>Alerts and blocked words</summary>
+      <label class="field" style="margin-top:8px">Notify me with a push
+        <select id="chatAlert"><option value="off">Never</option><option value="flags">Only when a viewer flags the print</option><option value="all">For every message (at most one per 20 seconds)</option></select>
+      </label>
+      <p class="hint" id="chatAlertHint"></p>
+      <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin-top:8px"><input type="checkbox" id="chatBuiltin" checked style="width:auto;min-height:0"> Also block the built-in list of swear words and slurs</label>
+      <label class="field">Your own blocked words (one per line, # for notes)
+        <textarea id="chatBlocked" rows="5" spellcheck="false" style="font-family:monospace"></textarea>
+      </label>
+      <button type="button" id="chatSave">Save</button>
+    </details>
+  </div>
   <div class="row" style="justify-content:flex-end; margin-top:14px"><button id="shareClose">Close</button></div>
 </dialog>
 
@@ -1123,12 +1162,30 @@ $("#addSelected").onclick = async () => {
 };
 
 $("#manualBtn").onclick = () => $("#manual").hidden = !$("#manual").hidden;
+const KINDS = {
+  klipper: { show: ["port", "api_key"], host: "192.168.1.50", hint: "" },
+  bambu: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The access code is on its screen." },
+  cc1: { show: ["name"], host: "Printer IP address", hint: "Only the IP is needed. Printer Buddy finds the rest. Pause, resume, stop and start work; temperatures and fans can't be changed from here." },
+  cc2: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The serial number and access code are on its screen." },
+};
+$("#manualForm").elements.kind.onchange = e => {
+  const el = e.target.form.elements, k = KINDS[e.target.value];
+  for (const n of ["port", "api_key", "name", "serial", "access_code"]) el[n].hidden = !k.show.includes(n);
+  el.host.placeholder = k.host;
+  $("#kindHint").textContent = k.hint; $("#kindHint").hidden = !k.hint;
+};
 $("#manualForm").onsubmit = async e => {
   e.preventDefault();
-  const f = Object.fromEntries(new FormData(e.target));
+  const f = Object.fromEntries(new FormData(e.target)), host = f.host.trim(), name = (f.name || "").trim();
+  const extra = { serial: (f.serial || "").trim(), access_code: (f.access_code || "").trim() };
+  const body = f.kind === "bambu" ? { host, name, bambu: extra }
+    : f.kind === "cc1" ? { host, name, elegoo: { model: "cc1" } }
+    : f.kind === "cc2" ? { host, name, elegoo: { model: "cc2", ...extra } }
+    : { host, port: f.port || 7125, api_key: f.api_key };
   try {
-    const v = await api("/api/printers", { method: "POST", body: JSON.stringify({ host: f.host.trim(), port: f.port || 7125, api_key: f.api_key }) });
-    printers.set(v.id, v); render(); e.target.reset(); $("#manual").hidden = true; toast(`Added ${v.name}`);
+    if (f.kind !== "klipper") toast("Connecting to the printer…");
+    const v = await api("/api/printers", { method: "POST", body: JSON.stringify(body) });
+    printers.set(v.id, v); render(); e.target.reset(); e.target.elements.kind.onchange({ target: e.target.elements.kind }); $("#manual").hidden = true; toast(`Added ${v.name}`);
   } catch (err) { toast(err.message); }
 };
 
@@ -1237,7 +1294,7 @@ function renderPage() {
 $("#pgPause").onclick = () => doAction(pageId, printers.get(pageId)?.state === "paused" ? "resume" : "pause");
 $("#pgCancel").onclick = () => doAction(pageId, "cancel");
 $("#pgStop").onclick = () => doAction(pageId, "estop");
-$("#pgFull").onclick = () => $("#pgCam").requestFullscreen?.();
+$("#pgFull").onclick = () => document.fullscreenElement ? document.exitFullscreen() : $("#pgCam").requestFullscreen?.();
 window.addEventListener("hashchange", route);
 
 const TABS = { status: ["#tabStatus", "#pgStatus"], control: ["#tabControl", "#pgControl"], console: ["#tabConsole", "#pgConsole"], timelapse: ["#tabTimelapse", "#pgTimelapse"] };
@@ -1284,8 +1341,8 @@ async function loadTimelapses() {
   try {
     const { timelapses, recording } = await api(`/api/printers/${id}/timelapses`);
     if (id !== pageId) return;
-    $("#tlStatus").innerHTML = (recording !== null ? `<span class="tl-rec">Recording · ${recording} pictures so far</span> ` : "")
-      + (timelapses.length ? `${timelapses.length} timelapse${timelapses.length > 1 ? "s" : ""}` : (recording === null ? "No timelapses yet. One is recorded for every print." : ""));
+    $("#tlStatus").innerHTML = recording !== null ? `<span class="tl-rec">Recording · ${recording} pictures so far</span>` : "Not recording";
+    $("#tlCount").textContent = timelapses.length ? `${timelapses.length} timelapse${timelapses.length > 1 ? "s" : ""}` : "No timelapses yet. One is recorded for every print.";
     $("#tlList").innerHTML = timelapses.length ? `<table><thead><tr><th>Print</th><th>Date</th><th>Length</th><th>Size</th><th>Result</th><th></th></tr></thead><tbody>${
       timelapses.map((t, i) => {
         const [label, cls] = RESULT[{ complete: "completed", cancelled: "cancelled", error: "error", standby: "completed" }[t.result]] || [t.result, ""];
@@ -1315,7 +1372,7 @@ const conHistory = [];
 let conHistPos = -1;
 function conAdd(id, kind, text) {
   const log = conLogs.get(id) || [];
-  log.push({ kind, text });
+  log.push({ kind, text, t: Date.now() });
   if (log.length > 500) log.splice(0, log.length - 500);
   conLogs.set(id, log);
   if (id === pageId && !$("#pgConsole").hidden) {
@@ -1353,6 +1410,13 @@ let jogStep = 10, speedDragging = false;
 async function gcode(script) {
   const p = printers.get(pageId); if (!p) return;
   try { await api(`/api/printers/${p.id}/gcode`, { method: "POST", body: JSON.stringify({ script }) }); }
+  catch (e) { toast(`${p.name}: ${e.message}`); }
+}
+// Bambu / Elegoo controls: a plain action straight to the printer, no fake gcode. Klipper still uses gcode().
+function nativePrinter() { const k = printers.get(pageId)?.kind; return k === "bambu" || k === "elegoo"; }
+async function command(action, params) {
+  const p = printers.get(pageId); if (!p) return;
+  try { await api(`/api/printers/${p.id}/command`, { method: "POST", body: JSON.stringify({ action, ...params }) }); }
   catch (e) { toast(`${p.name}: ${e.message}`); }
 }
 const setHeater = (heater, t) => gcode(`SET_HEATER_TEMPERATURE HEATER=${heater} TARGET=${Math.max(0, Math.round(t))}`);
@@ -1462,14 +1526,70 @@ async function openShare(id) {
   po.disabled = !live; po.title = live ? "" : "Only while a print is running";
   if (!live && $("#shareExp").value === "print") $("#shareExp").value = "1d";
   await loadShares(); $("#shareDlg").showModal();
+  ownerChat.start(id);
 }
+// the owner's side of a share link's chat: the same room, polled only while this window is open
+const ownerChat = (() => {
+  let id = null, last = 0, epoch = null, timer = null;
+  const box = () => $("#shareMsgs");
+  const empty = () => { const e = document.createElement("div"); e.className = "none"; e.textContent = "No messages yet."; box().replaceChildren(e); };
+  const add = m => {
+    const b = box(), stick = b.scrollHeight - b.scrollTop - b.clientHeight < 40;
+    b.querySelector(".none")?.remove();
+    const d = document.createElement("div"), n = document.createElement("b"), t = document.createElement("span");
+    d.className = m.owner ? "owner" : m.kind === "flag" ? "flag" : m.kind === "blocked" ? "blocked" : ""; n.textContent = m.kind === "flag" ? "⚑ " + m.name : m.name; t.textContent = m.kind === "blocked" ? " tried to send (blocked): " + m.text : " " + m.text; d.append(n, t); b.append(d);
+    if (stick) b.scrollTop = b.scrollHeight;
+  };
+  async function poll() {
+    if (id === null) return;
+    const mine = id;
+    let j;
+    try { j = await api(`/api/printers/${mine}/chat?after=${last}`); } catch { return; }
+    if (mine !== id) return;
+    if (epoch !== null && j.epoch !== epoch) { epoch = j.epoch; last = 0; empty(); return poll(); }
+    epoch = j.epoch;
+    setEnabled(j.enabled !== false);
+    for (const m of j.messages) { add(m); last = Math.max(last, m.id); }
+  }
+  function setEnabled(on) {
+    $("#chatAllow").checked = on;
+    $("#shareChatText").disabled = !on; $("#shareChatForm button").disabled = !on; $("#chatClear").disabled = !on;
+    $("#shareChatText").placeholder = on ? "Say something as Owner…" : "Chat is turned off";
+  }
+  return {
+    start(pid) { id = pid; last = 0; epoch = null; empty(); clearInterval(timer); poll(); timer = setInterval(poll, 3000); },
+    stop() { id = null; clearInterval(timer); },
+    async send(text) { await api(`/api/printers/${id}/chat`, { method: "POST", body: JSON.stringify({ text }) }); await poll(); },
+    async clear() { await api(`/api/printers/${id}/chat`, { method: "DELETE" }); await poll(); },
+    async allow(on) { await api(`/api/printers/${id}/chat`, { method: "PATCH", body: JSON.stringify({ enabled: on }) }); setEnabled(on); if (!on) empty(); },
+  };
+})();
+$("#shareChatForm").onsubmit = async e => {
+  e.preventDefault();
+  const t = $("#shareChatText").value.trim(); if (!t) return;
+  try { await ownerChat.send(t); $("#shareChatText").value = ""; } catch (err) { toast(err.message); }
+};
+$("#chatAllow").onchange = async e => { try { await ownerChat.allow(e.target.checked); } catch (err) { toast(err.message); e.target.checked = !e.target.checked; } };
+$("#chatClear").onclick = async () => { if (confirm("Clear the chat for everyone?")) try { await ownerChat.clear(); } catch (err) { toast(err.message); } };
+$("#shareDlg").addEventListener("close", () => ownerChat.stop());
+$("#chatOpts").addEventListener("toggle", async e => {
+  if (!e.target.open) return;
+  try {
+    const s = await api("/api/chat/settings");
+    $("#chatAlert").value = s.alert; $("#chatBlocked").value = s.blocked; $("#chatBuiltin").checked = s.builtin;
+    $("#chatAlertHint").textContent = s.notifications ? "" : "Set up a notification service in Settings first, or nothing can be sent.";
+  } catch (err) { toast(err.message); }
+});
+$("#chatSave").onclick = async () => {
+  try { await api("/api/chat/settings", { method: "PUT", body: JSON.stringify({ alert: $("#chatAlert").value, blocked: $("#chatBlocked").value, builtin: $("#chatBuiltin").checked }) }); toast("Saved"); } catch (err) { toast(err.message); }
+};
 async function loadShares() {
   try {
     const { shares } = await api(`/api/printers/${shareId}/shares`);
     $("#shareList").innerHTML = shares.length ? shares.map((sh, i) => `<div class="share-item">
         <input readonly value="${esc(sh.url)}" aria-label="Share link">
         <button data-copy="${i}">Copy</button><button class="revoke" data-revoke="${i}">Turn off</button>
-        <span class="exp">${sh.until_print ? "Works until the print ends" : sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}</span>
+        <span class="exp">${sh.until_print ? "Works until the print ends" : sh.expires_at ? `Works until ${new Date(sh.expires_at * 1000).toLocaleString()}` : "Works until you turn it off"}${sh.chat === false ? " · no chat" : ""}</span>
       </div>`).join("") : `<p class="muted" style="margin:0">No active links for this printer.</p>`;
     for (const b of $("#shareList").querySelectorAll("[data-copy]")) b.onclick = () => copyText(shares[+b.dataset.copy].url, b);
     for (const b of $("#shareList").querySelectorAll("[data-revoke]")) b.onclick = async () => {
@@ -1485,7 +1605,7 @@ async function copyText(text, btn) {
 }
 $("#shareCreate").onclick = async () => {
   try {
-    const sh = await api(`/api/printers/${shareId}/shares`, { method: "POST", body: JSON.stringify({ expires: $("#shareExp").value }) });
+    const sh = await api(`/api/printers/${shareId}/shares`, { method: "POST", body: JSON.stringify({ expires: $("#shareExp").value, chat: $("#shareChatOn").checked }) });
     await loadShares();
     try { await navigator.clipboard.writeText(sh.url); toast("Link created and copied"); } catch { toast("Link created"); }
   } catch (e) { toast(e.message); }
@@ -1538,7 +1658,7 @@ function camProbe() {
   const cam = $("#pgCam"), img = $("#pgImg");
   let probe = cam.querySelector(".ai-probe");
   if (!probe) { probe = document.createElement("div"); probe.className = "ai-probe"; probe.innerHTML = "<i></i>"; cam.append(probe); }
-  for (const k of ["inset", "left", "top", "width", "height", "transform"]) probe.style[k] = img.style[k];
+  for (const k of ["inset", "left", "top", "width", "height", "transform", "scale", "translate"]) probe.style[k] = img.style[k];
   const ew = probe.offsetWidth, eh = probe.offsetHeight, nw = img.naturalWidth, nh = img.naturalHeight;
   const s = (getComputedStyle(img).objectFit === "cover" ? Math.max : Math.min)(ew / nw, eh / nh);
   const cw = nw * s, ch = nh * s;
@@ -1860,7 +1980,9 @@ render();
 <script src="/static/panels/print/history/charts.js"></script>
 <script src="/static/panels/print/history/csv.js"></script>
 <script src="/static/panels/print/history/maintenance.js"></script>
+<script src="/static/panels/print/history/stats.js"></script>
 <script src="/static/panels/print/history/history.js"></script>
+<script src="/static/panels/settings/settings.js"></script>
 <script src="/static/panels/print/gcodeview/parse.js"></script>
 <script src="/static/panels/print/gcodeview/orbit.js"></script>
 <script src="/static/panels/print/gcodeview/view2d.js"></script>
@@ -1868,11 +1990,11 @@ render();
 <script src="/static/panels/print/gcodeview/gcodeview.js"></script>
 <script src="/static/panels/print/exclude/exclude.js"></script>
 <script src="/static/panels/print/timelapse/timelapse.js"></script>
+<script src="/static/panels/print/timelapse/tlcards.js"></script>
 <script src="/static/panels/print/spoolman/spoolman.js"></script>
 <script src="/static/panels/print/ai/ai.js"></script>
-<script src="/static/panels/control/toolhead/toolhead.js"></script>
-<script src="/static/panels/control/zoffset/zoffset.js"></script>
-<script src="/static/panels/control/extruder/extruder.js"></script>
+<script src="/static/panels/control/tool/tool.js"></script>
+<script src="/static/panels/print/jobs/jobs.js"></script>
 <script src="/static/panels/control/thermals/presets.js"></script>
 <script src="/static/panels/control/thermals/thermals.js"></script>
 <script src="/static/panels/control/fans/fans.js"></script>
@@ -1882,10 +2004,15 @@ render();
 <script src="/static/panels/control/actions/actions.js"></script>
 <script src="/static/panels/control/endstops/endstops.js"></script>
 <script src="/static/panels/control/bedmesh/bedmesh.js"></script>
+<script src="/static/panels/control/bedmesh/meshctl.js"></script>
+<script src="/static/panels/control/beacon/beacon.js"></script>
 <script src="/static/panels/control/fsensors/fsensors.js"></script>
+<script src="/static/panels/control/mmu/mmu.js"></script>
+<script src="/static/panels/control/topcover/topcover.js"></script>
 <script src="/static/panels/camera/camera/camera.js"></script>
 <script src="/static/panels/machine/machine/machine.js"></script>
 <script src="/static/panels/machine/system/system.js"></script>
+<script src="/static/panels/machine/system/sysinfo.js"></script>
 <script src="/static/panels/machine/config/highlight.js"></script>
 <script src="/static/panels/machine/config/editor.js"></script>
 <script src="/static/panels/machine/config/browse.js"></script>
@@ -1894,6 +2021,7 @@ render();
 <script src="/static/panels/machine/updates/updates.js"></script>
 <script src="/static/panels/machine/devices/devices.js"></script>
 <script src="/static/panels/machine/sensors/sensors.js"></script>
+<script src="/static/panels/machine/database/database.js"></script>
 <script src="/static/panels/machine/explorer/explorer.js"></script>
 <script src="/static/panels/machine/console/filters.js"></script>
 <script src="/static/panels/machine/console/help.js"></script>
@@ -1906,6 +2034,7 @@ render();
 <script src="/static/core/extras/error-card.js"></script>
 <script src="/static/core/extras/drop-upload.js"></script>
 <script src="/static/core/extras/shortcuts.js"></script>
+<script src="/static/core/extras/camzoom.js"></script>
 <script src="/static/core/extras/prompts.js"></script>
 <script src="/static/core/extras/calibration.js"></script>
 <script src="/static/core/extras/pause-layer.js"></script>

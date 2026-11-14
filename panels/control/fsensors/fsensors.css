@@ -1,0 +1,5 @@
+
+.pb-fsi { display: inline-flex; }
+.pb-fsi svg { width: 22px; height: 22px; }
+.pb-fsi.ok { color: #4ade80; }
+.pb-fsi.warn { color: var(--orange); }

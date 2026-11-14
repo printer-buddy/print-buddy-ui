@@ -125,8 +125,7 @@ PB.parts.gcode3d = S => {
       three.nozzle.visible = false;
       if (L && three.starts) {
         const live = S.q("[data-a=follow]").checked && S.pos != null && S.pos >= L.start;
-        let done = L.segs.length;
-        if (live) { done = 0; while (done / 4 < L.offs.length && L.offs[done / 4] < S.pos) done += 4; }
+        const done = S.doneOf(L);
         const upto = three.starts[li] + done / 4;
         if (three.lines) three.lines.geometry.setDrawRange(0, upto * 2);
         if (three.mesh) { three.mesh.count = upto; }

@@ -3,3 +3,36 @@
 .pb-mcu { padding: 8px 10px; border-radius: 4px; background: rgba(127, 127, 140, .08); font-size: 12.5px; display: flex; flex-direction: column; gap: 3px; }
 .pb-mcuh { display: flex; justify-content: space-between; gap: 6px; font-size: 13px; }
 .pb-mcuv { color: var(--text); }
+.pb-mcus { display: flex; flex-direction: column; gap: 12px; margin-bottom: 0; }
+.pb-sit { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pb-sit td { padding: 8px 4px; border-bottom: 1px solid var(--bd-line); vertical-align: top; }
+.pb-sit td:first-child { width: 42%; color: var(--muted); }
+.pb-dubar { height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .12); overflow: hidden; margin: 4px 0 8px; }
+.pb-dubar i { display: block; height: 100%; background: var(--orange); }
+.pb-sysgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 12px; }
+@media (max-width: 1100px) { .pb-sysgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .pb-sysgrid { grid-template-columns: minmax(0, 1fr); } }
+.pb-sysl { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.pb-sysch .pb-syschart + .pb-sysl { margin-top: 6px; }
+.pb-sysl .v, .pb-sysl .va { color: var(--text); font-variant-numeric: tabular-nums; }
+.pb-mcus { gap: 16px; }
+.pb-mcu { padding: 0; background: none; font-size: 14px; }
+.pb-mcuh { align-items: center; font-size: 16px; padding-bottom: 4px; }
+:is(#page, #home).bd .pb-mcuh button { width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; color: var(--muted); display: inline-grid; place-items: center; }
+:is(#page, #home).bd .pb-mcuh button:hover { background: var(--bd-hover); color: var(--text); }
+.pb-mcuh svg { width: 20px; height: 20px; }
+.pb-sit th { text-align: left; font-weight: 500; padding: 8px 4px; border-bottom: 1px solid var(--bd-line); width: 42%; color: var(--muted); }
+.pb-hdlg h4 { margin: 12px 0 4px; }
+.pb-sov { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 16px; }
+@media (max-width: 760px) { .pb-sov { grid-template-columns: minmax(0, 1fr); } }
+.pb-sovc { display: flex; flex-direction: column; gap: 8px; padding: 12px 0 0 0; }
+:is(#page, #home).bd .pb-sovc > button, :is(#page, #home).bd .pb-sovc > a { width: 100%; height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.pb-dul { font-size: 14px; }
+.pb-dubar.low i { background: #e5484d; }
+.pb-dubar { height: 10px; margin: 4px 0; }
+.pb-dul2 { display: flex; justify-content: space-between; font-size: 14px; }
+.pb-dul2 b { color: var(--text); font-weight: 500; }
+.pb-devbox { min-height: 120px; }
+:is(#page, #home).bd .pb-sovc > a.pb-dl { min-height: 0; height: 36px; padding: 0 12px; box-sizing: border-box; }
+:is(#page, #home).bd .pb-sovc > * { flex: none !important; }
+.pb-sovc { align-content: start; }

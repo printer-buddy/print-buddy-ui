@@ -13,3 +13,17 @@ html[data-theme="light"] .pb-switch:not(:checked) { background: #c9c9d1; }
 .pb-speed .pb-switch { flex: 0 0 38px; }
 .pb-speed .pb-switch + output { margin-left: auto; }
 .pb-speed output.pb-auto { margin-left: auto; }
+
+/* Fluidd's Outputs rows: name, slider, an editable number with a % suffix, a divider between rows, two columns when wide */
+.pb-ctl { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); column-gap: 24px; }
+.pb-fo { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 4px 0; border-bottom: 1px solid var(--bd-line); font-size: 16px; }
+.pb-fo .pb-lab { flex: 0 0 auto; min-width: 0; max-width: 45%; font-size: 16px; }
+.pb-fo .pb-lab small { margin-left: 8px; font-size: 12px; color: var(--muted); }
+.pb-fo input[type=range] { flex: 1; min-width: 0; accent-color: var(--orange); }
+.pb-fo output { margin-left: auto; color: var(--text); font-size: 16px; }
+.pb-fv { display: inline-flex; align-items: baseline; gap: 2px; flex: 0 0 auto; }
+.pb-fv i { font-style: normal; color: var(--muted); }
+.pb-fnum { width: 48px; height: 32px; min-height: 0; padding: 0 4px; text-align: right; background: transparent; color: var(--text); border: 0; border-bottom: 1px solid var(--bd-line); font: inherit; font-size: 16px; -moz-appearance: textfield; appearance: textfield; }
+.pb-fnum::-webkit-outer-spin-button, .pb-fnum::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pb-fnum:focus { outline: 0; border-color: var(--orange); }
+.pb-fnum:disabled { opacity: .5; }

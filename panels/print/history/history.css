@@ -32,3 +32,11 @@
 .pb-hc1, .pb-hc2 { height: 220px; }
 .pb-hcnums { grid-column: 1 / -1; font-size: 12.5px; }
 @media (max-width: 760px) { .pb-hcharts { grid-template-columns: 1fr; } }
+.pb-hsearch { width: 150px; height: 32px; box-sizing: border-box; padding: 0 8px; background: transparent; color: var(--text); border: 1px solid rgba(255, 255, 255, .3); border-radius: 4px; font: inherit; font-size: 14px; }
+.pb-hsearch:focus { outline: 0; border-color: var(--orange); }
+.pb-hcolmenu { display: flex; flex-wrap: wrap; gap: 4px 16px; padding: 6px 4px 8px; }
+.pb-hcolmenu[hidden] { display: none; }
+.pb-st { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.pb-stsq { padding: 4px 8px; text-align: center; border: 1px solid var(--bd-line); border-radius: 4px; font-size: 14px; color: var(--muted); }
+.pb-stsq b { display: block; color: var(--text); font-weight: 500; font-size: 16px; }
+.pb-tool input.pb-hsearch[type=search] { flex: 0 0 160px; width: 160px; }

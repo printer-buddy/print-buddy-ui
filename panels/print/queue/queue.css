@@ -2,3 +2,7 @@
 @media (max-width: 760px) { .pb-qstate { flex-basis: 100%; } }
 .pb-qcount { display: inline-flex; align-items: center; gap: 4px; margin-right: 4px; }
 .pb-qcount b { min-width: 28px; text-align: center; font-size: 13px; }
+.pb-qtot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.pb-qtot:empty { display: none; }
+.pb-qchip { padding: 4px 12px; border-radius: 14px; font-size: 12.5px; background: rgba(255, 255, 255, .08); }
+.pb-qchip.warn { background: rgba(255, 138, 31, .2); color: var(--orange); }

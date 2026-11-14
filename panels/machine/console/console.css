@@ -1,13 +1,32 @@
-.pb-log { font-family: var(--bd-mono); font-size: 12px; background: var(--bd-deep); height: 180px; overflow: auto; padding: 8px 10px; color: #c9c6d1; }
+.pb-log { font-family: var(--bd-mono); font-size: 16px; line-height: 24px; background: var(--bd-deep); height: 300px; overflow: auto; padding: 8px 10px; color: #c9c6d1; }
+.pb-log .pb-cl { display: flex; gap: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pb-log .pb-lt { flex: none; color: var(--muted); white-space: nowrap; }
+.pb-log .pb-lm { min-width: 0; }
+.pb-log mark { background: #ff0; color: #000; }
+.pb-log a.pb-cmd { color: var(--orange); cursor: pointer; }
+.pb-log a.pb-cmd:hover { text-decoration: underline; }
 .pb-log .sent { color: var(--orange); }
 .pb-log .error { color: var(--red-text, #ff8080); }
-.pb-cin { display: flex; border-top: 1px solid var(--bd-line); }
-.pb-cin input { flex: 1; min-width: 0; background: var(--bd-deep); border: 0; color: var(--text); padding: 0 10px; height: 36px;
-                font-family: var(--bd-mono); font-size: 12.5px; }
-:is(#page, #home).bd .pb-cin button { border: 0; border-left: 1px solid var(--bd-line); border-radius: 0; height: 36px; }
-.pb-ctool { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-bottom: 1px solid var(--bd-line); }
-:is(#page, #home).bd .pb-ctool button { height: 26px; padding: 0 8px; font-size: 12px; }
-:is(#page, #home).bd .pb-ctool button[aria-pressed="true"] { color: var(--orange); }
+.pb-cin { display: flex; gap: 8px; padding: 8px; }
+.pb-cinw { position: relative; flex: 1; min-width: 0; display: flex; }
+.pb-cin input { flex: 1; min-width: 0; background: transparent; border: 1px solid var(--bd-line); border-radius: 4px; color: var(--text); padding: 0 32px 0 10px; height: 40px;
+                font-family: var(--bd-mono); font-size: 16px; }
+.pb-cin input:focus { outline: 0; border-color: var(--orange); }
+.pb-cx { position: absolute; right: 4px; top: 6px; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; display: grid; place-items: center; }
+.pb-cx[hidden] { display: none; }
+.pb-cx svg { width: 16px; height: 16px; }
+:is(#page, #home).bd .pb-cin > button { border: 1px solid var(--bd-line); border-radius: 4px; height: 40px; padding: 0 16px; background: transparent; font-weight: 500; }
+.pb-ctool { display: flex; align-items: center; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--bd-line); }
+:is(#page, #home).bd .pb-ctool button { display: inline-flex; align-items: center; justify-content: center; gap: 2px; height: 32px; min-width: 32px; padding: 0 6px; border: 0; background: transparent; color: var(--muted); font-size: 12px; }
+:is(#page, #home).bd .pb-ctool button:hover:not(:disabled) { background: var(--bd-hover); color: var(--text); }
+.pb-ctool button[hidden] { display: none; }
+.pb-ctool svg { width: 18px; height: 18px; }
+.pb-csearch { position: relative; display: inline-flex; align-items: center; width: 160px; margin-left: 4px; }
+.pb-csearch input { width: 100%; height: 32px; box-sizing: border-box; padding: 0 30px 0 8px; background: transparent; border: 1px solid var(--bd-line); border-radius: 4px; color: var(--text); font: inherit; font-size: 13px; }
+.pb-csearch input:focus { outline: 0; border-color: var(--orange); }
+:is(#page, #home).bd .pb-csearch button { position: absolute; right: 2px; min-width: 26px; height: 26px; padding: 0; }
+.pb-csearch .pb-sicon { position: absolute; right: 8px; display: inline-flex; color: var(--muted); pointer-events: none; }
+.pb-csearch .pb-sicon[hidden] { display: none; }
 .pb-log .sent { cursor: pointer; }
 .pb-log .sent:hover { text-decoration: underline; }
 .pb-cmdhelp { width: min(680px, 94vw); }
@@ -16,3 +35,10 @@
 .pb-cmdlist b { font-family: var(--bd-mono, monospace); font-size: 12.5px; }
 .pb-cmdlist span { font-size: 12px; color: var(--muted); }
 html[data-theme="light"] .pb-cmdhelp input[type=search] { background: #fff; color: #1c1b20; border-color: #dcdce2; }
+.pb-qhelp { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-left: 8px; border: 1px solid var(--muted); border-radius: 50%; color: var(--muted); font-size: 11px; font-weight: 700; line-height: 1; vertical-align: middle; cursor: help; }
+.pb-ctool { min-height: 48px; }
+:is(#page, #home).bd .pb-ctool button { height: 40px; min-width: 40px; }
+.pb-ctool svg { width: 22px; height: 22px; }
+.pb-csearch input { height: 36px; font-size: 14px; }
+:is(#page, #home).bd .pb-csearch button { height: 30px; }
+.pb-csearch svg { width: 18px; height: 18px; }

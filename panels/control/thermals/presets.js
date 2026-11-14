@@ -57,15 +57,16 @@ PB.parts.thermalsPresets = (host, cmd) => {
         pdl.querySelector("[data-a=reset]").onclick = () => { list = BASE.map(p => ({ ...p, temps: { ...p.temps } })); render(); };
         pdl.querySelector("[data-a=no]").onclick = () => pdl.close();
         pdl.querySelector("[data-a=ok]").onclick = async () => {
-          read(); presets = list.slice(0, 30); pdl.close(); drawPresets();
+          read(); presets = list.slice(0, 30); pdl.close(); drawPresets(); document.dispatchEvent(new Event("pb-presets"));
           try { await PB.kv.set("presets", presets); toast("Presets saved"); } catch (e) { toast(`Couldn't save: ${e.message}`); }
         };
       };
       render(); pdl.showModal();
     }
     drawPresets();
+    PB.thermalPresets = { get: () => presets, edit: editPresets };
   return {
-    load(id) { presets = BASE; drawPresets(); PB.kv.get("presets", id).then(v => { if (id === pageId && Array.isArray(v)) { presets = v; drawPresets(); } }).catch(() => {}); },
-    destroy() { pdl.remove(); menu.remove(); },
+    load(id) { presets = BASE; drawPresets(); PB.kv.get("presets", id).then(v => { if (id === pageId && Array.isArray(v)) { presets = v; drawPresets(); document.dispatchEvent(new Event("pb-presets")); } }).catch(() => {}); },
+    destroy() { PB.thermalPresets = null; pdl.remove(); menu.remove(); },
   };
 };

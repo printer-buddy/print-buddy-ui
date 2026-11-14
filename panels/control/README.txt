@@ -10,3 +10,4 @@ actions/ - home, level, SAVE_CONFIG
 endstops/ - live endstop state
 bedmesh/ - mesh map + profiles
 fsensors/ - filament sensors
+mmu/ - MMU / AMS slots, load and unload

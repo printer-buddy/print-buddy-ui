@@ -87,6 +87,27 @@ window.PB = (() => {
   const thumbUrl = (pid, file) => `/api/printers/${pid}/thumbnail?file=${encodeURIComponent(file)}`;
   let tlOn = null;
   const dur = s => { s = Math.round(s || 0); const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h}h ${m}m` : `${m}m`; };
+  // Is the bed empty? Compares the camera now with the printer's empty-bed picture: small grey copies, overall brightness
+  // removed, then the share of pixels that changed. Returns null when the check is off or no empty-bed picture is set.
+  const plateOpts = pid => store.get(`pb-plate-${pid}`, { on: true, sens: "medium" });
+  async function plateCheck(pid) {
+    if (!plateOpts(pid).on) return null;
+    const load = src => new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = src; });
+    let ref, now;
+    try { ref = await load(`/api/printers/${pid}/plate?v=${Date.now()}`); } catch { return null; }
+    const cam = printers.get(pid)?.cam_settings?.main || 0;
+    try { now = await load(`/api/printers/${pid}/snapshot?cam=${cam}&v=${Date.now()}`); } catch { return { error: "Couldn't get a camera picture to check the bed." }; }
+    const W = 96, H = 72, grey = img => {
+      const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); g.drawImage(img, 0, 0, W, H);
+      const d = g.getImageData(0, 0, W, H).data, a = new Float32Array(W * H); let m = 0;
+      for (let i = 0; i < a.length; i++) { a[i] = .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2]; m += a[i]; }
+      m /= a.length; for (let i = 0; i < a.length; i++) a[i] -= m; return a;
+    };
+    const A = grey(ref), B = grey(now); let changed = 0;
+    for (let i = 0; i < A.length; i++) if (Math.abs(A[i] - B[i]) > 32) changed++;
+    const share = changed / A.length, limit = { low: .12, medium: .07, high: .04 }[plateOpts(pid).sens] || .07;
+    return { empty: share < limit, changed: share };
+  }
   async function printFile(path) {
     const p = current(); if (!p) return;
     pdlg.innerHTML = `<h3>Start this print?</h3><div class="bd-pp"><img alt="" src="${thumbUrl(p.id, path)}"><div><b>${esc(path)}</b>
@@ -94,6 +115,14 @@ window.PB = (() => {
       <div class="bd-ppopts"></div>
       <div class="bd-libfoot"><button type="button" data-a="no">Cancel</button><button type="button" class="bd-primary" data-a="go">Print</button></div>`;
     const img = pdlg.querySelector("img"); img.onerror = () => { img.hidden = true; };
+    const plateBox = el("div", "bd-plate"); plateBox.hidden = true; pdlg.querySelector(".bd-pp").after(plateBox);
+    plateCheck(p.id).then(r => {
+      if (!r || !pdlg.open) return;
+      plateBox.hidden = false;
+      plateBox.className = `bd-plate ${r.error ? "warn" : r.empty ? "ok" : "bad"}`;
+      plateBox.innerHTML = r.error ? esc(r.error) : r.empty ? "The bed looks empty."
+        : `<b>The bed doesn't look empty.</b> ${Math.round(r.changed * 100)}% of the camera picture changed since the empty-bed picture. Clear the bed, or print anyway.`;
+    }).catch(() => {});
     const opts = pdlg.querySelector(".bd-ppopts");
     let spool = null, spools = [];
     pdlg.querySelector("[data-a=no]").onclick = () => pdlg.close();
@@ -178,6 +207,6 @@ window.PB = (() => {
     pageHook: f => pageHooks.push(f),
   };
 
-  return { x, ic, defs, homeDefs, homePanel, panel, mount, settings, printFile, thumbUrl, rpc, fileUrl, confirmGcode, kv, gcode: script => gcode(script), reveal, unmount, shown, el, icon, store, current, take, park: n => n && parking.append(n),
+  return { plateCheck, plateOpts, x, ic, defs, homeDefs, homePanel, panel, mount, settings, printFile, thumbUrl, rpc, fileUrl, confirmGcode, kv, gcode: script => gcode(script), reveal, unmount, shown, el, icon, store, current, take, park: n => n && parking.append(n),
            onRoute: f => routeHooks.push(f) };
 })();

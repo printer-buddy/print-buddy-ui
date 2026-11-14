@@ -24,3 +24,14 @@
 .pb-presmenu small { margin-left: auto; color: var(--muted); font-family: var(--bd-mono, monospace); font-size: 12px; }
 .pb-presmenu hr { border: 0; border-top: 1px solid rgba(255, 255, 255, .08); margin: 4px 0; }
 .pb-pres:empty { display: none; }
+.pb-temps .pb-ti { display: inline-flex; margin-right: 8px; vertical-align: middle; }
+.pb-temps .pb-ti svg { width: 18px; height: 18px; }
+.pb-temps td { padding-top: 9px; padding-bottom: 9px; }
+.pb-tin { display: inline-flex; align-items: center; gap: 4px; padding-right: 8px; border: 1px solid var(--bd-line); border-radius: 4px; background: var(--bd-deep); }
+.pb-tin input { width: 52px; border: 0; background: transparent; text-align: right; }
+.pb-tin em { font-style: normal; color: var(--muted); font-size: 13px; }
+.pb-chart { position: relative; }
+.pb-cpause { position: absolute; top: 2px; right: 6px; z-index: 2; width: 28px; height: 28px; padding: 0; display: grid; place-items: center; border: 0; background: transparent; color: var(--muted); cursor: pointer; border-radius: 4px; }
+.pb-cpause:hover { background: var(--bd-hover); color: var(--text); }
+.pb-cpause[aria-pressed="true"] { color: var(--orange); }
+.pb-cpause svg { width: 18px; height: 18px; }

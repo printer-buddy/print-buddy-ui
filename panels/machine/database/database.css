@@ -1,0 +1,4 @@
+.pb-dbl { display: flex; flex-direction: column; }
+.pb-dbrow { display: flex; align-items: center; gap: 6px; padding: 4px 0; border-top: 1px solid var(--line); }
+.pb-dbrow:first-child { border-top: 0; }
+.pb-dbname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }

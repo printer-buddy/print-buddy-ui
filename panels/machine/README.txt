@@ -5,6 +5,7 @@ config/ - split config files
 updates/ - Klipper / Moonraker updates
 devices/ - serial / USB / CAN / camera IDs
 sensors/ - Moonraker sensors, Nevermore
+database/ - back up and restore Moonraker's database
 ksensors/ - Klipper sensors: live chart of any Klipper values (Cartographer temp, frequency …)
 explorer - Klipper state explorer
 console/ - split console

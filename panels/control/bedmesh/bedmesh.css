@@ -3,3 +3,11 @@
 .pb-meshopts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 4px; }
 :is(#page, #home).bd .pb-meshopts > button { height: 28px; padding: 0 10px; font-size: 12px; }
 :is(#page, #home).bd .pb-meshopts > button[aria-pressed="true"] { color: var(--orange); border-color: var(--orange); }
+.pb-mt { width: 100%; border-collapse: collapse; font-size: 14px; }
+.pb-mt th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); padding: 4px 8px; border-bottom: 1px solid var(--bd-line); }
+.pb-mt td { padding: 4px 8px; border-bottom: 1px solid var(--bd-line); height: 40px; }
+.pb-mt tr.on td:first-child { color: var(--orange); font-weight: 600; }
+.pb-mtb { text-align: right; white-space: nowrap; }
+:is(#page, #home).bd .pb-mtb button { width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; background: transparent; color: var(--muted); display: inline-grid; place-items: center; }
+:is(#page, #home).bd .pb-mtb button:hover:not(:disabled) { background: var(--bd-hover); color: var(--text); }
+.pb-mtb svg { width: 18px; height: 18px; }
