@@ -11,14 +11,16 @@ PB.panel("topcover", {
       const mats = p.materials, pur = p.purifier;
       if (!mats && !pur) { box.innerHTML = `<p class="pb-muted">No per-nozzle filament info or top cover on this printer.</p>`; return; }
       let html = "";
-      if (mats) html += `<div class="pb-tc-mats">${mats.map(m => `<div class="pb-tc-mat" title="${esc(m.vendor || "Empty")}">
+      if (mats) html += `<div class="pb-tc-mats">${mats.map(m => { const t = [m.vendor, m.type].filter(Boolean).join(" ") || "Empty";
+        return `<div class="pb-tc-mat" title="${esc(t)}">
           <span class="pb-tc-swatch" style="--c:${esc(m.color || "transparent")}"></span>
-          <span class="pb-tc-no">${m.index + 1}</span><span class="pb-tc-v">${esc(m.vendor || "Empty")}</span></div>`).join("")}</div>`;
+          <span class="pb-tc-no">${m.index + 1}</span><span class="pb-tc-v">${esc(t)}</span></div>`; }).join("")}</div>`;
       if (pur) {
         const fan = (id, label, v) => `<label class="pb-speed" data-fan="${id}"><span class="pb-lab">${label}</span>
             <input type="range" min="0" max="100" step="1" value="${Math.round((v || 0) * 100)}" ${pur.present ? "" : "disabled"}>
             <output>${Math.round((v || 0) * 100)}%</output></label>`;
-        html += `<div class="pb-tc-pur">${pur.present ? "" : `<p class="pb-muted">No top cover detected.</p>`}
+        const mode = ["Idle", "Cool chamber", "Preheat chamber", "Hot chamber"][pur.mode];
+        html += `<div class="pb-tc-pur">${pur.present ? (mode ? `<p class="pb-muted">Mode: ${mode}</p>` : "") : `<p class="pb-muted">No top cover detected.</p>`}
             ${fan("exhaust", "Exhaust fan", pur.exhaust)}${fan("inner", "Inner fan", pur.inner)}</div>`;
       }
       box.innerHTML = html;
