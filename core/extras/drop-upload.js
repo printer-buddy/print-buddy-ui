@@ -14,7 +14,7 @@
   addEventListener("drop", e => {
     if (!isFiles(e) || !onPage()) return;
     e.preventDefault(); dragN = 0; drop.hidden = true;
-    const all = [...e.dataTransfer.files], ok = all.filter(f => /\.(gcode|gco|g|bgcode|ufp)$/i.test(f.name));
+    const all = [...e.dataTransfer.files], ok = all.filter(f => /\.(gcode|g|gc|gco|ufp|nc|3mf)$/i.test(f.name));
     if (all.length > ok.length) toast(`Skipped ${all.length - ok.length} file(s) that aren't G-code`);
     if (!ok.length) return;
     if (PB.uploadFiles) return PB.uploadFiles(ok);

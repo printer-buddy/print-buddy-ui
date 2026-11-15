@@ -539,6 +539,7 @@
               <option value="">Save for AI…</option><option value="ok">as OK (no problem)</option><option value="spaghetti">as spaghetti</option>
               <option value="warping">as warping</option><option value="first_layer">as first layer</option><option value="failure">as other failure</option>
               <option value="stringing">as stringing</option><option value="blob">as blob</option><option value="crack">as crack</option>
+              <option value="plate">as empty bed (Plate check)</option>
             </select>
             <select id="pgAiMode" aria-label="AI mode for this printer">
               <option value="alert">Alert only</option><option value="pause">Alert + auto-pause</option><option value="off">Off</option>
@@ -1835,6 +1836,11 @@ $("#pgAiSave").onchange = async e => {
   const label = e.target.value, id = pageId;
   e.target.value = "";
   if (!label) return;
+  if (label === "plate") {
+    if (!confirm("Is the bed empty? This saves the camera picture as the empty bed for Plate check.")) return;
+    try { await api(`/api/printers/${id}/plate`, { method: "PUT" }); toast("Empty-bed picture saved for Plate check"); } catch (err) { toast(err.message); }
+    return;
+  }
   try {
     const r = await api(`/api/printers/${id}/ai/save`, { method: "POST", body: JSON.stringify({ label }) });
     confetti();
@@ -1948,7 +1954,7 @@ async function loadConfig() {
     document.body.classList.toggle("notify-basic", SETUP.notify !== "advanced");
     document.body.classList.toggle("no-timelapse", SETUP.video !== "timelapse");
     document.body.classList.toggle("no-remote", SETUP.remote !== "on");
-    const aiOn = SETUP.ai === "basic" || SETUP.ai === "heavy";
+    const aiOn = SETUP.ai === "lite" || SETUP.ai === "basic" || SETUP.ai === "heavy";
     document.body.classList.toggle("no-ai", !aiOn);
     if (aiOn) loadAI();
     if (isBasic()) {

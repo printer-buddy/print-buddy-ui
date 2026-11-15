@@ -9,7 +9,7 @@ PB.panel("files", {
   create(host, cfg) {
     host.innerHTML = `<div class="pb-tool">
         <select data-a="root" aria-label="Folder"${cfg.roots ? "" : " hidden"}><option value="gcodes">G-code</option><option value="config">Config</option><option value="logs">Logs</option></select>
-        <label class="pb-btn pb-pri" data-g>Upload<input type="file" accept=".gcode,.gco,.g" multiple hidden></label>
+        <label class="pb-btn pb-pri" data-g>Upload<input type="file" accept=".gcode,.g,.gc,.gco,.ufp,.nc,.3mf" multiple hidden></label>
         <label class="pb-chk" data-g><input type="checkbox"> Start after upload</label>
         <input type="search" placeholder="Search…" aria-label="Search files">
         <label class="pb-chk" title="Search every folder, not just this one"><input type="checkbox" data-a="everywhere"> All folders</label>
