@@ -37,7 +37,7 @@ PB.panel("jobs", {
           <button type="button" data-a="add" title="Add" aria-label="Add">${I.plus}</button>
           <button type="button" data-a="ref" title="Refresh" aria-label="Refresh">${PB.ic.refresh}</button>
           <span class="pb-jbsearch"><input type="text" spellcheck="false" aria-label="Search the files"><button type="button" data-a="sclear" aria-label="Clear the search" hidden>${I.x}</button><span class="pb-sicon">${I.find}</span></span>
-          <input type="file" accept=".gcode,.gco,.g,.gc,.ufp,.nc" multiple hidden></div>
+          <input type="file" accept=".gcode,.g,.gc,.gco,.ufp,.nc,.3mf" multiple hidden></div>
         <div class="pb-jbprog" hidden></div>
         <div class="pb-jbscroll"><table class="pb-jbt"><thead></thead><tbody></tbody></table><p class="pb-jbempty pb-muted" hidden></p></div></div>`;
     const q = s => host.querySelector(s), thead = q("thead"), tbody = q("tbody"), empty = q(".pb-jbempty"), crumb = q(".pb-jbcrumb"), search = q(".pb-jbsearch input"), prog = q(".pb-jbprog"), fileIn = q("input[type=file]");
@@ -51,6 +51,10 @@ PB.panel("jobs", {
     const railBtn = () => document.querySelector('#page .bd-rail button[title="Jobs"]');
     fs.onclick = () => railBtn()?.click();
 
+    let ed = null, ready = false, comps = [];
+    const PRINTABLE = /\.(gcode|g|gc|gco|ufp|nc)$/i, VIEWABLE = /\.(png|jpe?g|gif|webp|bmp|svg|md|mp4|webm|mov|mkv|avi)$/i;
+    const stamp = () => { const d = new Date(), z = n => String(n).padStart(2, "0"); return `${d.getFullYear()}${z(d.getMonth() + 1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`; };
+    const taken = n => files.some(f => f.filename === n) || dirs.some(d => d.dirname === n);
     let dir = "", dirs = [], files = [], loaded = false, busy = false, sort = { k: "modified", desc: true }, term = "", wasBusy = false, flash = null;
     const path = n => (dir ? dir + "/" : "") + n;
     async function load() {
@@ -99,8 +103,13 @@ PB.panel("jobs", {
     const shut = () => { mn.hidden = true; };
     function menu(e, it) {
       const p = path(it.name), file = !it.dir;
-      const rows = file ? [["Print", "print", busy], ["Add to Queue", "queue"], ...(PB.previewFile ? [["Preview G-code", "prev"]] : []), ["Download", "dl"], ["Rename", "ren"], ["Duplicate", "dup"], ["Remove", "del"]]
-                        : [["Rename", "ren"], ["Remove", "del"]];
+      const gc = PRINTABLE.test(it.name), heat = gc && it.first_layer_extr_temp && it.first_layer_bed_temp;
+      const rows = file ? [["Print", "print", busy], ["Add to Queue", "queue"], ...(heat ? [["Preheat", "heat", busy || !ready]] : []),
+                           ...(PB.parts?.cfgEditor && !VIEWABLE.test(it.name) && !/\.(3mf|zip|ufp)$/i.test(it.name) && (it.size || 0) <= 5000000 ? [["Edit", "edit"]] : []),
+                           ...(VIEWABLE.test(it.name) ? [["View", "view"]] : []), ...(PB.previewFile ? [["Preview G-code", "prev"]] : []),
+                           ["Download", "dl"], ["Rename", "ren"], ["Duplicate", "dup"], ...(/\.zip$/i.test(it.name) ? [] : [["Create zip", "zip"]]),
+                           ...(gc ? [["Refresh metadata", "meta"]] : []), ...(gc && comps.includes("analysis") ? [["Time analysis", "ana"]] : []), ["Remove", "del"]]
+                        : [["Rename", "ren"], ["Create zip", "zip"], ["Remove", "del"]];
       mn.innerHTML = rows.map(([l, a, off]) => `<button type="button" data-m="${a}"${off ? " disabled" : ""}>${l}</button>`).join("");
       mn.hidden = false;
       mn.style.left = `${Math.max(8, Math.min(e.clientX, innerWidth - mn.offsetWidth - 8))}px`;
@@ -113,14 +122,25 @@ PB.panel("jobs", {
           else if (a === "queue") {
             if (PB.queueAdd) PB.queueAdd(p);
             else { const r = await api(`/api/printers/${pageId}/queue`, { method: "POST", body: JSON.stringify({ action: "add", filenames: [p] }) }); toast(`Queued ${it.name} (${r.jobs.length} in the queue)`); }
-          } else if (a === "prev") PB.previewFile(p);
+          } else if (a === "heat") {
+            PB.gcode([`M104 S${it.first_layer_extr_temp}`, `M140 S${it.first_layer_bed_temp}`, ...(it.chamber_temp > 0 ? [`M141 S${it.chamber_temp}`] : [])].join("\n"));
+          } else if (a === "edit") { ed = ed || PB.parts.cfgEditor({}, () => load()); ed.open(p, "gcodes"); }
+          else if (a === "view") window.open(PB.fileUrl("gcodes", p), "_blank", "noopener");
+          else if (a === "zip") {
+            const dest = path(`${it.name}-${stamp()}.zip`);
+            await PB.rpc("server.files.zip", { dest: `gcodes/${dest}`, items: [`gcodes/${p}`] }); toast(`Zipped to ${dest.split("/").pop()}`); load();
+          } else if (a === "meta") { await PB.rpc("server.files.metascan", { filename: p }); toast(`Metadata refreshed for ${it.name}`); load(); }
+          else if (a === "ana") { toast(`Analysing ${it.name}…`); await PB.rpc("server.analysis.process", { filename: p, force: true }); toast(`Time analysis done for ${it.name}`); load(); }
+          else if (a === "prev") PB.previewFile(p);
           else if (a === "dl") { const l = PB.el("a"); l.href = PB.fileUrl("gcodes", p, true); l.download = it.name; document.body.append(l); l.click(); l.remove(); }
           else if (a === "ren") {
             const name = prompt("New name:", it.name); if (!name || name === it.name || name.includes("/")) return;
+            if (taken(name) && !confirm(`${name} already exists. Replace it?`)) return;
             await PB.rpc("server.files.move", { source: `gcodes/${p}`, dest: `gcodes/${path(name)}` }); load();
           } else if (a === "dup") {
             const dot = it.name.lastIndexOf("."), def = dot > 0 ? `${it.name.slice(0, dot)}_copy${it.name.slice(dot)}` : `${it.name}_copy`;
             const name = prompt("Name of the copy:", def); if (!name || name === it.name || name.includes("/")) return;
+            if (taken(name) && !confirm(`${name} already exists. Replace it?`)) return;
             await PB.rpc("server.files.copy", { source: `gcodes/${p}`, dest: `gcodes/${path(name)}` }); toast(`Copied to ${name}`); load();
           } else if (a === "del") {
             if (file) { if (!confirm(`Delete ${it.name}?`)) return; await PB.rpc("server.files.delete_file", { path: `gcodes/${p}` }); }
@@ -191,8 +211,10 @@ PB.panel("jobs", {
           prog.hidden = false;
           xhr.upload.onprogress = ev => { if (ev.lengthComputable) prog.textContent = `Uploading ${n + 1}/${list.length}: ${file.name}… ${Math.round(ev.loaded / ev.total * 100)}%`; };
           xhr.onload = () => {
-            let err = null; try { err = JSON.parse(xhr.responseText).error; } catch {}
-            if (xhr.status >= 200 && xhr.status < 300) toast(start ? `Uploaded and started ${file.name}` : `Uploaded ${file.name}`);
+            let res = {}; try { res = JSON.parse(xhr.responseText) || {}; } catch {}
+            const err = res.error;
+            if (xhr.status >= 200 && xhr.status < 300) toast(!start ? `Uploaded ${file.name}` : res.print_started ? `Uploaded and started ${file.name}`
+              : res.print_queued ? `Uploaded ${file.name}; it's queued to print` : res.print_started === false ? `Uploaded ${file.name}, but the print didn't start` : `Uploaded ${file.name}; print requested`);
             else toast(`${file.name}: upload failed: ${err || `HTTP ${xhr.status}`}`);
             done();
           };
@@ -214,6 +236,7 @@ PB.panel("jobs", {
       shown() { if (!loaded) load(); },
       update(p) {
         busy = p.state === "printing" || p.state === "paused";
+        ready = p.connection === "online" && p.klippy_state === "ready"; comps = p.components || [];
         if (!loaded && p.connection === "online") load();
         if (wasBusy && !busy) load();
         wasBusy = busy;
@@ -221,7 +244,7 @@ PB.panel("jobs", {
         for (const b of host.querySelectorAll(".pb-jbbar button")) if (!b.closest(".pb-jbcrumb")) b.disabled = !on;
         const rb = railBtn(); fs.hidden = !rb || rb.getAttribute("aria-current") === "true";
       },
-      destroy() { document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll, true); mn.remove(); pop.remove(); gd.remove(); },
+      destroy() { ed?.destroy(); document.removeEventListener("pointerdown", outside, true); document.removeEventListener("keydown", onKey); removeEventListener("scroll", onScroll, true); mn.remove(); pop.remove(); gd.remove(); },
     };
   },
 });

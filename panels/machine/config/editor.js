@@ -24,7 +24,7 @@ PB.parts.cfgEditor = (cfg, onClose) => {
     let showOutline = cfg.outline;
     const setOutline = () => { q(".pb-coutline").hidden = !showOutline; q("[data-a=outline]").setAttribute("aria-pressed", showOutline); };
     setOutline();
-    let path = "", saved = "", timer = null;
+    let path = "", root = "config", saved = "", timer = null;
     const dirty = () => path && ta.value !== saved;
     const mark = () => { state.textContent = !path ? "" : dirty() ? "● unsaved" : ""; };
 
@@ -68,19 +68,19 @@ PB.parts.cfgEditor = (cfg, onClose) => {
       if (e.key !== "Escape") return;
       if (!q(".pb-cfind").hidden) { q(".pb-cfind").hidden = true; ta.focus(); } else close();
     }
-    async function open(p) {
+    async function open(p, r) {
       if (!fx.hidden && dirty() && !confirm(`Throw away your changes to ${path}?`)) return;
-      path = p; ta.value = ""; saved = ""; q(".pb-cpath").textContent = p; q(".pb-cfind").hidden = true; show(true); paint(); mark();
+      path = p; root = r || "config"; q("[data-a=restart]").hidden = root !== "config"; ta.value = ""; saved = ""; q(".pb-cpath").textContent = p; q(".pb-cfind").hidden = true; show(true); paint(); mark();
       state.textContent = "Loading…";
       try {
-        const r = await fetch(PB.fileUrl("config", p)); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
+        const r = await fetch(PB.fileUrl(root, p)); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
         ta.value = saved = await r.text(); ta.scrollTop = 0; paint(); mark(); ta.setSelectionRange(0, 0);
       } catch (e) { state.textContent = e.message; }
     }
     async function save() {
       if (!path) return false;
       try {
-        const r = await fetch(PB.fileUrl("config", path), { method: "PUT", body: ta.value });
+        const r = await fetch(PB.fileUrl(root, path), { method: "PUT", body: ta.value });
         if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || `HTTP ${r.status}`);
         saved = ta.value; mark(); toast(`Saved ${path}`); return true;
       } catch (e) { toast(`Save failed: ${e.message}`); return false; }
