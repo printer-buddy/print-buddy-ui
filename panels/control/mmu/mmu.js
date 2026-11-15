@@ -30,7 +30,7 @@ PB.panel("mmu", {
         const i = +b.dataset.g, g = m.gates[i];
         if (m.gate === i || confirm(`Load slot ${g.label || i + 1} (${g.name || g.material})?`)) gcode(m.afc ? `CHANGE_TOOL LANE=${g.label}` : `MMU_CHANGE_TOOL GATE=${i}`);
       };
-      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode(m.afc ? `TOOL_UNLOAD LANE=${m.gates[m.gate]?.label}` : `MMU_EJECT GATE=${m.gate}`); });
+      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode(m.afc ? (m.gates[m.gate]?.label ? `TOOL_UNLOAD LANE=${m.gates[m.gate].label}` : "TOOL_UNLOAD") : `MMU_EJECT GATE=${m.gate}`); });
     }
     return {
       open() { key = ""; },
