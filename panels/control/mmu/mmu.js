@@ -28,9 +28,9 @@ PB.panel("mmu", {
           ${m.readonly ? "" : `<button type="button" data-unload ${m.loaded && !busy ? "" : "disabled"}>Unload</button>`}</div>`;
       for (const b of box.querySelectorAll("[data-g]")) b.onclick = () => {
         const i = +b.dataset.g, g = m.gates[i];
-        if (m.gate === i || confirm(`Load slot ${i + 1} (${g.name || g.material})?`)) gcode(`MMU_CHANGE_TOOL GATE=${i}`);
+        if (m.gate === i || confirm(`Load slot ${g.label || i + 1} (${g.name || g.material})?`)) gcode(m.afc ? `CHANGE_TOOL LANE=${g.label}` : `MMU_CHANGE_TOOL GATE=${i}`);
       };
-      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode(`MMU_EJECT GATE=${m.gate}`); });
+      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode(m.afc ? `TOOL_UNLOAD LANE=${m.gates[m.gate]?.label}` : `MMU_EJECT GATE=${m.gate}`); });
     }
     return {
       open() { key = ""; },
