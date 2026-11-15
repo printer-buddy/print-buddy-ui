@@ -13,6 +13,7 @@ PB.panel("tool", {
     { k: "invx", label: "Invert X buttons", type: "check", def: false },
     { k: "invy", label: "Invert Y buttons", type: "check", def: false },
     { k: "invz", label: "Invert Z buttons", type: "check", def: false },
+    { k: "fmwarn", label: "Warn before turning FORCE_MOVE on", type: "check", def: true },
   ],
   create(host, cfg) {
     const STEPS = String(cfg.steps || "0.1,1,10,25,50,100").split(",").map(Number), ZSTEPS = String(cfg.zsteps || "0.005,0.01,0.025,0.05").split(",").map(Number);
@@ -39,6 +40,7 @@ PB.panel("tool", {
             ${arrow("X-", I.left, "c1 r2")}${home("X Y", "Home X and Y", "c2 r2")}${arrow("X+", I.right, "c3 r2")}${home("Z", "Home Z", "c4 r2")}${home("X", "Home X", "c5 r2 w", "X")}
             ${arrow("Y-", I.down, "c2 r3")}${arrow("Z-", I.down, "c4 r3")}${home("Y", "Home Y", "c5 r3 w", "Y")}</div>
           <div class="pb-seg pb-tsteps">${STEPS.map(s => `<button type="button" data-step="${s}" aria-pressed="${s === 1}">${s}</button>`).join("")}</div>
+          <div class="pb-tfs" hidden></div>
         </div>
         <div class="pb-tr">
           <div class="pb-tpos">${["X", "Y", "Z"].map(a => `<label class="pb-pf"><span data-live="${a}">${a} [ -- ]</span><input type="number" step="any" data-ax="${a}" aria-label="${a} position, type a number and press Enter to move there"></label>`).join("")}
@@ -70,20 +72,27 @@ PB.panel("tool", {
       if (force) return forceMove(axis, dir * step);
       gcode(`G91\nG1 ${axis}${dir * step} F${feed(axis)}\nG90`);
     };
-    const forceMove = (axis, dist) => gcode(`FORCE_MOVE STEPPER=stepper_${axis.toLowerCase()} DISTANCE=${+dist.toFixed(4)} VELOCITY=${axis === "Z" ? cfg.fz : cfg.fxy} ACCEL=${axis === "Z" ? (lastExt?.max_z_accel || 100) : (lastExt?.max_accel || 3000)}`);
+    const forceStepper = (key, dist) => {
+      const z = key.startsWith("stepper_z"), acc = z ? lastExt?.max_z_accel : lastExt?.max_accel;
+      gcode(`FORCE_MOVE STEPPER=${key} DISTANCE=${+dist.toFixed(4)} VELOCITY=${z ? cfg.fz : cfg.fxy}${acc ? ` ACCEL=${acc}` : ""}`);
+    };
+    const forceMove = (axis, dist) => forceStepper(`stepper_${axis.toLowerCase()}`, dist);
     const boxes = all("[data-ax]");
     for (const x of boxes) x.onkeydown = e => {
       if (e.key === "Escape") x.blur();
       if (e.key !== "Enter" || x.value === "") return;
       const a = x.dataset.ax;
-      if (force) { forceMove(a, rel ? +x.value : +x.value - +((lastExt?.position || [])["XYZ".indexOf(a)] || 0)); x.blur(); return; }
+      if (force) { forceMove(a, +x.value); x.blur(); return; }
       gcode(rel ? `G91\nG1 ${a}${+x.value} F${feed(a)}\nG90` : `G90\nG1 ${a}${+x.value} F${feed(a)}`); x.blur();
     };
     for (const b of all("[data-pos]")) b.onclick = () => { rel = b.dataset.pos === "rel"; all("[data-pos]").forEach(o => o.setAttribute("aria-pressed", String(o === b))); };
     q("[data-a=force]").onclick = () => {
-      if (!force && !confirm("Are you sure? This can damage the printer.")) return;
+      if (!force && cfg.fmwarn !== false && !confirm("Are you sure? This can damage the printer.")) return;
       force = !force; if (inst && lastExt) inst.update(lastExt);
     };
+    const fsBox = q(".pb-tfs");
+    let fsKey = "";
+    fsBox.onclick = e => { const b = e.target.closest("[data-fs]"); if (b && ok && force) forceStepper(b.dataset.fs, +b.dataset.d); };
     q("[data-a=off]").onclick = () => PB.confirmGcode("Turn the motors off? Axes will need homing again.", "M84", "Motors off");
     // extruder
     const num = (n, lo, hi, d) => Math.min(hi, Math.max(lo, +k(n).value || d));
@@ -167,6 +176,13 @@ PB.panel("tool", {
         if (printing || !p.force_move) force = false;
         const canMove = a => homed.includes(a) || (force && !(p.multi_steppers || []).includes(a.toLowerCase()));
         const fb = q("[data-a=force]"); fb.hidden = !p.force_move; fb.disabled = !ok; fb.setAttribute("aria-pressed", String(force)); cross.classList.toggle("pb-force", force);
+        const fsList = force ? (p.steppers || []) : [], fk = fsList.join(",");
+        if (fk !== fsKey) {
+          fsKey = fk;
+          fsBox.innerHTML = fsList.map(s => `<div class="pb-tfr"><span>${esc(s.slice(8).toUpperCase())}</span><div class="pb-seg">${[-50, -10, -1, 1, 10, 50]
+            .map(d => `<button type="button" data-fs="${esc(s)}" data-d="${d}">${d > 0 ? "+" : ""}${d}</button>`).join("")}</div></div>`).join("");
+        }
+        fsBox.hidden = !fsList.length;
         if (p.pa_config) { rv.pa = p.pa_config.pressure_advance; rv.st = p.pa_config.smooth_time; }
         // while a print runs, Fluidd swaps the move cross for the Z offset buttons
         cross.hidden = stepsEl.hidden = exBlock.hidden = printing;

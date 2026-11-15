@@ -129,6 +129,12 @@ html[data-theme="light"] :is(#page, #home).bd .pb-tx button, html[data-theme="li
 
 /* FORCE_MOVE, like Fluidd: the arrows turn red while it is on */
 :is(#page, #home).bd .pb-tx.pb-force button:not(.pb-h) { background: rgba(201, 55, 44, .45); color: #fff; }
+.pb-tfs { display: grid; gap: 6px; margin-top: 10px; }
+.pb-tfs[hidden] { display: none; }
+.pb-tfr { display: flex; align-items: center; gap: 8px; }
+.pb-tfr > span { min-width: 34px; font-weight: 700; font-size: 12px; }
+.pb-tfr .pb-seg { flex: 1; }
+:is(#page, #home).bd .pb-tfr .pb-seg button { background: rgba(201, 55, 44, .45); color: #fff; }
 :is(#page, #home).bd .pb-card > header .pb-hbtn[data-a="force"] { height: 30px; padding: 0 12px; border: 0; border-radius: 4px; background: rgba(255, 255, 255, .1); color: var(--text); font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-right: 6px; }
 :is(#page, #home).bd .pb-card > header .pb-hbtn[data-a="force"][aria-pressed="true"] { background: var(--red); color: #fff; border: 0; }
 :is(#page, #home).bd .pb-card > header .pb-hbtn[data-a="force"][hidden] { display: none; }
