@@ -47,6 +47,12 @@ PB.components = (() => {
       ${row("AI model", c.ai.installed || (c.ai.kind === "off" ? "off" : ""), c.ai.latest, c.ai.update,
           select("data-ai", c.ai.kind, c.ai.kinds), `<button type="button" data-up="ai">Update</button>`, c.ai.needs)}
       <div class="pb-sub-h">Printers</div><div class="pb-compprinters"><p class="pb-muted">Checking printers…</p></div>`;
+    // like Fluidd: no updates or changes while printing (they restart Printer Buddy, which would lose a timelapse being recorded)
+    const busy = [...printers.values()].filter(p => p.state === "printing" || p.state === "paused").map(p => p.name);
+    if (busy.length) {
+      box.querySelector(".pb-compmsg").textContent = `${busy.join(", ")} ${busy.length > 1 ? "are" : "is"} printing. Updates and changes here are off until the print ends.`;
+      for (const el of box.querySelectorAll("[data-a=all], [data-up], [data-tier], [data-ai], [data-devpart]")) el.disabled = true;
+    }
     box.querySelector("[data-a=check]").onclick = () => load(box, true);
     box.querySelector("[data-a=all]")?.addEventListener("click", () => act(box, { update: c.core.update ? "core" : c.parts.some(p => p.update) ? "parts" : "ai" }, "Update Printer Buddy now? It restarts when done."));
     for (const b of box.querySelectorAll("[data-up]")) b.onclick = () => act(box, { update: b.dataset.up }, "Update now? Printer Buddy restarts when done.");
