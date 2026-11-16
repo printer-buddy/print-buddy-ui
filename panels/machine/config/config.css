@@ -44,8 +44,10 @@ html.pb-noscroll, html.pb-noscroll body { overflow: hidden; }
 #page.bd .pb-coutline button { display: block; width: 100%; height: 24px; padding: 0 10px; text-align: left; border: 0; border-radius: 0; background: none;
                                color: var(--muted); font-family: var(--bd-mono); font-size: 12px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 #page.bd .pb-coutline button:hover { background: var(--bd-hover); color: var(--text); }
+.pb-cfx .pb-cmini { position: relative; flex: 0 0 120px; border-left: 1px solid var(--bd-line); background: var(--bd-panel); touch-action: none; }
+.pb-cfx .pb-cmini canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .pb-cfx .pb-cfoot { flex: none; padding: 3px 10px; background: var(--bd-panel); border-top: 1px solid var(--bd-line); }
-@media (max-width: 760px) { .pb-cfx-bar button span { display: none; } .pb-cfx .pb-coutline { display: none; }
+@media (max-width: 760px) { .pb-cfx-bar button span { display: none; } .pb-cfx .pb-coutline, .pb-cfx .pb-cmini { display: none; }
                             .pb-crow small:first-of-type, :is(#page, #home).bd .pb-chead [data-s=modified] { display: none; }
                             .pb-chead, .pb-crow { grid-template-columns: 18px 1fr 64px; } }
 .pb-cdoc { font-size: 12.5px; color: var(--orange); text-decoration: none; }
