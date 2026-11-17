@@ -1,3 +1,5 @@
+<p align="center"><img src="https://raw.githubusercontent.com/printer-buddy/printer-buddy/nightly/assets/logo.png" alt="Printer Buddy" width="160"></p>
+
 # Print Buddy UI
 
 The web interface for [Printer Buddy](https://github.com/printer-buddy/printer-buddy): the dashboard, printer pages
@@ -18,6 +20,10 @@ vendor/         echarts, echarts-gl, three.js
 Each folder has a README.txt saying what's in it.
 
 ## Licenses
+
+Copyright (C) 2026 sterling motuz. Licensed under the GNU Affero General Public License v3.0 only (AGPL-3.0-only), with extra terms: keep the licence header in each file, and include a CHANGELOG of any changes. See [LICENSE](LICENSE) and [NOTICE](NOTICE). The Printer Buddy name and logo are not covered by the licence.
+
+Bundled libraries (`vendor/`):
 
 - [Apache ECharts](https://echarts.apache.org) - Apache-2.0, © The Apache Software Foundation
 - [ECharts GL](https://github.com/ecomfe/echarts-gl) - BSD-3-Clause, © 2017 Baidu Inc.
