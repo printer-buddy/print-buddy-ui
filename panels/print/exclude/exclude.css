@@ -1,3 +1,16 @@
+/*
+LICENSE
+
+Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+
+for https://github.com/printer-buddy/printer-buddy
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+
+Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
+*/
 .pb-objmap svg { width: 100%; max-height: 260px; display: block; margin-bottom: 8px; }
 .pb-objmap .bed { fill: var(--bd-deep); stroke: var(--bd-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .pb-objmap .obj > * { fill: rgba(143, 139, 153, .35); stroke: #8f8b99; stroke-width: 1.5; vector-effect: non-scaling-stroke; cursor: pointer; }

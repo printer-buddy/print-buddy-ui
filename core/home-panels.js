@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.homePanel("printers", {
   title: "Printers", desc: "Your printers as cards or a list (sort, search, groups)", single: true, flush: true,
   icon: PB.icon('<rect x="4" y="3" width="16" height="13" rx="2"/><path d="M4 12h16M8 20h8M12 16v4"/>'),

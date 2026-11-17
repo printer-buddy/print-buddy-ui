@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.panel("database", {
   title: "Moonraker Database", desc: "Back up and restore Moonraker's database (history, spools, settings)", cls: "adv", single: true,
   icon: PB.icon('<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>'),

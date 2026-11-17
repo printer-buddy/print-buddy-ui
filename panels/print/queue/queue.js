@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.panel("queue", {
   title: "Queue", desc: "Line up prints to run one after another", cls: "adv",
   icon: PB.icon('<path d="M4 6h16M4 12h16M4 18h10"/><path d="M18 16l3 2-3 2z"/>'),

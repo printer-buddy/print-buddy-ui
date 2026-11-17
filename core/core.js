@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 // Loaded after the main page script; builds on its globals (printers, pageId, renderPage, route, conAdd, gcode...).
 // A panel file calls  PB.panel("name", { title, icon, cls, single, settings, gear, create(host, cfg) -> { open, update, shown, log, destroy } })
 //   gear: true    its ⚙ settings button shows all the time, not only in Edit layout (for options people change often)

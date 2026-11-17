@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.panel("gcodeview", {
   title: "G-code preview", desc: "2D layer view or 3D view of a print file; follows the print", cls: "adv",
   icon: PB.icon('<path d="M4 7l8-4 8 4-8 4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/>'),

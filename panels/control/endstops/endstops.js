@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.panel("endstops", {
   title: "End Stops", desc: "Live endstop / probe state (open or triggered)", cls: "adv", gear: true,
   icon: PB.icon('<path d="M4 20h16M8 20V9l4-5 4 5v11"/><circle cx="12" cy="13" r="2"/>'),

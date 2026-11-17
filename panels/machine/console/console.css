@@ -1,3 +1,16 @@
+/*
+LICENSE
+
+Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+
+for https://github.com/printer-buddy/printer-buddy
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+
+Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
+*/
 .pb-log { font-family: var(--bd-mono); font-size: 16px; line-height: 24px; background: var(--bd-deep); height: 300px; overflow: auto; padding: 8px 10px; color: #c9c6d1; }
 .pb-log .pb-cl { display: flex; gap: 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .pb-log .pb-lt { flex: none; color: var(--muted); white-space: nowrap; }

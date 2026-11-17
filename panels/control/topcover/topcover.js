@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 // Per-nozzle filament info and a Top Cover / purifier accessory, seen on the Snapmaker U1. Unverified on real
 // hardware - the data shapes come from reading Snapmaker's open-sourced Klipper fork, not from a live printer.
 PB.panel("topcover", {
