@@ -65,7 +65,7 @@ PB.components = (() => {
       for (const el of box.querySelectorAll("[data-a=all], [data-up], [data-tier], [data-ai], [data-devpart]")) el.disabled = true;
     }
     box.querySelector("[data-a=check]").onclick = () => load(box, true);
-    box.querySelector("[data-a=all]")?.addEventListener("click", () => act(box, { update: c.core.update ? "core" : c.parts.some(p => p.update) ? "parts" : "ai" }, "Update Printer Buddy now? It restarts when done."));
+    box.querySelector("[data-a=all]")?.addEventListener("click", () => act(box, { update: "core" }, "Update Printer Buddy now? It restarts when done."));   // "core" is the full update: core, every part, AI, streamer and packages
     for (const b of box.querySelectorAll("[data-up]")) b.onclick = () => act(box, { update: b.dataset.up }, "Update now? Printer Buddy restarts when done.");
     for (const s of box.querySelectorAll("[data-tier]")) s.onchange = () => act(box, { part: s.dataset.tier, tier: s.value },
       s.dataset.tier === "streamer" ? `Set the camera streamer to ${s.value}?` : `Switch ${LABEL[s.dataset.tier]} to ${s.value}? Printer Buddy restarts.`);
