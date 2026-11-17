@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 (() => {
   const { el, icon } = PB;
   const SPLITS = { "1": [1], "1-1": [1, 1], "1-2": [1, 2], "2-1": [2, 1], "1-1-1": [1, 1, 1], "1-1-1-1": [1, 1, 1, 1] };
@@ -60,7 +71,8 @@
   dark.addEventListener("change", PB.applyTheme);
   PB.applyTheme();
   actions.append(themeBtn, editBtn, el("span", "bd-divider"), $("#pgStop"));
-  top.append(head.querySelector(".pg-back"), $("#pgName"), $("#pgTag"), el("span", "bd-sp"), actions);
+  const logo = el("img", "bd-logo"); logo.src = "/static/assets/logo-mascot.png"; logo.alt = ""; logo.width = 38; logo.height = 28;
+  top.append(logo, head.querySelector(".pg-back"), $("#pgName"), $("#pgTag"), el("span", "bd-sp"), actions);
   head.replaceWith(top);
   page.querySelector(".pg-tabs").hidden = true;
   for (const id of ["pgStatus", "pgControl", "pgConsole"]) $("#" + id).hidden = true;

@@ -1,11 +1,24 @@
 <!doctype html>
+<!--
+LICENSE
+
+Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+
+for https://github.com/printer-buddy/printer-buddy
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+
+Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Printer Buddy</title>
 <link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0B0B0D">
-<link rel="icon" href="/static/assets/icon-192.png"><link rel="apple-touch-icon" href="/static/assets/icon-192.png">
+<link rel="icon" href="/static/assets/favicon.png"><link rel="apple-touch-icon" href="/static/assets/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -22,6 +35,8 @@
   h1 { margin: 0; font-size: 24px; font-weight: 900; }
   h1 span { color: var(--orange); }
   .brand-sub { color: var(--muted); font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-logo { display: block; width: 60px; height: 44px; flex: none; }
   button { font: inherit; font-weight: 700; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 0;
            background: var(--card2); color: var(--text); cursor: pointer; }
   button.primary { background: var(--purple); color: #fff; font-weight: 900; }
@@ -366,7 +381,8 @@
 <body>
 <main>
   <div class="top">
-    <div class="brand"><h1>Printer <span>Buddy</span></h1><div class="brand-sub">Printer Selection</div></div>
+    <div class="brand"><img class="brand-logo" src="/static/assets/logo-mascot.png" alt="" width="60" height="44">
+      <div><h1>Printer <span>Buddy</span></h1><div class="brand-sub">Printer Selection</div></div></div>
     <div class="row">
       <div class="viewbar">
         <div class="seg adv" role="group" aria-label="View">
