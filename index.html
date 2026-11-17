@@ -494,7 +494,8 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
       <button class="primary">Add</button>
       <label style="flex:1 1 100%;display:flex;align-items:center;gap:8px;font-size:14px">Printer type
         <select name="kind" style="width:auto;flex:0 1 auto"><option value="klipper">Klipper (Moonraker)</option><option value="bambu">Bambu Lab (needs LAN mode)</option><option value="cc1">Elegoo Centauri Carbon</option><option value="cc2">Elegoo Centauri Carbon 2</option></select></label>
-      <p class="muted" id="kindHint" style="flex:1 1 100%;margin:0;font-size:13px" hidden></p>
+      <label class="bd-check" id="ocFw" style="flex:1 1 100%;font-size:14px" hidden><input type="checkbox" name="extra_commands"> OpenCentauri patched firmware (lets Printer Buddy change temperatures, fans, light and speed)</label>
+<p class="muted" id="kindHint" style="flex:1 1 100%;margin:0;font-size:13px" hidden></p>
     </form>
   </section>
 
@@ -1182,7 +1183,7 @@ $("#manualBtn").onclick = () => $("#manual").hidden = !$("#manual").hidden;
 const KINDS = {
   klipper: { show: ["port", "api_key"], host: "192.168.1.50", hint: "" },
   bambu: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The access code is on its screen." },
-  cc1: { show: ["name"], host: "Printer IP address", hint: "Only the IP is needed. Printer Buddy finds the rest. Pause, resume, stop and start work; temperatures and fans can't be changed from here." },
+  cc1: { show: ["name"], host: "Printer IP address", hint: "Only the IP is needed. Printer Buddy finds the rest. Pause, resume, stop and start work; temperatures, fans, light and speed only with OpenCentauri patched firmware (tick below). Running OpenCentauri COSMOS? Add it as Klipper instead." },
   cc2: { show: ["name", "serial", "access_code"], host: "Printer IP address", hint: "Turn on LAN mode on the printer. The serial number and access code are on its screen." },
 };
 $("#manualForm").elements.kind.onchange = e => {
@@ -1190,13 +1191,14 @@ $("#manualForm").elements.kind.onchange = e => {
   for (const n of ["port", "api_key", "name", "serial", "access_code"]) el[n].hidden = !k.show.includes(n);
   el.host.placeholder = k.host;
   $("#kindHint").textContent = k.hint; $("#kindHint").hidden = !k.hint;
+  $("#ocFw").hidden = e.target.value !== "cc1";
 };
 $("#manualForm").onsubmit = async e => {
   e.preventDefault();
   const f = Object.fromEntries(new FormData(e.target)), host = f.host.trim(), name = (f.name || "").trim();
   const extra = { serial: (f.serial || "").trim(), access_code: (f.access_code || "").trim() };
   const body = f.kind === "bambu" ? { host, name, bambu: extra }
-    : f.kind === "cc1" ? { host, name, elegoo: { model: "cc1" } }
+    : f.kind === "cc1" ? { host, name, elegoo: { model: "cc1", ...(f.extra_commands ? { extra_commands: true } : {}) } }
     : f.kind === "cc2" ? { host, name, elegoo: { model: "cc2", ...extra } }
     : { host, port: f.port || 7125, api_key: f.api_key };
   try {
