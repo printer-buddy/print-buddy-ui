@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 // The Jobs card, laid out like Fluidd's: a toolbar (folder path, icons, search) over a sortable table of G-code files and folders.
 // Click a file for its menu (print, queue, preview, download, rename, duplicate, remove); click a folder to open it.
 PB.panel("jobs", {
@@ -41,10 +52,10 @@ PB.panel("jobs", {
         <div class="pb-jbprog" hidden></div>
         <div class="pb-jbscroll"><table class="pb-jbt"><thead></thead><tbody></tbody></table><p class="pb-jbempty pb-muted" hidden></p></div></div>`;
     const q = s => host.querySelector(s), thead = q("thead"), tbody = q("tbody"), empty = q(".pb-jbempty"), crumb = q(".pb-jbcrumb"), search = q(".pb-jbsearch input"), prog = q(".pb-jbprog"), fileIn = q("input[type=file]");
-    // header: a ? with Fluidd's hint, and a button that opens the Jobs tab
+    // header: a ? with an upload hint, and a button that opens the Jobs tab
     const card = host.closest(".pb-card"), ttl = card?.querySelector(".pb-title");
     if (ttl && !ttl.querySelector(".pb-qhelp")) {
-      const qh = PB.el("span", "pb-qhelp"); qh.textContent = "?"; qh.title = "Drag and drop files or folders from outside the browser to upload them here"; qh.onclick = e => e.stopPropagation(); ttl.append(qh);
+      const qh = PB.el("span", "pb-qhelp"); qh.textContent = "?"; qh.title = "Drop files or folders here to upload them"; qh.onclick = e => e.stopPropagation(); ttl.append(qh);
     }
     const fs = PB.el("button", "", I.full); fs.type = "button"; fs.dataset.a = "full"; fs.dataset.head = ""; fs.title = "Open the full Jobs page"; fs.setAttribute("aria-label", "Open the full Jobs page");
     host.append(fs);

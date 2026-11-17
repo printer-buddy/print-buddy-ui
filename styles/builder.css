@@ -1,3 +1,16 @@
+/*
+LICENSE
+
+Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+
+for https://github.com/printer-buddy/printer-buddy
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+
+Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
+*/
 :is(#page, #home).bd { --bd-panel: #1d1d21; --bd-head: #232328; --bd-line: rgba(255, 255, 255, .07); --bd-hover: rgba(255, 255, 255, .06); --bd-deep: #16161a;
            --bd-mono: "Roboto Mono", ui-monospace, "SF Mono", Consolas, monospace; max-width: none; padding: 0; gap: 0; font-size: 14px;
            font-family: Roboto, system-ui, -apple-system, "Segoe UI", sans-serif; }
@@ -11,6 +24,8 @@ html:not([data-theme="light"]) body { background: #121214; }
 :is(#page, #home).bd .pb-ic { width: 16px; height: 16px; flex: none; }
 .bd-top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px 12px 4px 16px;
           background: var(--bd-panel); border-bottom: 1px solid var(--bd-line); flex-wrap: wrap; }
+.bd-top .bd-logo { display: block; width: 38px; height: 28px; flex: none; }
+@media (max-width: 480px) { .bd-top .bd-logo { display: none; } }
 .bd-top .pg-back { min-height: 0; font-size: 13px; padding: 0; }
 .bd-top h1 { font-size: 16px; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .bd-top .tag { position: static; font-size: 11px; padding: 2px 8px; border-radius: 10px; }

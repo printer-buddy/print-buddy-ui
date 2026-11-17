@@ -1,3 +1,14 @@
+//LICENSE
+//
+//Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+//
+//for https://github.com/printer-buddy/printer-buddy
+//
+//SPDX-License-Identifier: AGPL-3.0-only
+//
+//Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+//
+//Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.parts = PB.parts || {};
 PB.parts.cfgEditor = (cfg, onClose) => {
     const fx = PB.el("div", "pb-cfx"); fx.hidden = true;
@@ -17,7 +28,8 @@ PB.parts.cfgEditor = (cfg, onClose) => {
           <div class="pb-ed"><div class="pb-gutter" aria-hidden="true"></div>
             <div class="pb-edarea"><pre class="pb-hl" aria-hidden="true"></pre>
               <textarea spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off" aria-label="Config file contents"></textarea></div></div>
-          <aside class="pb-coutline"></aside></div>
+          <aside class="pb-coutline"></aside>
+          <div class="pb-cmini" aria-hidden="true"><canvas></canvas></div></div>
         <div class="pb-cfoot pb-muted"><span class="pb-cpos"></span></div>`;
     ($("#page") || document.body).appendChild(fx);
     const q = s => fx.querySelector(s), ta = q("textarea"), hl = q(".pb-hl"), gut = q(".pb-gutter"), state = q(".pb-cstate");
@@ -30,14 +42,80 @@ PB.parts.cfgEditor = (cfg, onClose) => {
 
     const { line } = PB.parts.cfgHighlight;
     function paint() {
-      const lines = ta.value.split("\n");
-      hl.innerHTML = lines.map(line).join("\n") + "\n";
+      const lines = ta.value.split("\n"), html = lines.map(line);
+      hl.innerHTML = html.join("\n") + "\n";
       gut.innerHTML = lines.map((_, i) => `<div>${i + 1}</div>`).join("");
-      outline(lines); sync(); where();
+      outline(lines); miniBuild(html); sync(); where();
     }
     const repaint = () => { clearTimeout(timer); timer = setTimeout(paint, ta.value.length > 60000 ? 250 : 30); };
-    function sync() { hl.scrollTop = ta.scrollTop; hl.scrollLeft = ta.scrollLeft; gut.scrollTop = ta.scrollTop; }
+    function sync() { hl.scrollTop = ta.scrollTop; hl.scrollLeft = ta.scrollLeft; gut.scrollTop = ta.scrollTop; miniSoon(); }
     const lineH = () => parseFloat(getComputedStyle(ta).lineHeight) || 19;
+
+    // Minimap, like Fluidd's: the whole file shrunk to 1px per character and 2px per line, in the same colours.
+    // The grey band is the part on screen; it shows when the mouse is over the minimap. Click to jump, drag or wheel to scroll.
+    const mini = q(".pb-cmini"), cv = mini.querySelector("canvas"), MLH = 2;
+    let runs = [], miniTop = 0, mouseY = -1, drag = null, raf = 0;
+    function miniBuild(html) {
+      const probe = document.createElement("span"), ink = {}, base = getComputedStyle(hl).color;
+      hl.appendChild(probe);
+      const colour = c => ink[c] ??= (probe.className = c, getComputedStyle(probe).color);
+      runs = html.map(h => {
+        const out = [], stack = []; let x = 0;
+        for (const p of h.split(/(<span class="[^"]*">|<\/span>)/)) {
+          if (!p) continue;
+          if (p.startsWith("<span")) { stack.push(p.slice(13, -2)); continue; }
+          if (p === "</span>") { stack.pop(); continue; }
+          const s = p.replace(/&(?:amp|lt|gt|quot|#39);/g, "_").replace(/\t/g, "  "), c = stack.length ? colour(stack.at(-1)) : base;
+          for (const m of s.matchAll(/\S+/g)) out.push([x + m.index, m[0].length, c]);
+          x += s.length;
+        }
+        return out;
+      });
+      probe.remove();
+      miniSoon();
+    }
+    const miniSoon = () => { if (!raf) raf = requestAnimationFrame(miniDraw); };
+    function slider() {
+      const k = MLH / lineH(), H = mini.clientHeight, total = runs.length * MLH, max = Math.max(1, ta.scrollHeight - ta.clientHeight);
+      miniTop = total > H ? Math.min(1, ta.scrollTop / max) * (total - H) : 0;
+      return { top: ta.scrollTop * k - miniTop, h: ta.clientHeight * k, rate: Math.max(.01, total > H ? k - (total - H) / max : k) };
+    }
+    function miniDraw() {
+      raf = 0;
+      const W = mini.clientWidth, H = mini.clientHeight, dpr = devicePixelRatio || 1;
+      if (!W || !H) return;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      const g = cv.getContext("2d"), s = slider();
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+      g.globalAlpha = .75;
+      const last = Math.min(runs.length, Math.ceil((miniTop + H) / MLH));
+      for (let i = Math.max(0, Math.floor(miniTop / MLH)); i < last; i++) {
+        const y = i * MLH - miniTop;
+        for (const [x, n, c] of runs[i]) { if (x + 4 > W) break; g.fillStyle = c; g.fillRect(x + 4, y, n, MLH); }
+      }
+      g.globalAlpha = 1;
+      if (drag || mouseY >= 0) {
+        const onIt = mouseY >= s.top && mouseY <= s.top + s.h;
+        g.fillStyle = `rgba(121, 121, 121, ${drag ? .5 : onIt ? .35 : .2})`; g.fillRect(0, s.top, W, s.h);
+      }
+    }
+    mini.onpointerenter = mini.onpointermove = e => {
+      mouseY = e.offsetY;
+      if (drag) ta.scrollTop = drag.top + (e.clientY - drag.y) / drag.rate;
+      miniSoon();
+    };
+    mini.onpointerleave = () => { mouseY = -1; miniSoon(); };
+    mini.onpointerdown = e => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      const s = slider();
+      if (e.offsetY < s.top || e.offsetY > s.top + s.h) ta.scrollTop = ((e.offsetY + miniTop) / MLH) * lineH() - ta.clientHeight / 2;
+      drag = { y: e.clientY, top: ta.scrollTop, rate: slider().rate };
+      mini.setPointerCapture(e.pointerId); miniSoon();
+    };
+    mini.onpointerup = mini.onpointercancel = () => { drag = null; miniSoon(); };
+    mini.addEventListener("wheel", e => { e.preventDefault(); ta.scrollTop += e.deltaY * (e.deltaMode === 1 ? lineH() : 1); ta.scrollLeft += e.deltaX; }, { passive: false });
+    const miniSize = new ResizeObserver(miniSoon); miniSize.observe(mini);
     function goLine(n) {   // 0-based
       const lines = ta.value.split("\n"); let pos = 0; for (let i = 0; i < n; i++) pos += lines[i].length + 1;
       ta.focus(); ta.setSelectionRange(pos, pos); ta.scrollTop = Math.max(0, n * lineH() - ta.clientHeight / 3); sync(); where();
@@ -139,6 +217,6 @@ PB.parts.cfgEditor = (cfg, onClose) => {
     open,
     reset() { if (!fx.hidden) { saved = ta.value; show(false); } path = ""; },
     setBusy(b) { q("[data-a=restart]").disabled = b; },
-    destroy() { show(false); fx.remove(); },
+    destroy() { show(false); miniSize.disconnect(); fx.remove(); },
   };
 };

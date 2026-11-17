@@ -1,3 +1,16 @@
+/*
+LICENSE
+
+Copyright (C) 2026  sterling motuz <Sterling@dexabyte.ca>
+
+for https://github.com/printer-buddy/printer-buddy
+
+SPDX-License-Identifier: AGPL-3.0-only
+
+Additional term (AGPL-3.0 section 7b, keep author credit): keep this header
+
+Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
+*/
 .pb-mmu-unit { margin-bottom: 10px; }
 .pb-mmu-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text); margin-bottom: 6px; }
 .pb-mmu-gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
