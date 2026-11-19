@@ -638,7 +638,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
         <label>Video speed <select name="tl_fps"><option value="15">15 fps</option><option value="25">25 fps</option><option value="30">30 fps</option></select></label>
         <label>Keep the last <select name="tl_keep"><option>5</option><option>10</option><option>20</option><option>50</option><option>100</option></select></label>
       </form>
-      <div class="files-msg">Settings apply to all printers and take effect on the next print. "Every layer" needs a slicer that reports layers; otherwise use "every few seconds".</div>
+      <div class="files-msg">Settings apply to all printers and take effect on the next print.</div>
     </div>
     <div class="hist-box" id="tlStatusBox"><div id="tlStatus" class="files-msg" aria-live="polite"></div></div>
     <div class="hist-box" id="tlListBox">
@@ -1653,13 +1653,15 @@ function aiBadge(el, p) {
 // Red box on the printer page's camera where the AI thinks the problem is (main camera only:
 // that's the one it watches). The box comes in the camera's own picture; a hidden copy of the
 // picture's flip/turn finds where that lands on screen.
+let aiDrawing = null;   // id of the printer whose detection area is being drawn
 function drawAIBox(p) {
   const cam = $("#pgCam"), img = $("#pgImg"), a = p?.ai;
   const test = p && aiTest.get(p.id), fresh = !!test && Date.now() / 1000 - test.at < 120;
   const src = a?.watching ? a : fresh ? test : null;
   const shown = !img.hidden && +img.dataset.camIdx === mainCam(p) && img.naturalWidth;
   let mark = cam.querySelector(".ai-box"), area = cam.querySelector(".ai-area");
-  const showBox = !!src?.box && shown && a?.mode !== "off", showArea = !!a?.area && shown;
+  // the detection area's white box only while it's being edited (Detection area button on)
+  const showBox = !!src?.box && shown && a?.mode !== "off", showArea = !!a?.area && shown && aiDrawing === p.id;
   if (!showBox) mark?.remove();
   if (!showArea) area?.remove();
   if (!showBox && !showArea) { cam.querySelector(".ai-probe")?.remove(); return; }
@@ -1698,7 +1700,6 @@ function camPoint(x, y) {
   const q = m.inverse().transformPoint(new DOMPoint(x - c.left - probe.offsetLeft - hw, y - c.top - probe.offsetTop - hh));
   return [Math.min(1, Math.max(0, (q.x + hw - ox) / cw)), Math.min(1, Math.max(0, (q.y + hh - oy) / ch))];
 }
-let aiDrawing = null;   // id of the printer whose detection area is being drawn
 $("#pgCam").addEventListener("pointerdown", e => {
   const cam = $("#pgCam"), img = $("#pgImg"), p = printers.get(pageId);
   if (aiDrawing !== pageId || e.target.closest("button")) return;
