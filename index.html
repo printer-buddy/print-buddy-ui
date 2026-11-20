@@ -105,6 +105,8 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .ai-rows .v { text-align: right; font-weight: 700; }
   .pg-ai .note { font-size: 13px; color: var(--muted); }
   .pg-ai .note.hot { color: var(--red-text); font-weight: 700; }
+  .pg-ai .note.ai-hint { color: var(--orange); }
+  .pg-ai #pgAiArea.hint { border-color: var(--orange); color: var(--orange); }
   .iconbtn { position: absolute; right: 10px; top: 10px; width: 44px; padding: 0; display: flex; align-items: center;
              justify-content: center; background: rgba(11,11,13,.8); }
   .caption { position: absolute; left: 0; right: 0; bottom: 0; padding: 28px 14px 12px; display: flex; align-items: flex-end;
@@ -550,17 +552,18 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
             <button type="button" id="pgAiHist" aria-pressed="false" title="Chart of the highest alert score across this print's checks">History</button>
             <button type="button" id="pgAiBoxAlways" aria-pressed="false" title="Draw the failure box on every check, even when the AI sees no failure (26 extra model runs each check)">Box: always</button>
             <button type="button" id="pgAiBoxFail" aria-pressed="true" title="Draw the failure box only at or above the alert threshold, so the extra model runs only happen when a failure is likely. With both box options off, the box is skipped completely, saving CPU on older Pis.">Box: on failure</button>
-            <button type="button" id="pgAiArea" title="Drag over the camera picture to choose the part the AI watches (optional). Without one it watches the whole picture.">Detection area</button>
+            <button type="button" id="pgAiArea" title="Drag over the camera picture to choose the part the AI watches. Recommended: the AI spots failures much better when it only looks at the print. Without one it watches the whole picture.">Detection area</button>
             <button type="button" id="pgAiAreaClear" hidden title="Watch the whole camera picture again">Clear area</button>
             <select id="pgAiSave" aria-label="Save this camera view for the AI" title="Save the camera view right now as a training photo">
               <option value="">Save for AI…</option><option value="ok">as OK (no problem)</option><option value="spaghetti">as spaghetti</option>
               <option value="warping">as warping</option><option value="first_layer">as first layer</option><option value="failure">as other failure</option>
-              <option value="stringing">as stringing</option><option value="blob">as blob</option><option value="crack">as crack</option>
+              <option value="stringing">as stringing</option><option value="blob">as blob</option>
               <option value="plate">as empty bed (Plate check)</option>
             </select>
             <select id="pgAiMode" aria-label="AI mode for this printer">
               <option value="alert">Alert only</option><option value="pause">Alert + auto-pause</option><option value="off">Off</option>
             </select></div></div>
+        <div class="note ai-hint" id="pgAiHint" hidden>Draw a detection area around the bed: the AI spots failures much better when it only looks at the print.</div>
         <div class="ask" id="pgAiAsk" hidden><span id="pgAiAskText">Was it really a failure?</span>
           <button type="button" class="yes" id="pgAiYes">Yes</button><button type="button" id="pgAiNo">No, it's fine</button></div>
         <div class="ai-rows" id="pgAiRows"></div>
@@ -663,11 +666,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
     <div class="share-msgs" id="shareMsgs" aria-live="polite"></div>
     <form id="shareChatForm"><input id="shareChatText" maxlength="300" placeholder="Say something as Owner…" autocomplete="off" aria-label="Message"><button class="primary">Send</button></form>
     <details class="chat-opts" id="chatOpts" style="margin-top:10px">
-      <summary>Alerts and blocked words</summary>
-      <label class="field" style="margin-top:8px">Notify me with a push
-        <select id="chatAlert"><option value="off">Never</option><option value="flags">Only when a viewer flags the print</option><option value="all">For every message (at most one per 20 seconds)</option></select>
-      </label>
-      <p class="hint" id="chatAlertHint"></p>
+      <summary>Blocked words</summary>
       <label style="display:flex;align-items:center;gap:6px;font-size:14px;margin-top:8px"><input type="checkbox" id="chatBuiltin" checked style="width:auto;min-height:0"> Also block the built-in list of swear words and slurs</label>
       <label class="field">Your own blocked words (one per line, # for notes)
         <textarea id="chatBlocked" rows="5" spellcheck="false" style="font-family:monospace"></textarea>
@@ -1595,12 +1594,11 @@ $("#chatOpts").addEventListener("toggle", async e => {
   if (!e.target.open) return;
   try {
     const s = await api("/api/chat/settings");
-    $("#chatAlert").value = s.alert; $("#chatBlocked").value = s.blocked; $("#chatBuiltin").checked = s.builtin;
-    $("#chatAlertHint").textContent = s.notifications ? "" : "Set up a notification service in Settings first, or nothing can be sent.";
+    $("#chatBlocked").value = s.blocked; $("#chatBuiltin").checked = s.builtin;
   } catch (err) { toast(err.message); }
 });
 $("#chatSave").onclick = async () => {
-  try { await api("/api/chat/settings", { method: "PUT", body: JSON.stringify({ alert: $("#chatAlert").value, blocked: $("#chatBlocked").value, builtin: $("#chatBuiltin").checked }) }); toast("Saved"); } catch (err) { toast(err.message); }
+  try { await api("/api/chat/settings", { method: "PUT", body: JSON.stringify({ blocked: $("#chatBlocked").value, builtin: $("#chatBuiltin").checked }) }); toast("Saved"); } catch (err) { toast(err.message); }
 };
 async function loadShares() {
   try {
@@ -1748,6 +1746,10 @@ function renderPageAI(p) {
   $("#pgAiAreaClear").hidden = !a.area || drawing;
   $("#pgCam").classList.toggle("drawing", drawing);
   const m = aiCfg?.model || {}, kinds = m.kinds || {};
+  // AI on with no area yet: ask for one (cropping to the print made a real spaghetti fail show far more clearly)
+  const askArea = a.mode !== "off" && !a.area && !drawing && m.loaded !== false;
+  $("#pgAiHint").hidden = !askArea;
+  $("#pgAiArea").classList.toggle("hint", askArea);
   const test = aiTest.get(p.id), fresh = !!test && Date.now() / 1000 - test.at < 120;
   const shown = a.watching ? a.scores : fresh ? test.scores : null;
   const labels = m.labels?.length ? m.labels : Object.keys(shown || a.scores || {});
@@ -1766,7 +1768,9 @@ function renderPageAI(p) {
   else if (aiCfg && !m.loaded) note.textContent = m.error || "No AI model loaded.";
   else if (aiRecentAlert(a)) {
     note.className = "note hot";
-    note.textContent = `Possible ${aiName(a.top)} at ${fmtClock(new Date(a.alerted_at * 1000))}` + (a.mode === "pause" ? " — paused the print." : " — check the print.");
+    note.textContent = `Possible ${aiName(a.top)} at ${fmtClock(new Date(a.alerted_at * 1000))}` + (a.pause_pending
+      ? " — check the print. It pauses if 3 of the next 5 checks see it too."
+      : a.mode === "pause" && p.state === "paused" ? " — paused the print." : " — check the print.");
   }
   else if (a.watching) {
     const every = aiCfg?.ai_interval ?? 10, fast = Math.max(2, every - 5);
