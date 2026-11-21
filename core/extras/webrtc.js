@@ -10,17 +10,15 @@
 //
 //Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 (() => {
-  // Live WebRTC player for LAN viewing: the browser talks straight to the camera,
-  // so it only works on the same network and can't cross a share link. On any failure
-  // the overlay is torn down and the <img> snapshot path takes over again.
+  // Live WebRTC player for LAN viewing. The signalling runs through Printer Buddy's own
+  // same-origin proxy (/api/printers/<id>/webrtc...) because the camera sends no CORS headers
+  // and Printer Buddy is on a different host; the media (ICE) still flows browser<->camera on the
+  // LAN. On any failure the overlay is torn down and the <img> snapshot path takes over.
   const STUN = [{ urls: "stun:stun.l.google.com:19302" }];
   const entries = new Map();   // img -> { video, key, close }
 
-  function go2rtc(video, src, onfail) {
-    const base = new URL(src);
-    const ws = new URL("api/ws" + base.search, base);
-    ws.protocol = ws.protocol === "https:" ? "wss:" : "ws:";
-    const sock = new WebSocket(ws);
+  function go2rtc(video, wsUrl, onfail) {
+    const sock = new WebSocket(wsUrl);
     sock.binaryType = "arraybuffer";
     const h = { pc: null, dead: false };
     sock.onopen = async () => {
@@ -47,10 +45,10 @@
     return () => { h.dead = true; try { h.pc?.close(); } catch {} try { sock.close(); } catch {} };
   }
 
-  function camerastreamer(video, src, onfail) {
+  function camerastreamer(video, url, onfail) {
     const h = { pc: null, dead: false, id: null };
     (async () => {
-      const res = await fetch(src, { method: "POST", headers: { "Content-Type": "application/json" },
+      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: "request", iceServers: STUN, keepAlive: true }) });
       if (!res.ok) throw new Error("http " + res.status);
       const offer = await res.json();
@@ -62,23 +60,21 @@
       pc.ontrack = ev => { if (ev.track.kind === "video") video.srcObject = ev.streams[0]; };
       pc.onicecandidate = async ev => {
         if (!ev.candidate) return;
-        try { await fetch(src, { method: "POST", headers: { "Content-Type": "application/json" },
+        try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "remote_candidate", id: h.id, candidates: [ev.candidate] }) }); } catch {}
       };
       pc.onconnectionstatechange = () => { if (pc.connectionState === "failed" || pc.connectionState === "disconnected") onfail(); };
       await pc.setRemoteDescription(offer);
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
-      await fetch(src, { method: "POST", headers: { "Content-Type": "application/json" },
+      await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type: answer.type, id: h.id, sdp: answer.sdp }) });
     })().catch(() => onfail());
     return () => { h.dead = true; try { h.pc?.close(); } catch {} };
   }
 
-  function mediamtx(video, src, onfail) {
-    const base = new URL(src);
-    if (!base.pathname.endsWith("/")) base.pathname += "/";
-    const whep = new URL("whep", base).toString();
+  function mediamtx(video, sig, q, onfail) {
+    const whep = sig + "/whep" + q;
     const h = { pc: null, dead: false, session: "", offer: null, queued: [] };
     const parseOffer = sdp => {
       const o = { iceUfrag: "", icePwd: "", medias: [] };
@@ -120,21 +116,12 @@
       await pc.setLocalDescription(offer);
       const res = await fetch(whep, { method: "POST", headers: { "Content-Type": "application/sdp" }, body: offer.sdp });
       if (res.status !== 201) throw new Error("whep " + res.status);
-      const loc = res.headers.get("location") || "";
-      const sid = loc.slice(loc.lastIndexOf("/") + 1);
-      if (!sid) throw new Error("no session");
-      h.session = whep + "/" + sid;
+      h.session = res.headers.get("location");   // Printer Buddy rewrites this to its own proxy path
+      if (!h.session) throw new Error("no session");
       await pc.setRemoteDescription({ type: "answer", sdp: await res.text() });
       if (h.queued.length) { sendCands(h.queued); h.queued = []; }
     })().catch(() => onfail());
     return () => { h.dead = true; try { h.pc?.close(); } catch {} if (h.session) fetch(h.session, { method: "DELETE" }).catch(() => {}); };
-  }
-
-  function dial(video, service, src, onfail) {
-    const s = (service || "").toLowerCase();
-    if (s.includes("go2rtc")) return go2rtc(video, src, onfail);
-    if (s.includes("mediamtx")) return mediamtx(video, src, onfail);
-    return camerastreamer(video, src, onfail);
   }
 
   function stop(img) {
@@ -147,8 +134,9 @@
   }
 
   function play(img, cam) {
-    if (!cam || !cam.src) return null;
-    const key = cam.src + "|" + (cam.service || "");
+    if (!cam) return null;
+    const pid = img.dataset.camPid, idx = img.dataset.camIdx || "0";
+    const key = pid + "|" + idx + "|" + (cam.service || "");
     const cur = entries.get(img);
     if (cur && cur.key === key && cur.video.isConnected) return cur.video;
     stop(img);
@@ -159,13 +147,24 @@
     video.className = "pb-camvid";
     img.insertAdjacentElement("afterend", video);
     const onfail = () => { const e = entries.get(img); if (e && e.video === video) { stop(img); img.dataset.camWf = String(performance.now() + 8000); } };
-    const close = dial(video, cam.service, cam.src, onfail);
+    const sig = `/api/printers/${pid}/webrtc`, q = `?cam=${encodeURIComponent(idx)}`;
+    const svc = (cam.service || "").toLowerCase();
+    let close;
+    if (svc.includes("go2rtc")) {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      close = go2rtc(video, `${proto}//${location.host}/api/printers/${pid}/webrtc-ws${q}`, onfail);
+    } else if (svc.includes("mediamtx")) {
+      close = mediamtx(video, sig, q, onfail);
+    } else {
+      close = camerastreamer(video, sig + q, onfail);
+    }
     entries.set(img, { video, key, close });
     return video;
   }
 
   function sweep() {
-    for (const img of [...entries.keys()]) if (!img.isConnected || !img.offsetParent) stop(img);
+    const hidden = document.hidden;
+    for (const img of [...entries.keys()]) if (hidden || !img.isConnected || !img.offsetParent) stop(img);
   }
 
   PB.webrtc = { play, stop, sweep };
