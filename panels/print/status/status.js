@@ -132,7 +132,9 @@ PB.panel("status", {
         wasActive = active;
         if (tab === "re") loadHist(false, p.id);
         const pr = q("[data-a=pr]"), lbl = paused ? "Resume" : "Pause";
-        pr.hidden = q("[data-a=cancel]").hidden = !active; pr.innerHTML = `${paused ? ICON.resume : ICON.pause}<span>${lbl}</span>`; pr.title = lbl; pr.setAttribute("aria-label", lbl);
+        pr.hidden = q("[data-a=cancel]").hidden = !active;
+        // only redraw when Pause/Resume changes: rebuilding it on every update (many a second) swallowed clicks on its icon and text
+        if (pr.title !== lbl) { pr.innerHTML = `${paused ? ICON.resume : ICON.pause}<span>${lbl}</span>`; pr.title = lbl; pr.setAttribute("aria-label", lbl); }
         q("[data-a=reset]").hidden = active || !p.filename;
         for (const b of [pr, q("[data-a=cancel]"), q("[data-a=reset]")]) b.disabled = !live;
         if (file !== thumbFile && cfg.thumb) {
@@ -146,7 +148,7 @@ PB.panel("status", {
         const pl = p.pause_layer, pal = q(".pb-pal");
         pal.hidden = !pl || !active;
         if (pl) q(".pb-palstate").textContent = pl.next?.enable ? "Pausing at the next layer" : pl.at?.enable && pl.at.layer ? `Pausing at layer ${pl.at.layer}` : "";
-        const msg = p.klippy_message || (p.state === "error" && p.message) || p.message || "";
+        const msg = p.display_message || "";   // M117 only, like Fluidd: Klipper errors are in the error card
         q("[data-row=m117]").hidden = !msg; set("m117", msg);
         q("[data-row=file]").hidden = !file; set("file", file);
         if (!cfg.list) return;

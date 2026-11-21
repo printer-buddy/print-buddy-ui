@@ -15,7 +15,10 @@
   const { el } = PB, { pageHook } = PB.x;
   const page = $("#page");
   const ban = el("div", "pb-kban"); ban.hidden = true;
-  (page.querySelector(".bd-top") || page.firstChild).after(ban);
+  // above the dashboard, beside the side menu (the menu stays at the top); its own column, as the dashboard redraws .bd-main
+  const main = page.querySelector(".bd-main");
+  if (main) { const col = el("div", "bd-col"); main.before(col); col.append(ban, main); }
+  else (page.querySelector(".bd-top") || page.firstChild).after(ban);
   let key = "";
   const ERR = PB.icon('<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>');
   const WARN = PB.icon('<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>');
@@ -35,7 +38,9 @@
       return;
     }
     const state = p.klippy_state || "ready", ready = state === "ready";
-    const msg = !ready && p.klippy_message && p.klippy_message !== "Printer is ready" ? p.klippy_message : "";
+    // like Fluidd: "Klippy not connected." when Klipper is down, else Klipper's own message
+    const msg = ready ? "" : state === "disconnected" ? "Klippy not connected."
+      : p.klippy_message && p.klippy_message !== "Printer is ready" ? p.klippy_message : "";
     const pw = (p.printer_warnings || []).map(String), kw = (p.klipper_warnings || []).map(String), mw = (p.moonraker_warnings || []).map(String), fc = (p.failed_components || []).map(String);
     const warned = pw.length || kw.length || mw.length || fc.length;
     const k = JSON.stringify([p.id, state, msg, pw, kw, mw, fc]);

@@ -112,6 +112,5 @@ body.pb-hasrail .bd-rail { background-image: var(--pb-railimg); background-size:
 @keyframes pbkprog { from { margin-left: -40%; } to { margin-left: 100%; } }
 :is(#page, #home).bd .pb-koff button { min-width: min(320px, 60%); height: 36px; background: #fb8c00; color: #1b1b1f; border: 0; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .pb-kal span { white-space: pre-line; }
-#page.bd .pb-kban.pb-kcard, #page.bd .pb-kban.pb-koff { margin-left: 216px; }
-#page.bd:has(.bd-rail.bd-compact) .pb-kban.pb-kcard, #page.bd:has(.bd-rail.bd-compact) .pb-kban.pb-koff { margin-left: 76px; }
-@media (max-width: 760px) { #page.bd .pb-kban.pb-kcard, #page.bd .pb-kban.pb-koff { margin-left: 16px; } }
+/* the card's column beside the side menu: card on top, dashboard under it */
+.bd-col { flex: 1; min-width: 0; }
