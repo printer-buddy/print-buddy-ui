@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m cameras/webrtc-zoom################################
+
+## WebRTC: zoom and pan the video, not just the image
+
+Zoom/pan now also scales the live WebRTC `<video>` overlay, so it works on WebRTC cameras the same as MJPEG. *Why:* zoom only transformed the `<img>`, which sits behind the video, so nothing visibly zoomed on a WebRTC camera.
+
+Lines changed:
+- `core/extras/camzoom.js` — 37–38 in `apply()`, mirror the zoom `scale`/`translate` onto the `.pb-camvid` video overlay when one is present (cleared on reset via the same path)
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m cameras/webrtc-fullscreen################################
 
 ## WebRTC: stop the video covering the camera buttons
