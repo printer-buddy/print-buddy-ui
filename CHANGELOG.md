@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m cameras/webrtc-fullscreen################################
+
+## WebRTC: stop the video covering the camera buttons
+
+Dropped the `z-index` on the live WebRTC `<video>` so it no longer paints over the full-screen button and FPS badge. *Why:* the overlay sat on top of the full-screen control on WebRTC cameras, so there was no way to go full screen.
+
+Lines changed:
+- `index.html` — 251 remove `z-index: 1` from the `.pb-camvid` rule
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m cameras/webrtc-cors################################
 
 ## WebRTC: run the handshake through Printer Buddy, not the camera
