@@ -34,6 +34,8 @@
       y = Math.min(my, Math.max(-my, y));
       img.style.scale = z > 1 ? String(z) : "";
       img.style.translate = z > 1 ? x + "px " + y + "px" : "";
+      const vid = box.querySelector(".pb-camvid");   // WebRTC renders in a <video>, not the img
+      if (vid) { vid.style.scale = img.style.scale; vid.style.translate = img.style.translate; }
       box.classList.toggle("zoomed", z > 1);
       label.hidden = z <= 1;
       label.textContent = (Math.round(z * 10) / 10) + "×";
