@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m mmu/spacing################################
+
+## MMU: more room per filament slot
+
+Widened the filament-slot tiles and gave them more padding so the slots (e.g. the U1's four nozzles) aren't squished together. *Why:* at `minmax(64px)` with tight padding the slots were cramped.
+
+Lines changed:
+- `panels/control/mmu/mmu.css` — 16 widen the slot grid to `minmax(88px, 1fr)` and gap 6→8; 17 pad each slot `12px 8px 10px` and gap 3→6
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m cameras/webrtc-zoom################################
 
 ## WebRTC: zoom and pan the video, not just the image

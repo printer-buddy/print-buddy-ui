@@ -13,8 +13,8 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
 */
 .pb-mmu-unit { margin-bottom: 10px; }
 .pb-mmu-head { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text); margin-bottom: 6px; }
-.pb-mmu-gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; }
-.pb-mmu-gate { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; min-height: 0; padding: 8px 4px 6px;
+.pb-mmu-gates { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
+.pb-mmu-gate { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 0; padding: 12px 8px 10px;
                background: var(--bd-deep); border: 1px solid var(--bd-line); border-radius: 6px; color: var(--text); font: inherit; cursor: pointer; }
 .pb-mmu-gate:disabled { cursor: default; }
 .pb-mmu-gate.on { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
