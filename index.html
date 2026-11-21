@@ -248,6 +248,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .pg-cambox { flex: 999 1 640px; min-width: 0; border-radius: 12px; overflow: hidden; background: var(--card); border: 1px solid var(--line); }
   .pg-cam { position: relative; aspect-ratio: 16 / 9; background: #000; }
   .pg-cam img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+  .pg-cam .pb-camvid, .ctl-cam .pb-camvid, .qv-cam .pb-camvid, .camtile .pb-camvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 1; }
   .pg-cam .ai-probe { position: absolute; inset: 0; width: 100%; height: 100%; visibility: hidden; pointer-events: none; }
   .pg-cam .ai-probe i { position: absolute; }
   .pg-cam .ai-box { position: absolute; border: 3px solid #ff2828; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0,0,0,.5); pointer-events: none; }
@@ -1008,10 +1009,11 @@ async function startLive(img, pid, idx, st) {
 }
 
 function camTick() {
-  if (document.hidden) { for (const img of [...liveStreams.keys()]) stopLive(img); return; }
+  if (document.hidden) { for (const img of [...liveStreams.keys()]) stopLive(img); PB.webrtc?.sweep(); return; }
   for (const [img, s] of [...liveStreams]) {
     if (!img.isConnected || !img.offsetParent || +img.dataset.camPid !== s.pid || +(img.dataset.camIdx || 0) !== s.idx) stopLive(img);
   }
+  PB.webrtc?.sweep();
   const now = performance.now();
   for (const img of document.querySelectorAll("img[data-cam-pid]")) {
     const pid = +img.dataset.camPid, p = printers.get(pid);
@@ -1021,6 +1023,11 @@ function camTick() {
     let st = camState.get(img);
     if (!st || st.pid !== pid || st.idx !== idx) { st = { pid, idx, last: 0, loading: false, frames: [] }; camState.set(img, st); }
     applyCamTransform(img, cfg);
+    const cam = p.cams?.[idx];
+    if (cam && cam.mode === "webrtc" && liveOn() && img.dataset.camKind === "big" && !(+(img.dataset.camWf || 0) > now)) {
+      const v = PB.webrtc?.play(img, cam);
+      if (v) { if (liveStreams.has(img)) stopLive(img); applyCamTransform(v, cfg); showFps(img, st, cfg); continue; }
+    } else PB.webrtc?.stop(img);
     const wantLive = liveOn() && img.dataset.camKind === "big" && p.cams?.[idx]?.live && !(st.liveRetry > now);
     if (wantLive) {
       if (!liveStreams.has(img)) startLive(img, pid, idx, st);
@@ -2068,6 +2075,7 @@ render();
 <script src="/static/core/extras/calibration.js"></script>
 <script src="/static/core/extras/pause-layer.js"></script>
 <script src="/static/core/extras/camera-editor.js"></script>
+<script src="/static/core/extras/webrtc.js"></script>
 <script src="/static/core/extras/theme.js"></script>
 <script src="/static/core/extras/components.js"></script>
 <script src="/static/core/extras/system-drawer.js"></script>
