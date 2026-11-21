@@ -2,6 +2,18 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m cameras/webrtc################################
+
+## Live WebRTC cameras on the local network
+
+A WebRTC camera (go2rtc, camera-streamer or MediaMTX) now plays live when you're on the same network, instead of only showing snapshots; it falls back to snapshots on any failure, including over a share link. *Why:* the camera editor offered WebRTC but the viewer never rendered it.
+
+Lines changed:
+- `core/extras/webrtc.js` — 1–172 new: `PB.webrtc` with the three handshakes (go2rtc WebSocket, camera-streamer POST, MediaMTX WHEP), overlaying a `<video>` on the camera and tearing it down on failure
+- `index.html` — 251 add the `.pb-camvid` overlay style; 1012, 1016 stop/prune WebRTC videos each tick; 1026–1030 play WebRTC for a `webrtc`-mode camera, else the snapshot path; 2078 load `webrtc.js`
+
+################################end of entry################################
+
 ################################2026-11-20 sterling m security/ai################################
 
 ## Security: remove the dead push-notification control
