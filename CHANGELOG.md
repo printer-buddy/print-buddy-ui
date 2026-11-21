@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m cameras/webrtc-cors################################
+
+## WebRTC: run the handshake through Printer Buddy, not the camera
+
+The player now sends its WebRTC signalling to Printer Buddy (same origin) instead of straight to the camera, so it isn't blocked by the camera's missing CORS header. *Why:* a cross-origin handshake to the camera was refused, leaving only snapshots.
+
+Lines changed:
+- `core/extras/webrtc.js` — 20 `go2rtc` takes a ready WebSocket URL; 48 `camerastreamer` posts to a given URL; 76 `mediamtx` builds its WHEP/session URLs from the proxy base and uses the rewritten `Location`; 136–157 `play` points every service at `/api/printers/<id>/webrtc…` (go2rtc at `/webrtc-ws`)
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m cameras/webrtc################################
 
 ## Live WebRTC cameras on the local network
