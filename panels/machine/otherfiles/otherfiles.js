@@ -24,7 +24,7 @@ PB.panel("otherfiles", {
         <button type="button" data-a="refresh" data-head title="Refresh" aria-label="Refresh">${PB.ic.refresh}</button></div>
       <div class="pb-bulk" hidden><b class="pb-bn"></b><span class="bd-sp"></span><button type="button" data-b="zip">Zip</button><button type="button" data-b="del" class="pb-danger">Delete</button></div>
       <div class="pb-crumbs"></div><div class="pb-ccount pb-muted" aria-live="polite"></div>
-      <div class="pb-cwrap"><div class="pb-chead"></div><div class="pb-cfiles"></div></div>
+      <div class="pb-cwrap" data-drop><div class="pb-chead"></div><div class="pb-cfiles"></div></div>
       <input type="file" data-u="files" multiple hidden><input type="file" data-u="dir" webkitdirectory hidden>`;
     const q = s => host.querySelector(s);
     const pop = PB.el("div", "pb-cmenu"); pop.hidden = true; ($("#page") || document.body).append(pop);

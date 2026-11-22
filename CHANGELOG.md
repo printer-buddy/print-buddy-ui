@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m ui/other-files-drop################################
+
+## Fix the Other-files panel still blanking the dashboard
+
+The previous blank-dashboard fix added the hidden file inputs but the Other-files panel still threw and blanked the dashboard: `.pb-cwrap` was missing the `data-drop` attribute, so the shared config actions hit a null wiring up drag-and-drop. *Why:* `PB.parts.cfgActions` looks up `[data-drop]` for the drop target, and that element wasn't marked.
+
+Lines changed:
+- `panels/machine/otherfiles/otherfiles.js` — 27 add `data-drop` to `.pb-cwrap`
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m ui/blank-dashboard-fix################################
 
 ## Fix a blank dashboard from the new Other-files panel and WebRTC tick
