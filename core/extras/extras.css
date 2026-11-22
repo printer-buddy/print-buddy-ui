@@ -49,6 +49,7 @@ input[type=range].pb-unlocked { outline: 2px solid var(--orange); outline-offset
 body.pb-hasbg { background-image: linear-gradient(rgba(10, 10, 12, .6), rgba(10, 10, 12, .6)), var(--pb-bgimg); background-size: cover; background-position: center; background-attachment: fixed; }
 html[data-theme="light"] body.pb-hasbg { background-image: linear-gradient(rgba(255, 255, 255, .7), rgba(255, 255, 255, .7)), var(--pb-bgimg); }
 body.pb-hasrail .bd-rail { background-image: var(--pb-railimg); background-size: cover; background-position: center; }
+.pb-bglogo { position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: .06; background: center center / min(55vw, 620px) no-repeat; }
 .pb-logo { height: 32px; width: auto; max-width: 140px; object-fit: contain; vertical-align: middle; margin-right: 10px; }
 .pb-thm { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--line); }
 .pb-thm h4 { margin: 0 0 4px; }

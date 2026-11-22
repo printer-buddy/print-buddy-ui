@@ -46,7 +46,7 @@
     { id: "console", name: "Console", rows: [{ s: "2-1", cols: [[P("console", "console", { page: true })]] }] },
     { id: "timelapse", name: "Timelapse", rows: [{ s: "2-1", cols: [[P("timelapse", "timelapse")], [P("timelapse", "tlstatus"), P("timelapse", "tlsettings")]] }] },
     { id: "diagnostics", name: "Diagnostics", rows: [{ s: "1", cols: [[P("diagnostics", "ksensors"), P("diagnostics", "sensors"), P("diagnostics", "explorer")]] }] },
-    { id: "configure", name: "Configure", rows: [{ s: "1", cols: [[P("configure", "config")]] }] },
+    { id: "configure", name: "Configure", rows: [{ s: "1", cols: [[P("configure", "config")]] }, { s: "1", cols: [[P("configure", "otherfiles")]] }] },
     { id: "system", name: "System", rows: [{ s: "1-1", cols: [[P("system", "sysinfo"), P("system", "sdinfo"), P("system", "diskusage"), P("system", "database")], [P("system", "system"), P("system", "mcus")]] }] },
     { id: "settings", name: "Settings", rows: [{ s: "1", cols: [[P("settings", "setgeneral"), P("settings", "settheme"), P("settings", "setalerts"), P("settings", "setai"), P("settings", "setconsole"), P("settings", "setjobs"), P("settings", "setmacros"), P("settings", "setcamera"), P("settings", "setplate"), P("settings", "settool"), P("settings", "setpresets"), P("settings", "setgcode"), P("settings", "updates"), P("settings", "setcards"), P("settings", "machine"), P("settings", "devices"), P("settings", "setabout")]] }] },
   ] };

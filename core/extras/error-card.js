@@ -49,7 +49,7 @@
     if (k === key) return; key = k;
     ban.className = "pb-kban pb-kcard";
     const buttons = state === "disconnected"
-      ? `<button type="button" class="pb-pri" data-k="svc">Restart Klipper</button>`
+      ? `<button type="button" class="pb-pri" data-k="svc">Restart Klipper</button><button type="button" class="pb-pri" data-k="fw">Firmware Restart</button>`
       : `<button type="button" class="pb-pri" data-k="restart">Restart Klipper</button><button type="button" class="pb-pri" data-k="fw">Firmware Restart</button>`;
     ban.innerHTML = `<header>${ERR}<span>Klippy: ${esc(state)}</span></header>
       <div class="pb-kbody"><div class="pb-kctl">${buttons}

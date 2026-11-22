@@ -14,6 +14,7 @@
   const NAMES = { color: "Colour", mode: "Dark / light (this device)", background: "Background picture", logo: "Logo", sidebar: "Side bar picture",
                   page: "Background (from custom.css)", panel: "See-through panels", head: "Header tint", over: "Background logo" };
   let theme = {};
+  let logobg = PB.store.get("pb-logobg", false);
   const style = el("style"); document.head.append(style);
   const imp = decls => decls.split(";").filter(d => d.trim()).map(d => `${d.trim()} !important`).join("; ");
   function use() {
@@ -37,6 +38,11 @@
       if (!img) { img = el("img", "pb-logo"); img.alt = ""; h.before(img); }
       img.src = url(theme.logo);
     }
+    let bgl = document.querySelector(".pb-bglogo");
+    if (logobg && theme.logo) {
+      if (!bgl) { bgl = el("div", "pb-bglogo"); document.body.append(bgl); }
+      bgl.style.backgroundImage = `url("${url(theme.logo)}")`;
+    } else bgl?.remove();
   }
   api("/api/ui/theme").then(r => { theme = r.theme || {}; use(); }).catch(() => {});
 
@@ -48,8 +54,10 @@
       <select data-t="source" aria-label="Theme from"><option value="fluidd">Fluidd</option><option value="mainsail">Mainsail</option></select>
       <button type="button" data-t="check">Look at its theme</button></div>
     <div class="pb-thmfound"></div>
-    <div class="pb-thmrow"><span class="pb-muted pb-thmnow"></span><span class="bd-sp"></span><button type="button" data-t="reset">Back to Printer Buddy's own look</button></div>`);
+    <div class="pb-thmrow"><span class="pb-muted pb-thmnow"></span><span class="bd-sp"></span><button type="button" data-t="reset">Back to Printer Buddy's own look</button></div>
+    <label class="bd-check pb-thmlogobg"><input type="checkbox"${logobg ? " checked" : ""}> Show the logo faintly behind the dashboard</label>`);
   look.append(box);
+  box.querySelector(".pb-thmlogobg input").onchange = e => { logobg = e.target.checked; PB.store.set("pb-logobg", logobg); use(); };
   const q = s => box.querySelector(s), found = q(".pb-thmfound");
   const now = () => {
     q(".pb-thmnow").textContent = theme.source ? `Using the ${theme.source === "fluidd" ? "Fluidd" : "Mainsail"} theme you copied.` : "Using Printer Buddy's own look.";

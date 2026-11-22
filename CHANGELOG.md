@@ -2,6 +2,54 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m theme/logo-background################################
+
+## Show the logo faintly behind the dashboard
+
+A per-device "Show the logo faintly behind the dashboard" toggle in the theme settings renders the configured logo as a faint centered watermark, like Fluidd's "Show logo on background". *Why:* Printer Buddy only used the copied logo in the header; the watermark is a Fluidd setting (not custom.css), so copying a theme never brought it across.
+
+Lines changed:
+- `core/extras/theme.js` — 17 read the `pb-logobg` device flag; 41–45 render/remove a `.pb-bglogo` element using `theme.logo`; 58, 60 add the toggle to the theme panel and persist it
+- `core/extras/extras.css` — 52 add the `.pb-bglogo` watermark style (fixed, faint, centered, behind panels)
+
+################################end of entry################################
+
+################################2026-11-21 sterling m machine/other-files################################
+
+## Add an "Other files" panel (logs, docs, config examples)
+
+A new read-only file browser for the logs, docs and config-examples roots, like Fluidd's "Other Files"; it reuses the Config panel's browser (list, preview, download) and shows on the Configure page under Config files. *Why:* those roots could only be reached piecemeal (logs via Print → Files, docs/examples via Config files), not in one place.
+
+Lines changed:
+- `panels/machine/otherfiles/otherfiles.js` — new: the "Other files" panel (roots logs/docs/config_examples, read-only, reusing `PB.parts.cfg*`)
+- `panels/machine/config/browse.js` — 14 add `logs: "Logs"` to the shared `ROOTS` labels
+- `core/builder.js` — 49 add the panel to the default Configure page (second row)
+- `index.html` — load `otherfiles.js`
+
+################################end of entry################################
+
+################################2026-11-21 sterling m ui/firmware-restart################################
+
+## Add Firmware Restart to the Klippy-disconnected card
+
+The "Klippy: disconnected" error card now offers Firmware Restart alongside Restart Klipper, like the other Klippy error states. *Why:* the disconnected state only showed Restart Klipper, so Firmware Restart was missing there.
+
+Lines changed:
+- `core/extras/error-card.js` — 52 add the `data-k="fw"` Firmware Restart button to the `disconnected` branch (handler already wired)
+
+################################end of entry################################
+
+################################2026-11-21 sterling m ui/dropdowns################################
+
+## Theme the dropdowns that weren't styled
+
+Added a base `select` style so dropdowns outside a specially-styled toolbar (e.g. the Config files folder picker) use the theme colours instead of the browser's white default. *Why:* only container-scoped `select` rules existed, so any other `<select>` rendered white with invisible text in the dark theme.
+
+Lines changed:
+- `index.html` — 92–93 add base `select` and `select option` theming (`background: var(--card)`, `color: var(--text)`)
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m mmu/spacing################################
 
 ## MMU: more room per filament slot

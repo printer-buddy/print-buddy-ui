@@ -89,6 +89,8 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .ph.pending { border-color: var(--orange); }
   .ph img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--card); }
   .ph .b { padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+  select { font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
+  select option { background: var(--card); color: var(--text); }
   .ph select { font: inherit; min-height: 34px; padding: 0 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text); }
   .ph .v-right { color: var(--lilac); font-weight: 700; }
   .ph .v-false_alarm, .ph .v-missed { color: var(--red-text); font-weight: 700; }
@@ -2054,6 +2056,7 @@ render();
 <script src="/static/panels/machine/config/browse.js"></script>
 <script src="/static/panels/machine/config/actions.js"></script>
 <script src="/static/panels/machine/config/config.js"></script>
+<script src="/static/panels/machine/otherfiles/otherfiles.js"></script>
 <script src="/static/panels/machine/updates/updates.js"></script>
 <script src="/static/panels/machine/devices/devices.js"></script>
 <script src="/static/panels/machine/sensors/sensors.js"></script>

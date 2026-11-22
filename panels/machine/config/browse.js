@@ -11,7 +11,7 @@
 //Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any changes, you must include a CHANGELOG with all changes and their dates
 PB.parts = PB.parts || {};
 PB.parts.cfgBrowse = c => {
-    const ROOTS = { config: "Config", config_examples: "Config examples", docs: "Docs" };
+    const ROOTS = { config: "Config", config_examples: "Config examples", docs: "Docs", logs: "Logs" };
     const FILTERS = [   // [key, label, test(name), folders too]
       ["hidden", "Hide hidden files", n => /^\.(?!\.$)/.test(n), true],
       ["klipper", "Hide Klipper backups", n => /^printer-\d{8}_\d{6}\.cfg$/.test(n)],
