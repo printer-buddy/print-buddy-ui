@@ -2,6 +2,18 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m ui/blank-dashboard-fix################################
+
+## Fix a blank dashboard from the new Other-files panel and WebRTC tick
+
+Two bugs introduced with the recent camera/Other-files work could blank the dashboard: the Other-files panel left out the two hidden file `<input>`s the shared config actions expect, so building it threw and aborted the page; and the camera tick referenced a bare `PB` before `window.PB` was assigned, throwing `PB is not defined`. *Why:* a thrown error in `build()` stops the dashboard from rendering, and the tick fires on an interval that can run before `PB` exists.
+
+Lines changed:
+- `panels/machine/otherfiles/otherfiles.js` — 28 add the hidden `data-u="files"`/`data-u="dir"` file inputs the shared `PB.parts.cfgActions` wires up
+- `index.html` — 1014, 1018, 1030, 1032 guard the camera-tick WebRTC calls with `window.PB?.` so they don't throw before `PB` is defined
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m mmu/spool-look################################
 
 ## Nicer filament spools and a remaining bar

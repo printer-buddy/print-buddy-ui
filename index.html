@@ -1011,11 +1011,11 @@ async function startLive(img, pid, idx, st) {
 }
 
 function camTick() {
-  if (document.hidden) { for (const img of [...liveStreams.keys()]) stopLive(img); PB.webrtc?.sweep(); return; }
+  if (document.hidden) { for (const img of [...liveStreams.keys()]) stopLive(img); window.PB?.webrtc?.sweep(); return; }
   for (const [img, s] of [...liveStreams]) {
     if (!img.isConnected || !img.offsetParent || +img.dataset.camPid !== s.pid || +(img.dataset.camIdx || 0) !== s.idx) stopLive(img);
   }
-  PB.webrtc?.sweep();
+  window.PB?.webrtc?.sweep();
   const now = performance.now();
   for (const img of document.querySelectorAll("img[data-cam-pid]")) {
     const pid = +img.dataset.camPid, p = printers.get(pid);
@@ -1027,9 +1027,9 @@ function camTick() {
     applyCamTransform(img, cfg);
     const cam = p.cams?.[idx];
     if (cam && cam.mode === "webrtc" && liveOn() && img.dataset.camKind === "big" && !(+(img.dataset.camWf || 0) > now)) {
-      const v = PB.webrtc?.play(img, cam);
+      const v = window.PB?.webrtc?.play(img, cam);
       if (v) { if (liveStreams.has(img)) stopLive(img); applyCamTransform(v, cfg); showFps(img, st, cfg); continue; }
-    } else PB.webrtc?.stop(img);
+    } else window.PB?.webrtc?.stop(img);
     const wantLive = liveOn() && img.dataset.camKind === "big" && p.cams?.[idx]?.live && !(st.liveRetry > now);
     if (wantLive) {
       if (!liveStreams.has(img)) startLive(img, pid, idx, st);
