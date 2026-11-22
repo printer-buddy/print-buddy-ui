@@ -2,6 +2,18 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-21 sterling m mmu/spool-look################################
+
+## Nicer filament spools and a remaining bar
+
+The MMU/AMS slots now show a bigger reel-style spool (filament colour wound on a hub) and a full-width remaining bar in the filament colour, labelled with the grams left (when the printer reports a weight, e.g. AFC) and the percent, instead of a flat 30px dot and a thin grey line. Applies to every MMU type (AFC, Happy Hare, CFS, Bambu AMS). *Why:* the slots were small and plain; a roll graphic + grams/percent reads at a glance.
+
+Lines changed:
+- `panels/control/mmu/mmu.css` — 22–24 reel-style spool (52px, radial gradient hub/filament/rim); 25 empty-slot spool; 28–29 full-width remaining bar filled in the filament colour; 30 add the `.pb-mmu-pct` label
+- `panels/control/mmu/mmu.js` — 21–23 label the bar with the grams left (when known) and the percent remaining
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m theme/logo-background################################
 
 ## Show the logo faintly behind the dashboard

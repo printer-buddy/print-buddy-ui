@@ -18,7 +18,10 @@ PB.panel("mmu", {
     let key = "";
     function gate(g, i, m, busy) {
       const empty = !g.status, on = m.gate === i, no = g.label || i + 1;
-      const left = g.remaining != null ? `<span class="pb-mmu-left"><i style="width:${Math.max(0, Math.min(100, g.remaining))}%"></i></span>` : "";
+      const lbl = [g.grams != null ? `${g.grams} g` : "", g.remaining != null ? `${Math.round(g.remaining)}% left` : ""].filter(Boolean).join(" · ");
+      const left = g.remaining != null || g.grams != null
+        ? `${g.remaining != null ? `<span class="pb-mmu-left"><i style="width:${Math.max(0, Math.min(100, g.remaining))}%"></i></span>` : ""}<span class="pb-mmu-pct">${esc(lbl)}</span>`
+        : "";
       return `<button type="button" class="pb-mmu-gate${on ? " on" : ""}${empty ? " empty" : ""}" data-g="${i}"
           style="--c:${esc(g.color || "transparent")}" ${empty || busy || m.readonly ? "disabled" : ""}
           title="${esc(empty ? `Slot ${no}: empty` : `Slot ${no}: ${g.name || g.material}${g.temp ? ` · ${g.temp}°C` : ""}`)}">
