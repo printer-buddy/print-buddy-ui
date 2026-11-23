@@ -199,6 +199,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .cam-ovl { display: none; position: absolute; left: 12px; bottom: 12px; align-items: center; gap: 10px; max-width: calc(100% - 24px);
              padding: 8px 10px; border-radius: 10px; background: rgba(11,11,13,.82); color: #fff; z-index: 2; pointer-events: none; }
   #pgCam:fullscreen .cam-ovl:not([hidden]), .qv-cam .cam-ovl:not([hidden]) { display: flex; }
+  .cam-ovl:has(~ .camsw) { left: auto; right: 12px; }
   .cam-ovl .cam-ovl-thumb { position: static; inset: auto; width: 54px; height: 54px; object-fit: contain; border-radius: 6px; background: #000; flex: none; }
   .cam-ovl .cam-ovl-thumb[hidden] { display: none; }
   .cam-ovl-info { display: flex; flex-direction: column; min-width: 0; }
@@ -1247,7 +1248,7 @@ function setCamOverlay(ovl, p, id) {
   if (!active) return;
   const thumb = ovl.querySelector(".cam-ovl-thumb");
   const want = p.filename ? `/api/printers/${id}/thumbnail?file=${encodeURIComponent(p.filename)}` : "";
-  if (thumb.dataset.src !== want) { thumb.dataset.src = want; thumb.hidden = !want; if (want) { thumb.onerror = () => { thumb.hidden = true; }; thumb.src = want; } }
+  if (thumb.dataset.src !== want) { thumb.dataset.src = want; thumb.hidden = !want; if (want) { thumb.onerror = () => { thumb.hidden = true; setTimeout(() => { if (thumb.dataset.src === want) thumb.dataset.src = ""; }, 30000); }; thumb.src = want; } }
   ovl.querySelector(".cam-ovl-name").textContent = p.name;
   ovl.querySelector(".cam-ovl-stats").textContent = [
     p.progress != null ? `${Math.floor(p.progress * 100)}%` : null,
