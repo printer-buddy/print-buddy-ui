@@ -1042,13 +1042,13 @@ function camTick() {
     // with a 45s fallback for idle prints / files with no layer info. The focused "big" view keeps its timed refresh.
     const isCard = img.dataset.camKind === "card", hasLayer = typeof p.layer === "number";
     const due = st.last === 0
-      || (isCard ? (hasLayer && p.state === "printing" ? p.layer !== st.layer : now - st.last >= 45000)
+      || (isCard ? (hasLayer && p.state === "printing" ? p.layer !== st.layer || (st.failed && now - st.last >= 10000) : now - st.last >= 45000)
                  : now - st.last >= every);
     if (!st.loading && due) {
       st.loading = true; st.last = now;
       if (typeof p.layer === "number") st.layer = p.layer;
-      img.onload = () => { st.loading = false; st.frames.push(performance.now()); showFps(img, st, cfg); };
-      img.onerror = () => { st.loading = false; };
+      img.onload = () => { st.loading = false; st.failed = false; st.frames.push(performance.now()); showFps(img, st, cfg); };
+      img.onerror = () => { st.loading = false; st.failed = true; };
       img.src = `/api/printers/${pid}/snapshot?cam=${idx}&t=${Date.now()}`;
     } else showFps(img, st, cfg);
   }
