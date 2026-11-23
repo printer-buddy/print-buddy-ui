@@ -17,7 +17,7 @@ const _HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 function _spool(color, pct, empty) {
   const cx = 60, cy = 60, uid = ++_sid, c = empty ? "" : (_HEX.test(color) ? color : "#9aa3af");
   const R_OUT = 52, R_HUB = 23;
-  const frac = empty ? 0 : Math.max(0.14, pct == null ? 1 : pct / 100);
+  const frac = empty ? 0 : Math.min(1, Math.max(0.14, pct == null ? 1 : pct / 100));
   const rFil = R_HUB + (R_OUT - R_HUB) * frac;
   const pl0 = "#eef1f5", pl1 = "#c3cad3", pl2 = "#9aa3af", rim = "#7c8691", bed = "#0c0e12";
   const fHi = empty ? "" : _mix(c, "#fff", 0.30), fLo = empty ? "" : _mix(c, "#000", 0.34), fEdge = empty ? "" : _mix(c, "#000", 0.5);
