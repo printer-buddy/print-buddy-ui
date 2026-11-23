@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-23 sterling m thermals/flame-colour################################
+
+## Tint each extruder flame with its loaded filament's colour
+
+On a printer with an MMU/AFC, each extruder row's flame icon on the Thermals panel takes the colour of the filament loaded in that nozzle, so a loaded red PLA shows a red flame. On a multi-nozzle toolchanger each nozzle is matched to the lane loaded into it (via the lane's `extruder`/`tool_loaded` from core); it falls back to the one active slot for a single nozzle, and to the usual orange when nothing is loaded or there's no MMU. *Why:* the flame was always orange and gave no hint of what's loaded. (A U1/AFC user's idea.)
+
+Lines changed:
+- `panels/control/thermals/thermals.js` — 44–49 add `loadedColor` (the colour of the lane loaded into a given extruder, with a single-nozzle fallback); 147 tint every `extruder*` flame with it each tick (DOM property; falls back to the palette colour)
+
+################################end of entry################################
+
 ################################2026-11-23 sterling m mmu/spool-art################################
 
 ## Draw the MMU/AMS slots as real filament spools
