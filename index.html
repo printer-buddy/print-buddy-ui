@@ -853,7 +853,9 @@ function render() {
 
     const status = el.querySelector(".status");
     const detail = p.klippy_message || (p.state === "error" && p.message) || null;
-    status.innerHTML = `<span style="color:${statusColor}">${esc(detail || statusText)}</span>` +
+    const layerTxt = active && typeof p.layer === "number"
+      ? ` <span class="file">· Layer ${p.layer}${typeof p.total_layers === "number" ? " / " + p.total_layers : ""}</span>` : "";
+    status.innerHTML = `<span style="color:${statusColor}">${esc(detail || statusText)}</span>` + layerTxt +
       (p.filename && (active || p.state === "complete") ? ` <span class="file">· ${esc(p.filename)}</span>` : "");
     status.title = [detail || statusText, p.filename].filter(Boolean).join(" · ");
 
@@ -1036,8 +1038,15 @@ function camTick() {
       showFps(img, st, cfg); continue;
     }
     if (liveStreams.has(img)) stopLive(img);
-    if (!st.loading && now - st.last >= every) {
+    // Overview cards refresh once per layer (snapshot lands at the repeatable layer-change spot, so it looks calm, not jumpy),
+    // with a 45s fallback for idle prints / files with no layer info. The focused "big" view keeps its timed refresh.
+    const isCard = img.dataset.camKind === "card", hasLayer = typeof p.layer === "number";
+    const due = st.last === 0
+      || (isCard ? (hasLayer && p.state === "printing" ? p.layer !== st.layer : now - st.last >= 45000)
+                 : now - st.last >= every);
+    if (!st.loading && due) {
       st.loading = true; st.last = now;
+      if (typeof p.layer === "number") st.layer = p.layer;
       img.onload = () => { st.loading = false; st.frames.push(performance.now()); showFps(img, st, cfg); };
       img.onerror = () => { st.loading = false; };
       img.src = `/api/printers/${pid}/snapshot?cam=${idx}&t=${Date.now()}`;

@@ -2,6 +2,28 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-23 sterling m overview/layer################################
+
+## Show the current layer on the printers overview
+
+A printing card on the printers overview now shows `Layer <n> / <total>` next to the status/filename, using the layer Printer Buddy already reports (from `SET_PRINT_STATS_INFO` or derived from Z height). *Why:* the overview showed progress percent but not which layer the print was on.
+
+Lines changed:
+- `index.html` — 856–858 append `Layer n / total` to a printing card's status line when the layer is known
+
+################################end of entry################################
+
+################################2026-11-23 sterling m cameras/snapshot-per-layer################################
+
+## Refresh overview camera thumbnails once per layer
+
+On the multi-printer overview, a printing card's camera snapshot now refreshes when the print's layer advances instead of every 5 seconds, with a 45s fallback for idle prints or files with no layer info. *Why:* a timed snapshot caught the toolhead at a random spot each time so the thumbnails jumped around; layers change at a repeatable toolhead position, so a per-layer frame looks calm and also cuts the snapshot load.
+
+Lines changed:
+- `index.html` — 1041–1050 refresh an overview card's snapshot on `p.layer` change (with a 45s idle fallback and an immediate first frame); the focused "big" view keeps its timed refresh
+
+################################end of entry################################
+
 ################################2026-11-23 sterling m thermals/flame-colour################################
 
 ## Tint each extruder flame with its loaded filament's colour
