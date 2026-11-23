@@ -40,6 +40,14 @@ PB.panel("thermals", {
                     therm: '<path d="M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0z"/>' };
     const iconOf = id => ICONS[id === "heater_bed" ? "bed" : /^extruder\d*$/.test(id) || id.startsWith("heater_generic") ? "flame" : id.startsWith("temperature_fan") ? "fan" : "therm"];
     const colorOf = id => COLORS[id] || EXTRA[Math.max(0, order.indexOf(id) - (order.includes("extruder") ? 1 : 0) - (order.includes("heater_bed") ? 1 : 0)) % EXTRA.length];
+    // Colour of the filament currently loaded in the nozzle (from the MMU/AFC active slot), for tinting the extruder flame.
+    const loadedColor = (p, sid) => {
+      const m = p && p.mmu; if (!m || !Array.isArray(m.gates)) return null;
+      let g = m.gates.find(x => x.tool_loaded && x.extruder === sid);     // per-nozzle (toolchanger): the lane loaded into this extruder
+      const oneNozzle = (p.sensors || []).filter(s => /^extruder\d*$/.test(s.id)).length <= 1;
+      if (!g && oneNozzle && sid === "extruder" && m.gate >= 0) g = m.gates[m.gate];   // single-nozzle fallback: the one active slot
+      const c = g && g.color; return /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(c) ? c : null;
+    };
     if (!cfg.chart) { }
     else if (window.echarts) {
       chart = echarts.init(chartEl, null, { renderer: "canvas" });
@@ -137,6 +145,7 @@ PB.panel("thermals", {
           row.querySelector("[data-f=pw]").textContent = live && s.kind === "heater" && s.power != null ? `${Math.round(s.power * 100)}%` : "";
           const inp = row.querySelector("input");
           if (inp) { if (document.activeElement !== inp) inp.placeholder = s.target ? `${Math.round(s.target)}` : "0"; inp.disabled = !live || isBasic(); }
+          if (/^extruder\d*$/.test(s.id)) { const ti = row.querySelector(".pb-ti"); if (ti) ti.style.color = loadedColor(p, s.id) || colorOf(s.id); }
         }
         if (!chart || Date.now() - lastPush < 1000 || !live) return;
         const now = lastPush = Date.now();
