@@ -13,8 +13,9 @@ let _sid = 0;
 function _px(h) { h = String(h || "").replace("#", ""); if (h.length === 3) h = h.split("").map(x => x + x).join(""); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; }
 function _mix(hex, to, amt) { const [r, g, b] = _px(hex), t = to === "#fff" ? 255 : 0, m = v => Math.round(v + (t - v) * amt); return `rgb(${m(r)},${m(g)},${m(b)})`; }
 // Face-on filament spool: translucent flange + spoke hub, wound filament ring in the slot colour that recedes toward the hub as it empties.
+const _HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
 function _spool(color, pct, empty) {
-  const cx = 60, cy = 60, uid = ++_sid, c = empty ? "" : (color || "#9aa3af");
+  const cx = 60, cy = 60, uid = ++_sid, c = empty ? "" : (_HEX.test(color) ? color : "#9aa3af");
   const R_OUT = 52, R_HUB = 23;
   const frac = empty ? 0 : Math.max(0.14, pct == null ? 1 : pct / 100);
   const rFil = R_HUB + (R_OUT - R_HUB) * frac;
