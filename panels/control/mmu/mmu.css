@@ -19,10 +19,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
 .pb-mmu-gate:disabled { cursor: default; }
 .pb-mmu-gate.on { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
 .pb-mmu-gate.empty { opacity: .45; }
-.pb-mmu-spool { width: 52px; height: 52px; border-radius: 50%; border: 1px solid var(--bd-line);
-                background: radial-gradient(circle, var(--bd-deep) 0 20%, var(--c) 24% 80%, rgba(0, 0, 0, .35) 84% 100%);
-                box-shadow: inset 0 0 6px rgba(0, 0, 0, .4), 0 1px 2px rgba(0, 0, 0, .35); }
-.pb-mmu-gate.empty .pb-mmu-spool { background: none; border-style: dashed; box-shadow: none; }
+.pb-mmu-spool { width: 54px; height: auto; display: block; }
 .pb-mmu-mat { font-size: 12px; font-weight: 600; }
 .pb-mmu-name { font-size: 11px; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-height: 13px; }
 .pb-mmu-left { width: 100%; height: 6px; background: var(--bd-hover); border-radius: 3px; overflow: hidden; }
