@@ -44,7 +44,8 @@ PB.panel("thermals", {
     const loadedColor = (p, sid) => {
       const m = p && p.mmu; if (!m || !Array.isArray(m.gates)) return null;
       let g = m.gates.find(x => x.tool_loaded && x.extruder === sid);     // per-nozzle (toolchanger): the lane loaded into this extruder
-      if (!g && sid === "extruder" && m.gate >= 0) g = m.gates[m.gate];   // single-nozzle fallback: the one active slot
+      const oneNozzle = (p.sensors || []).filter(s => /^extruder\d*$/.test(s.id)).length <= 1;
+      if (!g && oneNozzle && sid === "extruder" && m.gate >= 0) g = m.gates[m.gate];   // single-nozzle fallback: the one active slot
       const c = g && g.color; return /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(c) ? c : null;
     };
     if (!cfg.chart) { }
