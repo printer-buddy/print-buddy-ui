@@ -2,6 +2,18 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-23 sterling m mmu/spool-art################################
+
+## Draw the MMU/AMS slots as real filament spools
+
+Each slot now renders an SVG filament spool — a translucent flange with a spoke hub and the filament wound as a ring in the slot colour that recedes toward the hub as the slot empties — in place of the flat gradient dot. Applies to every MMU/AMS type (AFC, Happy Hare, CFS, Bambu AMS); an empty slot shows a bare spool. *Why:* the flat dot didn't read as filament or show how full a slot is at a glance.
+
+Lines changed:
+- `panels/control/mmu/mmu.js` — 12–41 add `_spool` (the filament-spool SVG) with small colour helpers `_px`/`_mix`; 59 render it per slot in place of the flat `<span class="pb-mmu-spool">`
+- `panels/control/mmu/mmu.css` — 22 size the spool SVG (replaces the flat-circle `.pb-mmu-spool` background/border rules)
+
+################################end of entry################################
+
 ################################2026-11-21 sterling m ui/other-files-drop################################
 
 ## Fix the Other-files panel still blanking the dashboard
