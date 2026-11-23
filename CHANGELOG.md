@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-23 sterling m cameras/overlay-card################################
+
+## Print info card over the camera in full screen and Quick View
+
+Full-screening the printer-page camera, or opening Quick View, now overlays a card in the bottom-left with the gcode thumbnail, printer name, progress %, layer, time left and nozzle/bed temps — so the print stats stay visible when the rest of the page is hidden. It shows only while printing or paused. *Why:* full screen left just the video with no stats.
+
+Lines changed:
+- `index.html` — 548, 715 add the `.cam-ovl` card to the page and Quick View cameras; 198–206 its style (shown only in `#pgCam:fullscreen` or the Quick View); 1243 add `setCamOverlay` (gcode thumbnail via `/api/printers/<id>/thumbnail`, name, %/layer/time/temps); 1272, 1332 populate it each render
+
+################################end of entry################################
+
 ################################2026-11-23 sterling m overview/layer################################
 
 ## Show the current layer on the printers overview

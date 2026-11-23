@@ -185,6 +185,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
          font: 700 12px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); pointer-events: none; }
   .qv-cam .fps, .pg-cam .fps { right: auto; left: 12px; top: 12px; }
   .ctl-cam .fps, .pb-card .pg-cam .fps { right: 12px; left: auto; top: auto; bottom: 12px; }
+  #pgCam .fps, .qv-cam .fps { right: auto; left: 12px; top: 12px; bottom: auto; }
   img[hidden] ~ .fps, .grid.list .fps { display: none; }
   .ctl-camsec { grid-column: 1 / -1; padding: 0 !important; overflow: hidden; }
   .ctl-cam { position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 440px; background: #000; overflow: hidden; }
@@ -195,6 +196,14 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .camtile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   .camtile .fps { left: 8px; top: 8px; right: auto; }
   .camname { position: absolute; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 6px; background: rgba(11,11,13,.8); font-size: 12px; font-weight: 700; }
+  .cam-ovl { display: none; position: absolute; left: 12px; bottom: 12px; align-items: center; gap: 10px; max-width: calc(100% - 24px);
+             padding: 8px 10px; border-radius: 10px; background: rgba(11,11,13,.82); color: #fff; z-index: 2; pointer-events: none; }
+  #pgCam:fullscreen .cam-ovl:not([hidden]), .qv-cam .cam-ovl:not([hidden]) { display: flex; }
+  .cam-ovl .cam-ovl-thumb { position: static; inset: auto; width: 54px; height: 54px; object-fit: contain; border-radius: 6px; background: #000; flex: none; }
+  .cam-ovl .cam-ovl-thumb[hidden] { display: none; }
+  .cam-ovl-info { display: flex; flex-direction: column; min-width: 0; }
+  .cam-ovl-name { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cam-ovl-stats { font-size: 12px; color: rgba(255,255,255,.85); }
   .camsw { position: absolute; left: 12px; bottom: 12px; z-index: 2; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 10px; background: rgba(11,11,13,.82); }
   .camsw button { min-height: 36px; padding: 0 12px; background: transparent; font-size: 14px; }
   .camsw button[aria-pressed="true"] { background: var(--orange); color: #1A1005; }
@@ -537,6 +546,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
     <div class="pg-cambox">
       <div class="pg-cam" id="pgCam">
         <img id="pgImg" alt="Webcam" hidden><div class="nocam" id="pgNoCam">No camera</div><span class="fps" aria-hidden="true"></span>
+        <div class="cam-ovl" id="pgOvl" hidden><img class="cam-ovl-thumb" alt=""><div class="cam-ovl-info"><b class="cam-ovl-name"></b><span class="cam-ovl-stats"></span></div></div>
         <button class="pg-full" id="pgFull" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
       <div class="bar"><div id="pgBar"></div></div>
@@ -703,7 +713,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
     <span class="spacer"></span>
     <button class="qv-close" id="qvClose" aria-label="Close Quick View"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
-  <div class="qv-cam"><img id="qvImg" alt="Webcam" hidden><div class="nocam" id="qvNoCam">No camera</div><span class="fps" aria-hidden="true"></span></div>
+  <div class="qv-cam"><img id="qvImg" alt="Webcam" hidden><div class="nocam" id="qvNoCam">No camera</div><span class="fps" aria-hidden="true"></span><div class="cam-ovl" id="qvOvl" hidden><img class="cam-ovl-thumb" alt=""><div class="cam-ovl-info"><b class="cam-ovl-name"></b><span class="cam-ovl-stats"></span></div></div></div>
   <div class="bar"><div id="qvBar"></div></div>
   <div class="qv-foot">
     <div class="qv-info"><span class="line" id="qvLine"></span><span class="sub" id="qvSub"></span></div>
@@ -1231,6 +1241,21 @@ function openQV(id) {
   refreshQVCam(); $("#qv").showModal();
 }
 function refreshQVCam() { const img = $("#qvImg"); camState.delete(img); img.dataset.camPid = qvId ?? ""; img.dataset.camKind = "big"; }
+function setCamOverlay(ovl, p, id) {
+  const active = p && (p.state === "printing" || p.state === "paused");
+  ovl.hidden = !active;
+  if (!active) return;
+  const thumb = ovl.querySelector(".cam-ovl-thumb");
+  const want = p.filename ? `/api/printers/${id}/thumbnail?file=${encodeURIComponent(p.filename)}` : "";
+  if (thumb.dataset.src !== want) { thumb.dataset.src = want; thumb.hidden = !want; if (want) { thumb.onerror = () => { thumb.hidden = true; }; thumb.src = want; } }
+  ovl.querySelector(".cam-ovl-name").textContent = p.name;
+  ovl.querySelector(".cam-ovl-stats").textContent = [
+    p.progress != null ? `${Math.floor(p.progress * 100)}%` : null,
+    typeof p.layer === "number" ? `Layer ${p.layer}${typeof p.total_layers === "number" ? "/" + p.total_layers : ""}` : null,
+    p.eta != null ? `${fmtDur(p.eta)} left` : null,
+    p.nozzle != null ? `${Math.round(p.nozzle)}°/${Math.round(p.bed ?? 0)}°` : null,
+  ].filter(Boolean).join(" · ");
+}
 function renderQV() {
   if (qvId === null) return;
   const p = printers.get(qvId);
@@ -1245,6 +1270,7 @@ function renderQV() {
   const camOk = p.has_webcam && live;
   $("#qvImg").hidden = !camOk; $("#qvNoCam").hidden = camOk;
   setupCamBox($(".qv-cam"), $("#qvImg"), p, qvSel);
+  setCamOverlay($("#qvOvl"), p, qvId);
   $("#qvNoCam").textContent = live ? "No camera" : "Can't reach printer";
   $("#qvBar").style.width = `${pct * 100}%`; $("#qvBar").style.background = barColor;
   const line = $("#qvLine"); line.textContent = (p.state === "error" && p.message) || statusText; line.style.color = statusColor;
@@ -1304,6 +1330,7 @@ function renderPage() {
   const camOk = p.has_webcam && live;
   $("#pgImg").hidden = !camOk; $("#pgNoCam").hidden = camOk; $("#pgFull").hidden = !camOk;
   setupCamBox($("#pgCam"), $("#pgImg"), p, pageSel);
+  setCamOverlay($("#pgOvl"), p, pageId);
   $("#pgNoCam").textContent = live ? "No camera" : "Can't reach printer";
   $("#pgBar").style.width = `${pct * 100}%`; $("#pgBar").style.background = barColor;
   const state = $("#pgState"); state.textContent = p.klippy_message || (p.state === "error" && p.message) || statusText; state.style.color = statusColor;
