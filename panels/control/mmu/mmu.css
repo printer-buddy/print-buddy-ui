@@ -18,6 +18,8 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
                background: var(--bd-deep); border: 1px solid var(--bd-line); border-radius: 6px; color: var(--text); font: inherit; cursor: pointer; }
 .pb-mmu-gate:disabled { cursor: default; }
 .pb-mmu-gate.on { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+:is(#page, #home).bd .pb-mmu-gate { height: auto; padding: 12px 8px 10px; background: var(--bd-deep); border: 1px solid var(--bd-line); }
+:is(#page, #home).bd .pb-mmu-gate.on { border-color: var(--orange); }
 .pb-mmu-gate.empty { opacity: .45; }
 .pb-mmu-spool { width: 54px; height: auto; display: block; }
 .pb-mmu-mat { font-size: 12px; font-weight: 600; }
