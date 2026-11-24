@@ -1254,7 +1254,7 @@ function setCamOverlay(ovl, p, id) {
     p.progress != null ? `${Math.floor(p.progress * 100)}%` : null,
     typeof p.layer === "number" ? `Layer ${p.layer}${typeof p.total_layers === "number" ? "/" + p.total_layers : ""}` : null,
     p.eta != null ? `${fmtDur(p.eta)} left` : null,
-    p.nozzle != null ? `${Math.round(p.nozzle)}°/${Math.round(p.bed ?? 0)}°` : null,
+    p.nozzle != null || p.bed != null ? `${p.nozzle != null ? Math.round(p.nozzle) + "°" : "—"}/${p.bed != null ? Math.round(p.bed) + "°" : "—"}` : null,
   ].filter(Boolean).join(" · ");
 }
 function renderQV() {
