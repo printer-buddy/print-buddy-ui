@@ -153,7 +153,7 @@ PB.panel("mmu", {
       for (const b of box.querySelectorAll("[data-g]")) b.onclick = () => { const i = +b.dataset.g; sel = sel === i ? null : i; editing = false; draw(last); };
       for (const b of box.querySelectorAll(".pb-mmu-menu [data-act]")) b.onclick = () => act(b.dataset.act, m);
       const g = sel != null ? m.gates[sel] : null;
-      box.querySelector('[data-f="color"]')?.addEventListener("input", e => { e.target.dataset.touched = "1"; });
+      for (const el of box.querySelectorAll("[data-f]")) for (const ev of ["input", "change"]) el.addEventListener(ev, () => { el.dataset.touched = "1"; });
       box.querySelector("[data-map]")?.addEventListener("change", e => gcode(`SET_MAP LANE=${_q(g.label)} MAP=${_q(e.target.value)}`));
       box.querySelector("[data-runout]")?.addEventListener("change", e => gcode(`SET_RUNOUT LANE=${_q(g.label)} RUNOUT=${_q(e.target.value)}`));
       box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?") && !busyNow()) gcode(m.gates[m.gate]?.label ? `TOOL_UNLOAD LANE=${_q(m.gates[m.gate].label)}` : "TOOL_UNLOAD"); });
@@ -161,9 +161,9 @@ PB.panel("mmu", {
       box.querySelector('.pb-mmu-foot [data-act="hhload"]')?.addEventListener("click", () => { if (confirm("Load the filament?") && !busyNow()) gcode("MMU_LOAD"); });
       box.querySelector('.pb-mmu-foot [data-act="hhunload"]')?.addEventListener("click", () => { if (confirm("Unload the filament?") && !busyNow()) gcode("MMU_UNLOAD"); });
     }
-    // Redraw while the editor is open (so buttons follow the printer state) but keep what's been typed, and the focus.
+    // Redraw while the editor is open (so buttons follow the printer state) but keep the fields that were edited, and the focus.
     function redrawKeepingForm(p) {
-      const keep = [...box.querySelectorAll("[data-f]")].map(el => [el.dataset.f, el.value, el.checked, el.dataset.touched]);
+      const keep = [...box.querySelectorAll("[data-f]")].filter(el => el.dataset.touched).map(el => [el.dataset.f, el.value, el.checked, el.dataset.touched]);
       const fo = document.activeElement?.dataset?.f, s0 = document.activeElement?.selectionStart, s1 = document.activeElement?.selectionEnd;
       draw(p);
       for (const [n, v, c, t] of keep) {
