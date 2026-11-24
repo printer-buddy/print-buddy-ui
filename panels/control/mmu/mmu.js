@@ -41,8 +41,8 @@ function _spool(color, pct, empty) {
     + (empty ? `<circle cx="${cx}" cy="${cy}" r="${R_OUT}" fill="none" stroke="${rim}" stroke-dasharray="3 5" stroke-width="1.5" opacity=".7"/>` : "")
     + `</svg>`;
 }
-// Klipper splits command params with shlex: quote values with spaces, and drop characters that start a comment.
-function _q(v) { v = String(v ?? "").replace(/[#;*"]/g, "").trim(); return /\s/.test(v) ? `"${v}"` : v; }
+// Klipper splits command params with shlex: always double-quote, escape backslashes, and drop characters that start a comment.
+function _q(v) { v = String(v ?? "").replace(/[#;*"]/g, "").trim().replace(/\\/g, "\\\\"); return `"${v}"`; }
 function _hex(c) { return _HEX.test(c || "") ? (c.length === 4 ? "#" + [...c.slice(1)].map(x => x + x).join("") : c).toLowerCase() : ""; }
 PB.panel("mmu", {
   title: "MMU / AMS", desc: "Filament slots, what's loaded, load, unload and edit each lane", cls: "adv",
@@ -51,6 +51,7 @@ PB.panel("mmu", {
     host.innerHTML = `<div class="pb-mmu"></div>`;
     const box = host.querySelector(".pb-mmu");
     let key = "", sel = null, editing = false, last = null;
+    const busyNow = () => !!last && (last.state === "printing" || last.state === "paused");
     function gate(g, i, m) {
       const empty = !g.status, on = m.gate === i, no = g.label || i + 1;
       const lbl = [g.grams != null ? `${g.grams} g` : "", g.remaining != null ? `${Math.round(g.remaining)}% left` : ""].filter(Boolean).join(" · ");
@@ -100,7 +101,7 @@ PB.panel("mmu", {
     }
     function act(a, m) {
       const i = sel, g = m.gates[i], lane = _q(g.label), no = g.label || i + 1, nm = /^lane/i.test(no) ? no : `lane ${no}`, f = n => box.querySelector(`[data-f="${n}"]`);
-      const ask = (t, s) => { if (confirm(t)) gcode(s); };
+      const ask = (t, s) => { if (confirm(t) && !busyNow()) gcode(s); };
       if (a === "edit") { editing = true; return draw(last); }
       if (a === "cancel") { editing = false; return draw(last); }
       if (m.afc) {
@@ -110,7 +111,7 @@ PB.panel("mmu", {
         if (a === "save") {
           const c = f("color").value.replace("#", ""), mat = f("material").value.trim(), w = f("weight").value;
           const lines = [];
-          if (c !== _hex(g.color).replace("#", "")) lines.push(`SET_COLOR LANE=${lane} COLOR=${c}`);
+          if (f("color").dataset.touched) lines.push(`SET_COLOR LANE=${lane} COLOR=${c}`);
           if (mat && mat !== (g.material || "")) lines.push(`SET_MATERIAL LANE=${lane} MATERIAL=${_q(mat)}`);
           if (w !== "" && +w !== g.grams) lines.push(`SET_WEIGHT LANE=${lane} WEIGHT=${Math.round(+w)}`);
           if (lines.length) gcode(lines.join("\n"));
@@ -126,7 +127,7 @@ PB.panel("mmu", {
         const parts = [], name = f("name").value.trim(), mat = f("material").value.trim(), c = f("color").value.replace("#", ""), t = f("temp").value, av = f("available").checked;
         if (name !== (g.name || "")) parts.push(`NAME=${_q(name)}`);
         if (mat !== (g.material || "")) parts.push(`MATERIAL=${_q(mat)}`);
-        if (c !== _hex(g.color).replace("#", "")) parts.push(`COLOR=${c}`);
+        if (f("color").dataset.touched) parts.push(`COLOR=${c}`);
         if (t !== "" && +t !== g.temp) parts.push(`TEMP=${Math.round(+t)}`);
         if (av !== g.status > 0) parts.push(`AVAILABLE=${av ? 1 : 0}`);
         if (parts.length) gcode(`MMU_GATE_MAP GATE=${i} ${parts.join(" ")} QUIET=1`);
@@ -152,20 +153,36 @@ PB.panel("mmu", {
       for (const b of box.querySelectorAll("[data-g]")) b.onclick = () => { const i = +b.dataset.g; sel = sel === i ? null : i; editing = false; draw(last); };
       for (const b of box.querySelectorAll(".pb-mmu-menu [data-act]")) b.onclick = () => act(b.dataset.act, m);
       const g = sel != null ? m.gates[sel] : null;
+      box.querySelector('[data-f="color"]')?.addEventListener("input", e => { e.target.dataset.touched = "1"; });
       box.querySelector("[data-map]")?.addEventListener("change", e => gcode(`SET_MAP LANE=${_q(g.label)} MAP=${_q(e.target.value)}`));
       box.querySelector("[data-runout]")?.addEventListener("change", e => gcode(`SET_RUNOUT LANE=${_q(g.label)} RUNOUT=${_q(e.target.value)}`));
-      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode(m.gates[m.gate]?.label ? `TOOL_UNLOAD LANE=${_q(m.gates[m.gate].label)}` : "TOOL_UNLOAD"); });
-      box.querySelector('.pb-mmu-foot [data-act="bypass"]')?.addEventListener("click", () => gcode("MMU_SELECT BYPASS=1"));
-      box.querySelector('.pb-mmu-foot [data-act="hhload"]')?.addEventListener("click", () => { if (confirm("Load the filament?")) gcode("MMU_LOAD"); });
-      box.querySelector('.pb-mmu-foot [data-act="hhunload"]')?.addEventListener("click", () => { if (confirm("Unload the filament?")) gcode("MMU_UNLOAD"); });
+      box.querySelector("[data-unload]")?.addEventListener("click", () => { if (confirm("Unload the filament?") && !busyNow()) gcode(m.gates[m.gate]?.label ? `TOOL_UNLOAD LANE=${_q(m.gates[m.gate].label)}` : "TOOL_UNLOAD"); });
+      box.querySelector('.pb-mmu-foot [data-act="bypass"]')?.addEventListener("click", () => { if (!busyNow()) gcode("MMU_SELECT BYPASS=1"); });
+      box.querySelector('.pb-mmu-foot [data-act="hhload"]')?.addEventListener("click", () => { if (confirm("Load the filament?") && !busyNow()) gcode("MMU_LOAD"); });
+      box.querySelector('.pb-mmu-foot [data-act="hhunload"]')?.addEventListener("click", () => { if (confirm("Unload the filament?") && !busyNow()) gcode("MMU_UNLOAD"); });
+    }
+    // Redraw while the editor is open (so buttons follow the printer state) but keep what's been typed, and the focus.
+    function redrawKeepingForm(p) {
+      const keep = [...box.querySelectorAll("[data-f]")].map(el => [el.dataset.f, el.value, el.checked, el.dataset.touched]);
+      const fo = document.activeElement?.dataset?.f, s0 = document.activeElement?.selectionStart, s1 = document.activeElement?.selectionEnd;
+      draw(p);
+      for (const [n, v, c, t] of keep) {
+        const el = box.querySelector(`[data-f="${n}"]`);
+        if (!el) continue;
+        el.value = v; el.checked = c;
+        if (t) el.dataset.touched = t;
+      }
+      const el = fo && box.querySelector(`[data-f="${fo}"]`);
+      if (el) { el.focus(); try { if (s0 != null) el.setSelectionRange(s0, s1); } catch (e) { } }
     }
     return {
-      open() { key = ""; },
+      open() { key = ""; sel = null; editing = false; last = null; },
       update(p) {
-        if (editing) { last = p; return; }
         const k = JSON.stringify([p.mmu, p.state]);
+        last = p;
         if (k === key) return;
         key = k;
+        if (editing) return redrawKeepingForm(p);
         draw(p);
       },
     };

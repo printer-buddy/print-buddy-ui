@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-24 sterling m mmu/lane-actions-fixes################################
+
+## MMU card: fixes from review
+
+Four fixes to the per-lane MMU menu. Values in commands are now always double-quoted with backslashes escaped, so a name like `O'Reilly` no longer makes Klipper reject the command. Saving the edit form sends a colour only if the colour picker was touched, so editing just the material or weight of a lane with no colour no longer turns it grey. Switching to another printer closes the menu and editor, so a Save can't write one printer's gate data to another. While the editor is open the card still redraws on each update (keeping what's been typed and the focus), so motion buttons grey out when a print starts, and every motion command re-checks the printer isn't printing or paused before it's sent. *Why:* CodeRabbit review of the per-lane menu.
+
+Lines changed:
+- `panels/control/mmu/mmu.js` — 44–45 `_q` always quotes and escapes backslashes; 54 add `busyNow`; 104, 159–162 re-check `busyNow()` before sending motion commands; 114, 130 send the colour only when touched; 156 mark the colour picker as touched on input; 164–177 add `redrawKeepingForm`; 179 `open()` clears the selected lane and editor; 180–187 `update()` redraws while editing via `redrawKeepingForm`
+
+################################end of entry################################
+
 ################################2026-11-24 sterling m mmu/lane-actions################################
 
 ## MMU card: per-lane actions like Fluidd and Mainsail
