@@ -29,3 +29,13 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
 .pb-mmu-pct { font-size: 10px; color: var(--muted); margin-top: -1px; }
 .pb-mmu-no { position: absolute; top: 3px; left: 5px; font-size: 10px; color: var(--muted); }
 .pb-mmu-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+.pb-mmu-gate.sel { outline: 2px solid var(--muted); outline-offset: 1px; }
+.pb-mmu-menu { margin: 0 0 10px; padding: 10px; background: var(--bd-deep); border: 1px solid var(--bd-line); border-radius: 6px; display: grid; gap: 8px; font-size: 13px; }
+.pb-mmu-menu-head { display: flex; justify-content: space-between; gap: 8px; }
+.pb-mmu-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.pb-mmu-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pb-mmu-row select { min-width: 110px; }
+.pb-mmu-form { display: grid; gap: 6px; padding-top: 8px; border-top: 1px solid var(--bd-line); }
+.pb-mmu-form label { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pb-mmu-form input[type="text"], .pb-mmu-form input[type="number"] { width: 140px; }
+.pb-mmu-form .pb-mmu-check { justify-content: flex-start; }

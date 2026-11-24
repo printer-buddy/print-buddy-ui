@@ -2,6 +2,29 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-24 sterling m mmu/lane-actions-fixes################################
+
+## MMU card: fixes from review
+
+Four fixes to the per-lane MMU menu. Values in commands are now always double-quoted with backslashes escaped, so a name like `O'Reilly` no longer makes Klipper reject the command. Saving the edit form sends a colour only if the colour picker was touched, so editing just the material or weight of a lane with no colour no longer turns it grey. Switching to another printer closes the menu and editor, so a Save can't write one printer's gate data to another. While the editor is open the card still redraws on each update (keeping only the fields that were edited, and the focus; untouched fields show the printer's latest values, so a Save can't send back a stale material or name), so motion buttons grey out when a print starts, and every motion command re-checks the printer isn't printing or paused before it's sent. *Why:* CodeRabbit review of the per-lane menu.
+
+Lines changed:
+- `panels/control/mmu/mmu.js` — 44–45 `_q` always quotes and escapes backslashes; 54 add `busyNow`; 104, 159–162 re-check `busyNow()` before sending motion commands; 114, 130 send the colour only when touched; 156 mark every edit field as touched on input or change; 164–177 add `redrawKeepingForm`, restoring only touched fields; 179 `open()` clears the selected lane and editor; 180–187 `update()` redraws while editing via `redrawKeepingForm`
+
+################################end of entry################################
+
+################################2026-11-24 sterling m mmu/lane-actions################################
+
+## MMU card: per-lane actions like Fluidd and Mainsail
+
+Clicking a lane or gate on the MMU card now opens a menu for that lane instead of loading it straight away. AFC lanes get Load or Unload (`CHANGE_TOOL` / `TOOL_UNLOAD LANE=`), Eject (`LANE_UNLOAD LANE=`, also on an empty lane when prep is detected), a Tool picker (`SET_MAP`), a Runout-to picker (`SET_RUNOUT`) and Edit filament (colour, material, weight, sending only what changed with `SET_COLOR` / `SET_MATERIAL` / `SET_WEIGHT`). Happy Hare gates get Select, Preload, Eject, Change tool (`MMU_SELECT` / `MMU_PRELOAD` / `MMU_EJECT` / `MMU_CHANGE_TOOL GATE=`) and Edit gate (name, material, colour, temperature, available, as one `MMU_GATE_MAP GATE=… QUIET=1`). The Happy Hare footer now has Load and Unload (`MMU_LOAD` / `MMU_UNLOAD`, instead of `MMU_EJECT`) and Select bypass when the unit has one. Actions are greyed out by the same rules as Fluidd and Mainsail (while printing, lane not ready, already selected, no crossload), filament moves still ask to confirm, and the edit form isn't redrawn by live updates while it's open. *Why:* the card could only load a slot and unload; per-lane control needed Fluidd or Mainsail.
+
+Lines changed:
+- `panels/control/mmu/mmu.js` — 45–46 add `_q` (quotes values with spaces for Klipper, strips comment characters) and `_hex`; 47–48 panel description; 52–66 lanes open the menu (no longer disabled when empty), selected lane outlined; 67–100 add `menu()` with the AFC and Happy Hare actions and edit forms; 101–135 add `act()` sending the commands; 136–161 `draw()` adds the menu, the Happy Hare footer buttons and their handlers; 164–165 skip redraws while editing
+- `panels/control/mmu/mmu.css` — 32–42 styles for the selected lane, the menu, its rows and the edit form
+
+################################end of entry################################
+
 ################################2026-11-23 sterling m cameras/overlay-card################################
 
 ## Print info card over the camera in full screen and Quick View
