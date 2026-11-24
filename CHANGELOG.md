@@ -2,6 +2,18 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-24 sterling m mmu/lane-actions################################
+
+## MMU card: per-lane actions like Fluidd and Mainsail
+
+Clicking a lane or gate on the MMU card now opens a menu for that lane instead of loading it straight away. AFC lanes get Load or Unload (`CHANGE_TOOL` / `TOOL_UNLOAD LANE=`), Eject (`LANE_UNLOAD LANE=`, also on an empty lane when prep is detected), a Tool picker (`SET_MAP`), a Runout-to picker (`SET_RUNOUT`) and Edit filament (colour, material, weight, sending only what changed with `SET_COLOR` / `SET_MATERIAL` / `SET_WEIGHT`). Happy Hare gates get Select, Preload, Eject, Change tool (`MMU_SELECT` / `MMU_PRELOAD` / `MMU_EJECT` / `MMU_CHANGE_TOOL GATE=`) and Edit gate (name, material, colour, temperature, available, as one `MMU_GATE_MAP GATE=… QUIET=1`). The Happy Hare footer now has Load and Unload (`MMU_LOAD` / `MMU_UNLOAD`, instead of `MMU_EJECT`) and Select bypass when the unit has one. Actions are greyed out by the same rules as Fluidd and Mainsail (while printing, lane not ready, already selected, no crossload), filament moves still ask to confirm, and the edit form isn't redrawn by live updates while it's open. *Why:* the card could only load a slot and unload; per-lane control needed Fluidd or Mainsail.
+
+Lines changed:
+- `panels/control/mmu/mmu.js` — 45–46 add `_q` (quotes values with spaces for Klipper, strips comment characters) and `_hex`; 47–48 panel description; 52–66 lanes open the menu (no longer disabled when empty), selected lane outlined; 67–100 add `menu()` with the AFC and Happy Hare actions and edit forms; 101–135 add `act()` sending the commands; 136–161 `draw()` adds the menu, the Happy Hare footer buttons and their handlers; 164–165 skip redraws while editing
+- `panels/control/mmu/mmu.css` — 32–42 styles for the selected lane, the menu, its rows and the edit form
+
+################################end of entry################################
+
 ################################2026-11-23 sterling m cameras/overlay-card################################
 
 ## Print info card over the camera in full screen and Quick View
