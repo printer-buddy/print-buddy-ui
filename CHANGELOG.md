@@ -8,11 +8,11 @@ All changes to the Printer Buddy web UI, newest first.
 
 The Printer Buddy menu (the three-lines button on the printers page) has a **Box ID** section under Updates showing this box's share ID, the number to use with `/register` in the Printer Buddy Discord. *Why:* registering a box needs its ID, and it wasn't shown anywhere in the UI.
 
-The Share window shows a line in orange when Printer Buddy can't run the share tunnel, with the reason from the share server (for example that another box on the network is already sharing, and how to register this box) or that Remote access isn't finished. It checks again 8 seconds after a link is made, and an answer that arrives after the window has switched to another printer is ignored. *Why:* a refused tunnel only showed in Printer Buddy's log, so share links just didn't work with no explanation.
+The Share window shows a line in orange when Printer Buddy can't run the share tunnel, with the reason from the share server (for example that another box on the network is already sharing, and how to register this box) or that Remote access isn't finished. It checks again 8 seconds after a link is made, and only the answer to the newest load is used, so an older answer arriving late can't bring back a revoked link or show another printer's list. *Why:* a refused tunnel only showed in Printer Buddy's log, so share links just didn't work with no explanation.
 
 Lines changed:
 - `core/extras/system-drawer.js` — 126–127 add the Box ID section to the menu; 129 fill it from `/api/share/user-id`
-- `index.html` — 674 add the share warning line; 1663–1667 fill it from the share list's `tunnel_error`, ignoring an answer for a printer the window has moved off; 1689 check again after a link is made
+- `index.html` — 674 add the share warning line; 1661 add `shareLoad`; 1664–1668 fill it from the share list's `tunnel_error`, using only the answer to the newest load; 1690 check again after a link is made
 
 ################################end of entry################################
 

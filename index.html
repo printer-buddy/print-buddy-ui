@@ -1658,11 +1658,12 @@ $("#chatOpts").addEventListener("toggle", async e => {
 $("#chatSave").onclick = async () => {
   try { await api("/api/chat/settings", { method: "PUT", body: JSON.stringify({ blocked: $("#chatBlocked").value, builtin: $("#chatBuiltin").checked }) }); toast("Saved"); } catch (err) { toast(err.message); }
 };
+let shareLoad = 0;
 async function loadShares() {
   try {
-    const pid = shareId;
-    const { shares, tunnel_error } = await api(`/api/printers/${pid}/shares`);
-    if (pid !== shareId) return;
+    const seq = ++shareLoad;
+    const { shares, tunnel_error } = await api(`/api/printers/${shareId}/shares`);
+    if (seq !== shareLoad) return;
     $("#shareWarn").hidden = !tunnel_error;
     $("#shareWarn").textContent = tunnel_error ? `Share links don't work from outside right now: ${tunnel_error}` : "";
     $("#shareList").innerHTML = shares.length ? shares.map((sh, i) => `<div class="share-item">
