@@ -6,10 +6,10 @@ All changes to the Printer Buddy web UI, newest first.
 
 ## Iframe cameras show the printer's page, like Fluidd
 
-A camera with `service: iframe` (such as ZMOD's or Snapmaker U1 Extended firmware's touchscreen) now shows its `stream_url` page in an iframe in the quick view, the printer page and its full screen, and the Control page camera, the same way Fluidd shows it, so the printer's own page handles the picture and touches. Overview cards keep their snapshots. The page loads straight from the printer, so it shows only where the browser can reach the printer. *Why:* touches on ZMOD's screen worked in Fluidd but not in Printer Buddy.
+A camera with `service: iframe` (such as ZMOD's or Snapmaker U1 Extended firmware's touchscreen) now shows its `stream_url` page in an iframe in the quick view, the printer page and its full screen, and the Control page camera, the same way Fluidd shows it, so the printer's own page handles the picture and touches. Overview cards keep their snapshots. The page loads straight from the printer, so it shows only where the browser can reach the printer. The iframe is removed while its picture is hidden (printer offline, grid view, quick view closed) or the tab is in the background, and a WebRTC video is stopped before the iframe shows. *Why:* touches on ZMOD's screen worked in Fluidd but not in Printer Buddy.
 
 Lines changed:
-- `index.html` — 264 add the `.pb-camframe` overlay style; 1043–1049 in `camTick`, show an iframe camera's page in big views instead of the picture
+- `index.html` — 264 add the `.pb-camframe` overlay style; 1028 in `camTick`, remove iframes whose picture is hidden; 1044–1051 show an iframe camera's page in big views instead of the picture, stopping WebRTC first
 
 ################################end of entry################################
 

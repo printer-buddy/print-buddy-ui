@@ -1025,6 +1025,7 @@ async function startLive(img, pid, idx, st) {
 }
 
 function camTick() {
+  for (const f of document.querySelectorAll(".pb-camframe")) if (document.hidden || !f.previousElementSibling?.offsetParent) f.remove();
   if (document.hidden) { for (const img of [...liveStreams.keys()]) stopLive(img); window.PB?.webrtc?.sweep(); return; }
   for (const [img, s] of [...liveStreams]) {
     if (!img.isConnected || !img.offsetParent || +img.dataset.camPid !== s.pid || +(img.dataset.camIdx || 0) !== s.idx) stopLive(img);
@@ -1043,6 +1044,7 @@ function camTick() {
     const frame = img.nextElementSibling?.classList.contains("pb-camframe") ? img.nextElementSibling : null;
     if (cam && /iframe/i.test(cam.service) && cam.src && img.dataset.camKind === "big") {
       if (liveStreams.has(img)) stopLive(img);
+      window.PB?.webrtc?.stop(img);
       if (!frame) img.insertAdjacentHTML("afterend", `<iframe class="pb-camframe" src="${esc(cam.src)}"></iframe>`);
       else if (frame.getAttribute("src") !== cam.src) frame.src = cam.src;
       continue;
