@@ -13,26 +13,16 @@ Lines changed:
 
 ################################end of entry################################
 
-################################2026-11-24 sterling m mmu/lane-actions-fixes################################
-
-## MMU card: fixes from review
-
-Four fixes to the per-lane MMU menu. Values in commands are now always double-quoted with backslashes escaped, so a name like `O'Reilly` no longer makes Klipper reject the command. Saving the edit form sends a colour only if the colour picker was touched, so editing just the material or weight of a lane with no colour no longer turns it grey. Switching to another printer closes the menu and editor, so a Save can't write one printer's gate data to another. While the editor is open the card still redraws on each update (keeping only the fields that were edited, and the focus; untouched fields show the printer's latest values, so a Save can't send back a stale material or name), so motion buttons grey out when a print starts, and every motion command re-checks the printer isn't printing or paused before it's sent. *Why:* CodeRabbit review of the per-lane menu.
-
-Lines changed:
-- `panels/control/mmu/mmu.js` — 44–45 `_q` always quotes and escapes backslashes; 54 add `busyNow`; 104, 159–162 re-check `busyNow()` before sending motion commands; 114, 130 send the colour only when touched; 156 mark every edit field as touched on input or change; 164–177 add `redrawKeepingForm`, restoring only touched fields; 179 `open()` clears the selected lane and editor; 180–187 `update()` redraws while editing via `redrawKeepingForm`
-
-################################end of entry################################
-
 ################################2026-11-24 sterling m mmu/lane-actions################################
 
 ## MMU card: per-lane actions like Fluidd and Mainsail
 
-Clicking a lane or gate on the MMU card now opens a menu for that lane instead of loading it straight away. AFC lanes get Load or Unload (`CHANGE_TOOL` / `TOOL_UNLOAD LANE=`), Eject (`LANE_UNLOAD LANE=`, also on an empty lane when prep is detected), a Tool picker (`SET_MAP`), a Runout-to picker (`SET_RUNOUT`) and Edit filament (colour, material, weight, sending only what changed with `SET_COLOR` / `SET_MATERIAL` / `SET_WEIGHT`). Happy Hare gates get Select, Preload, Eject, Change tool (`MMU_SELECT` / `MMU_PRELOAD` / `MMU_EJECT` / `MMU_CHANGE_TOOL GATE=`) and Edit gate (name, material, colour, temperature, available, as one `MMU_GATE_MAP GATE=… QUIET=1`). The Happy Hare footer now has Load and Unload (`MMU_LOAD` / `MMU_UNLOAD`, instead of `MMU_EJECT`) and Select bypass when the unit has one. Actions are greyed out by the same rules as Fluidd and Mainsail (while printing, lane not ready, already selected, no crossload), filament moves still ask to confirm, and the edit form isn't redrawn by live updates while it's open. *Why:* the card could only load a slot and unload; per-lane control needed Fluidd or Mainsail.
+Clicking a lane or gate on the MMU card now opens a menu for that lane instead of loading it straight away. AFC lanes get Load or Unload (`CHANGE_TOOL` / `TOOL_UNLOAD LANE=`), Eject (`LANE_UNLOAD LANE=`, also on an empty lane when prep is detected), a Tool picker (`SET_MAP`), a Runout-to picker (`SET_RUNOUT`) and Edit filament (colour, material, weight, sending only what changed with `SET_COLOR` / `SET_MATERIAL` / `SET_WEIGHT`). Happy Hare gates get Select, Preload, Eject, Change tool (`MMU_SELECT` / `MMU_PRELOAD` / `MMU_EJECT` / `MMU_CHANGE_TOOL GATE=`) and Edit gate (name, material, colour, temperature, available, as one `MMU_GATE_MAP GATE=… QUIET=1`). The Happy Hare footer now has Load and Unload (`MMU_LOAD` / `MMU_UNLOAD`, instead of `MMU_EJECT`) and Select bypass when the unit has one. Actions are greyed out by the same rules as Fluidd and Mainsail (while printing, lane not ready, already selected, no crossload), filament moves still ask to confirm, and every motion command re-checks the printer isn't printing or paused before it's sent. Values in commands are always double-quoted with backslashes escaped, so a name like `O'Reilly` doesn't make Klipper reject the command. Saving the edit form sends a colour only if the colour picker was touched, so editing just the material or weight of a lane with no colour doesn't turn it grey. Switching to another printer closes the menu and editor, so a Save can't write one printer's gate data to another. While the editor is open the card still redraws on each update, keeping only the fields that were edited and the focus (untouched fields show the printer's latest values, so a Save can't send back a stale material or name). *Why:* the card could only load a slot and unload; per-lane control needed Fluidd or Mainsail.
 
 Lines changed:
 - `panels/control/mmu/mmu.js` — 45–46 add `_q` (quotes values with spaces for Klipper, strips comment characters) and `_hex`; 47–48 panel description; 52–66 lanes open the menu (no longer disabled when empty), selected lane outlined; 67–100 add `menu()` with the AFC and Happy Hare actions and edit forms; 101–135 add `act()` sending the commands; 136–161 `draw()` adds the menu, the Happy Hare footer buttons and their handlers; 164–165 skip redraws while editing
 - `panels/control/mmu/mmu.css` — 32–42 styles for the selected lane, the menu, its rows and the edit form
+- `panels/control/mmu/mmu.js`, review fixes — 44–45 `_q` always quotes and escapes backslashes; 54 add `busyNow`; 104, 159–162 re-check `busyNow()` before sending motion commands; 114, 130 send the colour only when touched; 156 mark every edit field as touched on input or change; 164–177 add `redrawKeepingForm`, restoring only touched fields; 179 `open()` clears the selected lane and editor; 180–187 `update()` redraws while editing via `redrawKeepingForm`
 
 ################################end of entry################################
 
@@ -92,29 +82,6 @@ Lines changed:
 
 ################################end of entry################################
 
-################################2026-11-21 sterling m ui/other-files-drop################################
-
-## Fix the Other-files panel still blanking the dashboard
-
-The previous blank-dashboard fix added the hidden file inputs but the Other-files panel still threw and blanked the dashboard: `.pb-cwrap` was missing the `data-drop` attribute, so the shared config actions hit a null wiring up drag-and-drop. *Why:* `PB.parts.cfgActions` looks up `[data-drop]` for the drop target, and that element wasn't marked.
-
-Lines changed:
-- `panels/machine/otherfiles/otherfiles.js` — 27 add `data-drop` to `.pb-cwrap`
-
-################################end of entry################################
-
-################################2026-11-21 sterling m ui/blank-dashboard-fix################################
-
-## Fix a blank dashboard from the new Other-files panel and WebRTC tick
-
-Two bugs introduced with the recent camera/Other-files work could blank the dashboard: the Other-files panel left out the two hidden file `<input>`s the shared config actions expect, so building it threw and aborted the page; and the camera tick referenced a bare `PB` before `window.PB` was assigned, throwing `PB is not defined`. *Why:* a thrown error in `build()` stops the dashboard from rendering, and the tick fires on an interval that can run before `PB` exists.
-
-Lines changed:
-- `panels/machine/otherfiles/otherfiles.js` — 28 add the hidden `data-u="files"`/`data-u="dir"` file inputs the shared `PB.parts.cfgActions` wires up
-- `index.html` — 1014, 1018, 1030, 1032 guard the camera-tick WebRTC calls with `window.PB?.` so they don't throw before `PB` is defined
-
-################################end of entry################################
-
 ################################2026-11-21 sterling m mmu/spool-look################################
 
 ## Nicer filament spools and a remaining bar
@@ -143,10 +110,10 @@ Lines changed:
 
 ## Add an "Other files" panel (logs, docs, config examples)
 
-A new read-only file browser for the logs, docs and config-examples roots, like Fluidd's "Other Files"; it reuses the Config panel's browser (list, preview, download) and shows on the Configure page under Config files. *Why:* those roots could only be reached piecemeal (logs via Print → Files, docs/examples via Config files), not in one place.
+A new read-only file browser for the logs, docs and config-examples roots, like Fluidd's "Other Files"; it reuses the Config panel's browser (list, preview, download) and shows on the Configure page under Config files. It carries the two hidden file `<input>`s and the `data-drop` mark the shared config actions (`PB.parts.cfgActions`) expect, since building the panel without them threw and blanked the dashboard. *Why:* those roots could only be reached piecemeal (logs via Print → Files, docs/examples via Config files), not in one place.
 
 Lines changed:
-- `panels/machine/otherfiles/otherfiles.js` — new: the "Other files" panel (roots logs/docs/config_examples, read-only, reusing `PB.parts.cfg*`)
+- `panels/machine/otherfiles/otherfiles.js` — new: the "Other files" panel (roots logs/docs/config_examples, read-only, reusing `PB.parts.cfg*`); 27 `data-drop` on `.pb-cwrap`; 28 the hidden `data-u="files"`/`data-u="dir"` file inputs
 - `panels/machine/config/browse.js` — 14 add `logs: "Logs"` to the shared `ROOTS` labels
 - `core/builder.js` — 49 add the panel to the default Configure page (second row)
 - `index.html` — load `otherfiles.js`
@@ -186,48 +153,18 @@ Lines changed:
 
 ################################end of entry################################
 
-################################2026-11-21 sterling m cameras/webrtc-zoom################################
-
-## WebRTC: zoom and pan the video, not just the image
-
-Zoom/pan now also scales the live WebRTC `<video>` overlay, so it works on WebRTC cameras the same as MJPEG. *Why:* zoom only transformed the `<img>`, which sits behind the video, so nothing visibly zoomed on a WebRTC camera.
-
-Lines changed:
-- `core/extras/camzoom.js` — 37–38 in `apply()`, mirror the zoom `scale`/`translate` onto the `.pb-camvid` video overlay when one is present (cleared on reset via the same path)
-
-################################end of entry################################
-
-################################2026-11-21 sterling m cameras/webrtc-fullscreen################################
-
-## WebRTC: stop the video covering the camera buttons
-
-Dropped the `z-index` on the live WebRTC `<video>` so it no longer paints over the full-screen button and FPS badge. *Why:* the overlay sat on top of the full-screen control on WebRTC cameras, so there was no way to go full screen.
-
-Lines changed:
-- `index.html` — 251 remove `z-index: 1` from the `.pb-camvid` rule
-
-################################end of entry################################
-
-################################2026-11-21 sterling m cameras/webrtc-cors################################
-
-## WebRTC: run the handshake through Printer Buddy, not the camera
-
-The player now sends its WebRTC signalling to Printer Buddy (same origin) instead of straight to the camera, so it isn't blocked by the camera's missing CORS header. *Why:* a cross-origin handshake to the camera was refused, leaving only snapshots.
-
-Lines changed:
-- `core/extras/webrtc.js` — 20 `go2rtc` takes a ready WebSocket URL; 48 `camerastreamer` posts to a given URL; 76 `mediamtx` builds its WHEP/session URLs from the proxy base and uses the rewritten `Location`; 136–157 `play` points every service at `/api/printers/<id>/webrtc…` (go2rtc at `/webrtc-ws`)
-
-################################end of entry################################
-
 ################################2026-11-21 sterling m cameras/webrtc################################
 
 ## Live WebRTC cameras on the local network
 
-A WebRTC camera (go2rtc, camera-streamer or MediaMTX) now plays live when you're on the same network, instead of only showing snapshots; it falls back to snapshots on any failure, including over a share link. *Why:* the camera editor offered WebRTC but the viewer never rendered it.
+A WebRTC camera (go2rtc, camera-streamer or MediaMTX) now plays live when you're on the same network, instead of only showing snapshots; it falls back to snapshots on any failure, including over a share link. The signalling goes to Printer Buddy (same origin) rather than straight to the camera, since the camera sends no CORS header. Zoom/pan scales the video the same as an MJPEG picture, the video doesn't cover the full-screen button and FPS badge, and the camera tick calls the player through `window.PB?.` so it can't throw before `PB` exists. *Why:* the camera editor offered WebRTC but the viewer never rendered it.
 
 Lines changed:
 - `core/extras/webrtc.js` — 1–172 new: `PB.webrtc` with the three handshakes (go2rtc WebSocket, camera-streamer POST, MediaMTX WHEP), overlaying a `<video>` on the camera and tearing it down on failure
 - `index.html` — 251 add the `.pb-camvid` overlay style; 1012, 1016 stop/prune WebRTC videos each tick; 1026–1030 play WebRTC for a `webrtc`-mode camera, else the snapshot path; 2078 load `webrtc.js`
+- `core/extras/webrtc.js`, follow-ups — 20 `go2rtc` takes a ready WebSocket URL; 48 `camerastreamer` posts to a given URL; 76 `mediamtx` builds its WHEP/session URLs from the proxy base and uses the rewritten `Location`; 136–157 `play` points every service at `/api/printers/<id>/webrtc…` (go2rtc at `/webrtc-ws`)
+- `index.html`, follow-ups — 251 drop `z-index: 1` from the `.pb-camvid` rule; 1014, 1018, 1030, 1032 call the WebRTC player through `window.PB?.`
+- `core/extras/camzoom.js` — 37–38 in `apply()`, mirror the zoom `scale`/`translate` onto the `.pb-camvid` video overlay when one is present (cleared on reset via the same path)
 
 ################################end of entry################################
 
