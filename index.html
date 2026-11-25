@@ -261,6 +261,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .pg-cam { position: relative; aspect-ratio: 16 / 9; background: #000; }
   .pg-cam img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   .pg-cam .pb-camvid, .ctl-cam .pb-camvid, .qv-cam .pb-camvid, .camtile .pb-camvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; }
+  .pg-cam .pb-camframe, .ctl-cam .pb-camframe, .qv-cam .pb-camframe, .camtile .pb-camframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
   .pg-cam .ai-probe { position: absolute; inset: 0; width: 100%; height: 100%; visibility: hidden; pointer-events: none; }
   .pg-cam .ai-probe i { position: absolute; }
   .pg-cam .ai-box { position: absolute; border: 3px solid #ff2828; border-radius: 4px; box-shadow: 0 0 0 1px rgba(0,0,0,.5); pointer-events: none; }
@@ -1039,6 +1040,13 @@ function camTick() {
     if (!st || st.pid !== pid || st.idx !== idx) { st = { pid, idx, last: 0, loading: false, frames: [] }; camState.set(img, st); }
     applyCamTransform(img, cfg);
     const cam = p.cams?.[idx];
+    const frame = img.nextElementSibling?.classList.contains("pb-camframe") ? img.nextElementSibling : null;
+    if (cam && /iframe/i.test(cam.service) && cam.src && img.dataset.camKind === "big") {
+      if (liveStreams.has(img)) stopLive(img);
+      if (!frame) img.insertAdjacentHTML("afterend", `<iframe class="pb-camframe" src="${esc(cam.src)}"></iframe>`);
+      else if (frame.getAttribute("src") !== cam.src) frame.src = cam.src;
+      continue;
+    } else frame?.remove();
     if (cam && cam.mode === "webrtc" && liveOn() && img.dataset.camKind === "big" && !(+(img.dataset.camWf || 0) > now)) {
       const v = window.PB?.webrtc?.play(img, cam);
       if (v) { if (liveStreams.has(img)) stopLive(img); applyCamTransform(v, cfg); showFps(img, st, cfg); continue; }

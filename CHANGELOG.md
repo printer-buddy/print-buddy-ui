@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-24 sterling m cameras/screen################################
+
+## Iframe cameras show the printer's page, like Fluidd
+
+A camera with `service: iframe` (such as ZMOD's or Snapmaker U1 Extended firmware's touchscreen) now shows its `stream_url` page in an iframe in the quick view, the printer page and its full screen, and the Control page camera, the same way Fluidd shows it, so the printer's own page handles the picture and touches. Overview cards keep their snapshots. The page loads straight from the printer, so it shows only where the browser can reach the printer. *Why:* touches on ZMOD's screen worked in Fluidd but not in Printer Buddy.
+
+Lines changed:
+- `index.html` — 264 add the `.pb-camframe` overlay style; 1043–1049 in `camTick`, show an iframe camera's page in big views instead of the picture
+
+################################end of entry################################
+
 ################################2026-11-24 sterling m mmu/lane-actions-fixes################################
 
 ## MMU card: fixes from review
