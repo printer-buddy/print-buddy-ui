@@ -487,6 +487,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
           They go to a private dataset used to train the next AI model. Delete any photo below before it's sent, or untick this any time.</span>
       </fieldset>
       <fieldset><legend>Photos for AI</legend>
+        <label class="field">Keep this many photos <input type="number" name="ai_keep" min="10" max="500" step="1" required></label>
         <p id="aiStats" style="margin:0 0 6px;font-weight:700"></p>
         <p class="muted" id="aiPhotoCounts" style="margin:0 0 10px"></p>
         <div class="ph-grid" id="aiPhotos"></div>
@@ -1961,7 +1962,7 @@ function drawPhotos() {
         ${i.status === "waiting" ? `<span class="muted">Labelled when the print ends</span>` :
           `<select data-plabel="${i.id}" aria-label="Label"><option value="">${i.status === "pending" ? "Needs a label…" : "Label: " + (i.label === "ok" ? "OK" : esc(aiName(i.label)))}</option>${opts}</select>`}
         <button type="button" class="del" data-pdel="${i.id}">Delete</button></div></div>`).join("")
-    : `<p class="muted" style="margin:0">No photos yet. They're collected during prints and AI alerts, or with "Save for AI…" on a printer's page.</p>`;
+    : `<p class="muted" style="margin:0">No photos yet. While sending photos to the Printer Buddy project is on, they're collected during prints and AI alerts, or with "Save for AI…" on a printer's page.</p>`;
   for (const sel of $("#aiPhotos").querySelectorAll("[data-plabel]")) sel.onchange = async () => {
     if (!sel.value) return;
     try { await api(`/api/ai/photos/${sel.dataset.plabel}`, { method: "POST", body: JSON.stringify({ label: sel.value }) }); confetti(); loadPhotos(); }
@@ -2003,6 +2004,7 @@ function fillAIForm() {
     f[k].value = String(aiCfg[k]);
   }
   f.ai_contribute.checked = !!aiCfg.ai_contribute;
+  f.ai_keep.value = String(aiCfg.ai_keep);
   loadPhotos();
   $("#aiModel").textContent = m.loaded
     ? `Model ${m.tag}${m.provider && m.provider !== "CPU" ? ` on ${m.provider}` : ""}. Alerts on: ${m.labels.filter(l => m.kinds[l] === "alert").map(aiName).join(", ")}. Warnings only: ${m.labels.filter(l => m.kinds[l] !== "alert").map(aiName).join(", ")}.`
@@ -2016,7 +2018,7 @@ $("#aiClose").onclick = () => $("#aiPanel").hidden = true;
 $("#aiForm").onsubmit = async e => {
   e.preventDefault();
   const f = $("#aiForm"), b = {};
-  for (const k of ["ai_threshold", "ai_interval", "ai_hold", "ai_cooldown"]) b[k] = +f[k].value;
+  for (const k of ["ai_threshold", "ai_interval", "ai_hold", "ai_cooldown", "ai_keep"]) b[k] = +f[k].value;
   b.ai_contribute = f.ai_contribute.checked;
   try { aiCfg = await api("/api/ai/settings", { method: "PUT", body: JSON.stringify(b) }); toast("Saved"); render(); }
   catch (err) { toast(err.message); }

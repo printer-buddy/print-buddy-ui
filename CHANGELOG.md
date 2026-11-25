@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-24 sterling m ai/photos################################
+
+## AI photos: set how many to keep
+
+The AI panel's "Photos for AI" box has a "Keep this many photos" number box (10 to 500) that saves with the other AI settings, and the empty-list text says photos are only collected while sending photos to the Printer Buddy project is on. *Why:* photos are now only kept while sharing is on, and the number kept is a setting instead of a fixed 500.
+
+Lines changed:
+- `index.html` — 490 add the `ai_keep` number box; 1965 reword the "No photos yet" text; 2007 fill it from the AI settings; 2021 send it when the AI settings are saved
+
+################################end of entry################################
+
 ################################2026-11-24 sterling m cameras/screen################################
 
 ## Iframe cameras show the printer's page, like Fluidd
