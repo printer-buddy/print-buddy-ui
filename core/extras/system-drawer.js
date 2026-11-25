@@ -123,8 +123,10 @@
       <div class="pb-sub-h">Host</div>
       <div class="pb-sdlist"><button type="button" data-h="reboot">Reboot</button><button type="button" data-h="shutdown">Shut down</button></div>
       <div class="pb-sub-h">Services</div><div class="pb-svcs"><p class="pb-muted">Loading…</p></div>
-      <div class="pb-sub-h">Updates</div><div class="pb-sdcomp"></div>`, true);
+      <div class="pb-sub-h">Updates</div><div class="pb-sdcomp"></div>
+      <div class="pb-sub-h">Box ID</div><p class="pb-sdboxid pb-muted">…</p>`, true);
     PB.components?.load(dr.querySelector(".pb-sdcomp"));
+    api("/api/share/user-id").then(r => { dr.querySelector(".pb-sdboxid").textContent = r.user_id; }).catch(() => {});
     dr.querySelector("[data-h=restart]").onclick = () => {
       if (!confirm("Restart Printer Buddy? Prints keep going on the printers.")) return;
       close(); system({ action: "restart", service: "printer-buddy" });

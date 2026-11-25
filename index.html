@@ -671,6 +671,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
 <dialog id="shareDlg" aria-labelledby="shareTitle">
   <h2 id="shareTitle">Share</h2>
   <p class="sub">Anyone with the link can watch this printer's camera and progress. They can't control it.</p>
+  <p class="sub" id="shareWarn" style="color:var(--orange)" role="status" hidden></p>
   <div class="share-new">
     <label>Link works for <select id="shareExp"><option value="1h">1 hour</option><option value="1d" selected>1 day</option><option value="7d">7 days</option><option value="print" id="shareExpPrint">until the print ends</option><option value="never">until I turn it off</option></select></label>
     <label style="display:inline-flex;align-items:center;gap:6px;font-size:14px"><input type="checkbox" id="shareChatOn" checked style="width:auto;min-height:0"> Chat</label>
@@ -1659,7 +1660,9 @@ $("#chatSave").onclick = async () => {
 };
 async function loadShares() {
   try {
-    const { shares } = await api(`/api/printers/${shareId}/shares`);
+    const { shares, tunnel_error } = await api(`/api/printers/${shareId}/shares`);
+    $("#shareWarn").hidden = !tunnel_error;
+    $("#shareWarn").textContent = tunnel_error ? `Share links don't work from outside right now: ${tunnel_error}` : "";
     $("#shareList").innerHTML = shares.length ? shares.map((sh, i) => `<div class="share-item">
         <input readonly value="${esc(sh.url)}" aria-label="Share link">
         <button data-copy="${i}">Copy</button><button class="revoke" data-revoke="${i}">Turn off</button>
@@ -1681,6 +1684,7 @@ $("#shareCreate").onclick = async () => {
   try {
     const sh = await api(`/api/printers/${shareId}/shares`, { method: "POST", body: JSON.stringify({ expires: $("#shareExp").value, chat: $("#shareChatOn").checked }) });
     await loadShares();
+    setTimeout(() => { if ($("#shareDlg").open) loadShares(); }, 8000);
     try { await navigator.clipboard.writeText(sh.url); toast("Link created and copied"); } catch { toast("Link created"); }
   } catch (e) { toast(e.message); }
 };

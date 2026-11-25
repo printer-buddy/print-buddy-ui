@@ -2,6 +2,20 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-25 sterling m security/box-id################################
+
+## Show the box ID in the Printer Buddy menu, and why share links don't work from outside
+
+The Printer Buddy menu (the three-lines button on the printers page) has a **Box ID** section under Updates showing this box's share ID, the number to use with `/register` in the Printer Buddy Discord. *Why:* registering a box needs its ID, and it wasn't shown anywhere in the UI.
+
+The Share window shows a line in orange when Printer Buddy can't run the share tunnel, with the reason from the share server (for example that another box on the network is already sharing, and how to register this box) or that Remote access isn't finished. It checks again 8 seconds after a link is made. *Why:* a refused tunnel only showed in Printer Buddy's log, so share links just didn't work with no explanation.
+
+Lines changed:
+- `core/extras/system-drawer.js` — 126–127 add the Box ID section to the menu; 129 fill it from `/api/share/user-id`
+- `index.html` — 674 add the share warning line; 1663–1665 fill it from the share list's `tunnel_error`; 1687 check again after a link is made
+
+################################end of entry################################
+
 ################################2026-11-24 sterling m ai/photos################################
 
 ## AI photos: set how many to keep
