@@ -70,7 +70,12 @@
   const load = async () => {
     list.innerHTML = `<p class="pb-muted">Loading the themes…</p>`;
     let items;
-    try { items = (await api("/api/ui/themes")).themes || []; } catch (e) { list.innerHTML = `<p class="pb-muted">${esc(e.message)}</p>`; return; }
+    try { items = (await api("/api/ui/themes")).themes || []; }
+    catch (e) {
+      list.innerHTML = `<p class="pb-muted">${esc(e.message)} <button type="button" data-t="retry">Try again</button></p>`;
+      list.querySelector("[data-t=retry]").onclick = load;
+      return;
+    }
     list.innerHTML = items.length ? items.map(t => `<button type="button" class="pb-thmcard" data-id="${esc(t.id)}">
         ${t.preview ? `<img alt="" src="${esc(t.preview)}">` : `<span class="pb-thmsws">${t.swatch.map(c => `<i style="background:${esc(c)}"></i>`).join("")}</span>`}
         <b>${esc(t.name)}</b><span class="pb-muted">${esc(t.author)}</span></button>`).join("") : `<p class="pb-muted">No themes in the list yet.</p>`;
