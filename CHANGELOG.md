@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-26 sterling m cameras/overlay-bar################################
+
+## Camera overlay: a full-width bar, always on
+
+The camera overlay is now a bar across the bottom of the camera instead of a small card, and it shows on the printer page camera (normal and full screen) and in Quick View whenever the camera picture is showing, not only in full screen while printing. When not printing it's a small pill in the bottom-left with the printer's state and nozzle and bed temperatures with their targets; while printing or paused it's the full-width bar, which adds a big percent, time left, the layer, a progress bar, elapsed time, the estimated finish time, and the gcode thumbnail with the printer name. It's larger in full screen and wraps onto more rows on narrow screens. The multi-camera switcher now works like the camera card's Cameras button: hidden until the mouse is over the camera (or a switcher button has focus), shown at 80% on touch screens, and drawn above the overlay, so the overlay never moves for it. *Why:* the card squeezed every stat onto one small line of text, and it was only visible in full screen and Quick View during a print.
+
+Lines changed:
+- `index.html` — 199–231 the bar's style (replacing the card's), shown in every view, a pill with the print-only parts hidden when not printing; 232–235 the camera switcher shows on hover, above the overlay; 579, 747 the printer page and Quick View overlays start empty; 1284–1312 add `CAM_OVL`, and `setCamOverlay` shows the bar while the camera picture shows and fills the print parts only while printing or paused; 1327, 1387 pass whether the camera picture shows
+
+################################end of entry################################
+
 ################################2026-11-25 sterling m security/box-id################################
 
 ## Show the box ID in the Printer Buddy menu, and why share links don't work from outside

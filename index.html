@@ -196,16 +196,43 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   .camtile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
   .camtile .fps { left: 8px; top: 8px; right: auto; }
   .camname { position: absolute; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 6px; background: rgba(11,11,13,.8); font-size: 12px; font-weight: 700; }
-  .cam-ovl { display: none; position: absolute; left: 12px; bottom: 12px; align-items: center; gap: 10px; max-width: calc(100% - 24px);
-             padding: 8px 10px; border-radius: 10px; background: rgba(11,11,13,.82); color: #fff; z-index: 2; pointer-events: none; }
-  #pgCam:fullscreen .cam-ovl:not([hidden]), .qv-cam .cam-ovl:not([hidden]) { display: flex; }
-  .cam-ovl:has(~ .camsw) { left: auto; right: 12px; }
+  .cam-ovl { display: none; position: absolute; left: 0; right: 0; bottom: 0; align-items: stretch; flex-wrap: wrap; gap: 12px 18px;
+             padding: 12px 16px; background: rgba(11,11,13,.82); color: #fff; font-size: 12px; z-index: 2; pointer-events: none; }
+  .cam-ovl:not([hidden]) { display: flex; }
+  .cam-ovl.idle .co-pct, .cam-ovl.idle .co-time, .cam-ovl.idle .co-job { display: none; }
+  .cam-ovl.idle { left: 12px; right: auto; bottom: 12px; max-width: calc(100% - 24px); padding: 8px 12px; border-radius: 10px; }
+  .cam-ovl > * + * { padding-left: 18px; border-left: 1px solid rgba(255,255,255,.18); }
+  .co-state { display: flex; flex-direction: column; justify-content: center; }
+  .co-label { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,.85); }
+  .co-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--co); }
+  .co-pct { font-size: 34px; line-height: 1.1; }
+  .co-time { flex: 1 1 220px; display: flex; flex-direction: column; justify-content: center; gap: 6px; min-width: 0; }
+  .co-top, .co-sub { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; color: rgba(255,255,255,.85); }
+  .co-eta { font-size: 18px; font-weight: 700; color: #fff; }
+  .co-prog { height: 5px; border-radius: 3px; background: rgba(255,255,255,.18); overflow: hidden; }
+  .co-prog i { display: block; height: 100%; background: var(--co); }
+  .co-sub b { display: block; font-size: 14px; color: #fff; }
+  .co-sub span:last-child { text-align: right; }
+  .co-temps { display: flex; flex-direction: column; justify-content: center; gap: 4px; margin: 0; }
+  .co-temps div { display: flex; align-items: baseline; gap: 8px; }
+  .co-temps dt { min-width: 44px; color: rgba(255,255,255,.85); }
+  .co-temps dd { margin: 0; font-size: 15px; font-weight: 700; }
+  .co-job { display: flex; align-items: center; gap: 10px; max-width: 260px; min-width: 0; }
   .cam-ovl .cam-ovl-thumb { position: static; inset: auto; width: 54px; height: 54px; object-fit: contain; border-radius: 6px; background: #000; flex: none; }
   .cam-ovl .cam-ovl-thumb[hidden] { display: none; }
-  .cam-ovl-info { display: flex; flex-direction: column; min-width: 0; }
-  .cam-ovl-name { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cam-ovl-stats { font-size: 12px; color: rgba(255,255,255,.85); }
-  .camsw { position: absolute; left: 12px; bottom: 12px; z-index: 2; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 10px; background: rgba(11,11,13,.82); }
+  .cam-ovl-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #pgCam:fullscreen .cam-ovl { gap: 16px 28px; padding: 18px 28px; font-size: 14px; }
+  #pgCam:fullscreen .cam-ovl > * + * { padding-left: 28px; }
+  #pgCam:fullscreen .co-pct { font-size: 64px; }
+  #pgCam:fullscreen .co-eta { font-size: 26px; }
+  #pgCam:fullscreen .co-sub b, #pgCam:fullscreen .cam-ovl-name { font-size: 18px; }
+  #pgCam:fullscreen .co-temps dd { font-size: 20px; }
+  #pgCam:fullscreen .cam-ovl .cam-ovl-thumb { width: 72px; height: 72px; }
+  @media (max-width: 760px) { .cam-ovl > * + * { padding-left: 0; border-left: 0; } }
+  .camsw { position: absolute; left: 12px; bottom: 12px; z-index: 3; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 10px; background: rgba(11,11,13,.82);
+           opacity: 0; transition: opacity .15s; }
+  :hover > .camsw, .camsw:focus-within { opacity: 1; }
+  @media (hover: none) { .camsw { opacity: .8; } }
   .camsw button { min-height: 36px; padding: 0 12px; background: transparent; font-size: 14px; }
   .camsw button[aria-pressed="true"] { background: var(--orange); color: #1A1005; }
   dialog#camDlg { width: min(420px, calc(100% - 32px)); padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--text); }
@@ -549,7 +576,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
     <div class="pg-cambox">
       <div class="pg-cam" id="pgCam">
         <img id="pgImg" alt="Webcam" hidden><div class="nocam" id="pgNoCam">No camera</div><span class="fps" aria-hidden="true"></span>
-        <div class="cam-ovl" id="pgOvl" hidden><img class="cam-ovl-thumb" alt=""><div class="cam-ovl-info"><b class="cam-ovl-name"></b><span class="cam-ovl-stats"></span></div></div>
+        <div class="cam-ovl" id="pgOvl" hidden></div>
         <button class="pg-full" id="pgFull" aria-label="Full screen"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       </div>
       <div class="bar"><div id="pgBar"></div></div>
@@ -717,7 +744,7 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
     <span class="spacer"></span>
     <button class="qv-close" id="qvClose" aria-label="Close Quick View"><svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
   </div>
-  <div class="qv-cam"><img id="qvImg" alt="Webcam" hidden><div class="nocam" id="qvNoCam">No camera</div><span class="fps" aria-hidden="true"></span><div class="cam-ovl" id="qvOvl" hidden><img class="cam-ovl-thumb" alt=""><div class="cam-ovl-info"><b class="cam-ovl-name"></b><span class="cam-ovl-stats"></span></div></div></div>
+  <div class="qv-cam"><img id="qvImg" alt="Webcam" hidden><div class="nocam" id="qvNoCam">No camera</div><span class="fps" aria-hidden="true"></span><div class="cam-ovl" id="qvOvl" hidden></div></div>
   <div class="bar"><div id="qvBar"></div></div>
   <div class="qv-foot">
     <div class="qv-info"><span class="line" id="qvLine"></span><span class="sub" id="qvSub"></span></div>
@@ -1254,20 +1281,34 @@ function openQV(id) {
   refreshQVCam(); $("#qv").showModal();
 }
 function refreshQVCam() { const img = $("#qvImg"); camState.delete(img); img.dataset.camPid = qvId ?? ""; img.dataset.camKind = "big"; }
-function setCamOverlay(ovl, p, id) {
-  const active = p && (p.state === "printing" || p.state === "paused");
-  ovl.hidden = !active;
+const CAM_OVL = `<div class="co-state"><span class="co-label"></span><b class="co-pct"></b></div>
+  <div class="co-time"><div class="co-top"><span class="co-eta"></span><span class="co-layer"></span></div><div class="co-prog"><i></i></div>
+    <div class="co-sub"><span>Elapsed<b class="co-elapsed"></b></span><span>Est. finish<b class="co-finish"></b></span></div></div>
+  <dl class="co-temps"><div><dt>Nozzle</dt><dd class="co-noz"></dd></div><div><dt>Bed</dt><dd class="co-bed"></dd></div></dl>
+  <div class="co-job"><img class="cam-ovl-thumb" alt=""><b class="cam-ovl-name"></b></div>`;
+function setCamOverlay(ovl, p, id, camOk) {
+  ovl.hidden = !(p && camOk);
+  if (ovl.hidden) return;
+  if (!ovl.firstElementChild) ovl.innerHTML = CAM_OVL;
+  const active = p.state === "printing" || p.state === "paused";
+  const [label, , color] = look(statusOf(p));
+  const set = (sel, text) => { ovl.querySelector(sel).textContent = text; };
+  ovl.classList.toggle("idle", !active);
+  ovl.style.setProperty("--co", color);
+  set(".co-label", label);
+  ovl.querySelector(".co-noz").innerHTML = fmtTT(p.nozzle, p.nozzle_target);
+  ovl.querySelector(".co-bed").innerHTML = fmtTT(p.bed, p.bed_target);
   if (!active) return;
   const thumb = ovl.querySelector(".cam-ovl-thumb");
   const want = p.filename ? `/api/printers/${id}/thumbnail?file=${encodeURIComponent(p.filename)}` : "";
   if (thumb.dataset.src !== want) { thumb.dataset.src = want; thumb.hidden = !want; if (want) { thumb.onerror = () => { thumb.hidden = true; setTimeout(() => { if (thumb.dataset.src === want) thumb.dataset.src = ""; }, 30000); }; thumb.src = want; } }
-  ovl.querySelector(".cam-ovl-name").textContent = p.name;
-  ovl.querySelector(".cam-ovl-stats").textContent = [
-    p.progress != null ? `${Math.floor(p.progress * 100)}%` : null,
-    typeof p.layer === "number" ? `Layer ${p.layer}${typeof p.total_layers === "number" ? "/" + p.total_layers : ""}` : null,
-    p.eta != null ? `${fmtDur(p.eta)} left` : null,
-    p.nozzle != null || p.bed != null ? `${p.nozzle != null ? Math.round(p.nozzle) + "°" : "—"}/${p.bed != null ? Math.round(p.bed) + "°" : "—"}` : null,
-  ].filter(Boolean).join(" · ");
+  set(".cam-ovl-name", p.name);
+  set(".co-pct", p.progress != null ? `${Math.floor(p.progress * 100)}%` : "—");
+  set(".co-eta", p.eta != null ? `≈ ${fmtDur(p.eta)} left` : "");
+  set(".co-layer", typeof p.layer === "number" ? `Layer ${p.layer}${typeof p.total_layers === "number" ? " / " + p.total_layers : ""}` : "");
+  ovl.querySelector(".co-prog i").style.width = `${(p.progress || 0) * 100}%`;
+  set(".co-elapsed", fmtDur(p.print_duration));
+  set(".co-finish", p.eta != null ? fmtClock(new Date(Date.now() + p.eta * 1000)) : "—");
 }
 function renderQV() {
   if (qvId === null) return;
@@ -1283,7 +1324,7 @@ function renderQV() {
   const camOk = p.has_webcam && live;
   $("#qvImg").hidden = !camOk; $("#qvNoCam").hidden = camOk;
   setupCamBox($(".qv-cam"), $("#qvImg"), p, qvSel);
-  setCamOverlay($("#qvOvl"), p, qvId);
+  setCamOverlay($("#qvOvl"), p, qvId, camOk);
   $("#qvNoCam").textContent = live ? "No camera" : "Can't reach printer";
   $("#qvBar").style.width = `${pct * 100}%`; $("#qvBar").style.background = barColor;
   const line = $("#qvLine"); line.textContent = (p.state === "error" && p.message) || statusText; line.style.color = statusColor;
@@ -1343,7 +1384,7 @@ function renderPage() {
   const camOk = p.has_webcam && live;
   $("#pgImg").hidden = !camOk; $("#pgNoCam").hidden = camOk; $("#pgFull").hidden = !camOk;
   setupCamBox($("#pgCam"), $("#pgImg"), p, pageSel);
-  setCamOverlay($("#pgOvl"), p, pageId);
+  setCamOverlay($("#pgOvl"), p, pageId, camOk);
   $("#pgNoCam").textContent = live ? "No camera" : "Can't reach printer";
   $("#pgBar").style.width = `${pct * 100}%`; $("#pgBar").style.background = barColor;
   const state = $("#pgState"); state.textContent = p.klippy_message || (p.state === "error" && p.message) || statusText; state.style.color = statusColor;
