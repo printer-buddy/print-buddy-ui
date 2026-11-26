@@ -2,6 +2,17 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-26 sterling m cameras/overlay-bar################################
+
+## Camera overlay: a full-width bar, always on
+
+The camera overlay is now a bar across the bottom of the camera instead of a small card, and it shows on the printer page camera (normal and full screen) and in Quick View whenever the camera picture is showing, not only in full screen while printing. When not printing it's a small pill in the bottom-left with the printer's state and nozzle and bed temperatures with their targets; while printing or paused it's the full-width bar, which adds a big percent, time left, the layer, a progress bar, elapsed time, the estimated finish time, and the gcode thumbnail with the printer name. It's larger in full screen; on screens up to 760px wide it's two short rows (state, percent and temperatures; then time left, layer and the progress bar) without the thumbnail, name, elapsed and finish time, so it fits a phone's camera. The multi-camera switcher now works like the camera card's Cameras button: hidden until the mouse is over the camera (or a switcher button has focus) and drawn above the overlay, so the overlay never moves for it; on touch screens it's shown at 80% at the top centre of the camera, clear of the overlay. *Why:* the card squeezed every stat onto one small line of text, and it was only visible in full screen and Quick View during a print.
+
+Lines changed:
+- `index.html` — 199–230 the bar's style (replacing the card's), shown in every view, a pill with the print-only parts hidden when not printing; 231–241 the compact phone layout; 242–245 the camera switcher shows on hover, above the overlay, and at the top centre on touch screens; 589, 757 the printer page and Quick View overlays start empty; 1294–1322 add `CAM_OVL`, and `setCamOverlay` shows the bar while the camera picture shows and fills the print parts only while printing or paused; 1337, 1397 pass whether the camera picture shows
+
+################################end of entry################################
+
 ################################2026-11-25 sterling m security/box-id################################
 
 ## Show the box ID in the Printer Buddy menu, and why share links don't work from outside
