@@ -228,11 +228,21 @@ Additional term (AGPL-3.0 section 7c, mark changed versions): if you make any ch
   #pgCam:fullscreen .co-sub b, #pgCam:fullscreen .cam-ovl-name { font-size: 18px; }
   #pgCam:fullscreen .co-temps dd { font-size: 20px; }
   #pgCam:fullscreen .cam-ovl .cam-ovl-thumb { width: 72px; height: 72px; }
-  @media (max-width: 760px) { .cam-ovl > * + * { padding-left: 0; border-left: 0; } }
+  @media (max-width: 760px) {
+    .cam-ovl > * + * { padding-left: 0; border-left: 0; }
+    .cam-ovl { gap: 6px 14px; padding: 8px 12px; }
+    .co-state, .co-temps { flex-direction: row; align-items: center; gap: 8px 12px; }
+    .co-pct { font-size: 22px; }
+    .co-temps dt { min-width: 0; }
+    .co-temps dd { font-size: 14px; }
+    .co-time { order: 1; flex-basis: 100%; gap: 4px; }
+    .co-eta { font-size: 14px; }
+    .co-sub, .co-job { display: none; }
+  }
   .camsw { position: absolute; left: 12px; bottom: 12px; z-index: 3; display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 10px; background: rgba(11,11,13,.82);
            opacity: 0; transition: opacity .15s; }
   :hover > .camsw, .camsw:focus-within { opacity: 1; }
-  @media (hover: none) { .camsw { opacity: .8; } }
+  @media (hover: none) { .camsw { opacity: .8; top: 12px; bottom: auto; left: 50%; transform: translateX(-50%); } }
   .camsw button { min-height: 36px; padding: 0 12px; background: transparent; font-size: 14px; }
   .camsw button[aria-pressed="true"] { background: var(--orange); color: #1A1005; }
   dialog#camDlg { width: min(420px, calc(100% - 32px)); padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); color: var(--text); }
