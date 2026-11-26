@@ -50,7 +50,7 @@
 
   // the "Theme from Fluidd or Mainsail" form is built by theme.js into the home page's Settings panel; this card borrows it while the page is open
   PB.panel("settheme", {
-    title: "Theme", desc: "Dark mode, and copying a Fluidd or Mainsail theme", single: true, cls: "adv",
+    title: "Theme", desc: "Dark mode, and themes", single: true, cls: "adv",
     icon: PB.icon('<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor"/>'),
     create(host) {
       host.innerHTML = row("Dark mode", `<select data-a="theme"><option value="auto">Auto (follow this device)</option><option value="dark">On</option><option value="light">Off</option></select>`) + `<div class="pb-thmhold"></div>`;

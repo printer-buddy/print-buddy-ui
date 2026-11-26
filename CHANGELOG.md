@@ -2,6 +2,20 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-26 sterling m themes/list################################
+
+## Settings → Theme: pick a theme from the theme list
+
+The "Theme from Fluidd or Mainsail" box is replaced by a grid of the themes in the theme list (loaded when it scrolls into view), each a card with its preview picture or colour swatch, name and author. Clicking a card applies that theme to every device, and switches this device to its dark or light mode if the theme sets one; the picked card is outlined. A theme now also sets every colour (separately for dark and light), a text font and a monospace font, and its own `theme.css`. The text under the grid says which theme is in use, including a Fluidd or Mainsail theme copied before, and "Back to Printer Buddy's own look" and the background-logo tick box stay. *Why:* anyone can add a theme to the list with a pull request, and a theme can restyle all of Printer Buddy.
+
+Lines changed:
+- `core/extras/theme.js` — 13–17 drop the copy box's part names, add the theme's stylesheet link; 26–39 apply the theme's colours, fonts and stylesheet; 54–94 the theme grid, picking a theme and the "in use" text, replacing the copy box
+- `core/extras/extras.css` — 58–66 theme card styles, replacing the copy box's
+- `panels/settings/settings.js` — 53 the Theme panel's description
+- `core/extras/README.txt` — 9 what theme.js does
+
+################################end of entry################################
+
 ################################2026-11-26 sterling m cameras/overlay-bar################################
 
 ## Camera overlay: a full-width bar, always on
