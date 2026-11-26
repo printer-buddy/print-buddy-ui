@@ -55,12 +55,15 @@ body.pb-hasrail .bd-rail { background-image: var(--pb-railimg); background-size:
 .pb-thm h4 { margin: 0 0 4px; }
 .pb-thm p { font-size: 13px; margin: 0 0 8px; }
 .pb-thmrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
-.pb-thmrow select { min-height: 36px; }
-.pb-thmpart { display: grid; grid-template-columns: 20px 170px 1fr; align-items: center; gap: 8px; padding: 6px 0; font-size: 13.5px; }
-.pb-thmpart input { min-height: 0; width: 16px; height: 16px; padding: 0; accent-color: var(--orange); }
-.pb-thmpart img { max-height: 60px; max-width: 160px; border-radius: 4px; border: 1px solid var(--line); }
-.pb-thmsw { display: inline-block; width: 18px; height: 18px; border-radius: 4px; margin-right: 6px; vertical-align: middle; }
-.pb-thmcss { display: inline-block; width: 120px; height: 40px; border-radius: 4px; border: 1px solid var(--line); background-color: #222; }
+.pb-thmlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 8px 0; }
+:is(#page, #home, body) .pb-thm button.pb-thmcard { display: flex; flex-direction: column; align-items: stretch; gap: 4px; height: auto; min-height: 0; padding: 8px;
+  text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--card2); color: var(--text); cursor: pointer; }
+:is(#page, #home, body) .pb-thm button.pb-thmcard.on { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+.pb-thmcard img, .pb-thmsws { width: 100%; height: 70px; border-radius: 6px; object-fit: cover; }
+.pb-thmsws { display: flex; overflow: hidden; border: 1px solid var(--line); }
+.pb-thmsws i { flex: 1; }
+.pb-thmcard b { font-size: 13.5px; }
+.pb-thmcard .pb-muted { font-size: 12px; }
 .pb-scrim { position: fixed; inset: 0; z-index: 800; background: rgba(0, 0, 0, .45); }
 .pb-sysdrawer { position: fixed; top: 0; right: 0; bottom: 0; z-index: 801; width: min(320px, 100vw); overflow-y: auto; padding: 12px 14px 20px;
   background: var(--bd-panel, var(--card)); color: var(--text); border-left: 1px solid var(--bd-line, var(--line)); box-shadow: -8px 0 24px rgba(0, 0, 0, .35);
