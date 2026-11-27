@@ -61,7 +61,7 @@
     <div class="pb-thmlist"></div>
     <div class="pb-thmrow"><span class="pb-muted pb-thmnow"></span><span class="bd-sp"></span><button type="button" data-t="reset">Back to Printer Buddy's own look</button></div>
     <label class="bd-check pb-thmlogobg"><input type="checkbox"${logobg ? " checked" : ""}> Show the logo faintly behind the dashboard</label>
-    <label class="pb-thmcam">Camera overlay see-through <input type="range" min="0" max="100" step="5" value="${camsee}"> <span>${camsee}%</span></label>`);
+    <label class="pb-thmcam">Camera overlay see-through <input type="range" min="0" max="100" step="1" value="${camsee}"> <span>${camsee}%</span></label>`);
   look.append(box);
   box.querySelector(".pb-thmlogobg input").onchange = e => { logobg = e.target.checked; PB.store.set("pb-logobg", logobg); use(); };
   box.querySelector(".pb-thmcam input").oninput = e => {

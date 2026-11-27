@@ -6,7 +6,7 @@ All changes to the Printer Buddy web UI, newest first.
 
 ## Settings → Theme: how see-through the camera overlay is
 
-A "Camera overlay see-through" slider (0 to 100%, in steps of 5) under the themes sets how much of the camera picture shows through the camera overlay bar and the camera switcher, on the printer page and in Quick View. It's saved on this device and applies as it moves; it starts at 18%, the same as before. *Why:* the dark bar can cover the part of the print you want to watch.
+A "Camera overlay see-through" slider (0 to 100%) under the themes sets how much of the camera picture shows through the camera overlay bar and the camera switcher, on the printer page and in Quick View. It's saved on this device and applies as it moves; it starts at 18%, the same as before. *Why:* the dark bar can cover the part of the print you want to watch.
 
 Lines changed:
 - `index.html` — 200, 242 the overlay and switcher backgrounds use the setting
