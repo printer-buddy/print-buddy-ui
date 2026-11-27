@@ -55,6 +55,8 @@ body.pb-hasrail .bd-rail { background-image: var(--pb-railimg); background-size:
 .pb-thm h4 { margin: 0 0 4px; }
 .pb-thm p { font-size: 13px; margin: 0 0 8px; }
 .pb-thmrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 8px 0; }
+.pb-thmcam { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.pb-thmcam input { flex: 1; max-width: 240px; accent-color: var(--orange); }
 .pb-thmlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 8px 0; }
 :is(#page, #home, body) .pb-thm button.pb-thmcard { display: flex; flex-direction: column; align-items: stretch; gap: 4px; height: auto; min-height: 0; padding: 8px;
   text-align: left; border: 1px solid var(--line); border-radius: 8px; background: var(--card2); color: var(--text); cursor: pointer; }

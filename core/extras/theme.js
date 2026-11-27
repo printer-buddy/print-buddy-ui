@@ -13,6 +13,9 @@
   const { el } = PB;
   let theme = {};
   let logobg = PB.store.get("pb-logobg", false), shown = () => {};
+  let camsee = PB.store.get("pb-camsee", 18);
+  const seeThrough = () => document.documentElement.style.setProperty("--pb-camovl", String((100 - camsee) / 100));
+  seeThrough();
   const style = el("style"); document.head.append(style);
   const sheet = el("link"); sheet.rel = "stylesheet";
   const imp = decls => decls.split(";").filter(d => d.trim()).map(d => `${d.trim()} !important`).join("; ");
@@ -57,9 +60,14 @@
       <a href="https://github.com/printer-buddy/printer-buddy-themes" target="_blank" rel="noopener">printer-buddy-themes</a>.</p>
     <div class="pb-thmlist"></div>
     <div class="pb-thmrow"><span class="pb-muted pb-thmnow"></span><span class="bd-sp"></span><button type="button" data-t="reset">Back to Printer Buddy's own look</button></div>
-    <label class="bd-check pb-thmlogobg"><input type="checkbox"${logobg ? " checked" : ""}> Show the logo faintly behind the dashboard</label>`);
+    <label class="bd-check pb-thmlogobg"><input type="checkbox"${logobg ? " checked" : ""}> Show the logo faintly behind the dashboard</label>
+    <label class="pb-thmcam">Camera overlay see-through <input type="range" min="0" max="100" step="5" value="${camsee}"> <span>${camsee}%</span></label>`);
   look.append(box);
   box.querySelector(".pb-thmlogobg input").onchange = e => { logobg = e.target.checked; PB.store.set("pb-logobg", logobg); use(); };
+  box.querySelector(".pb-thmcam input").oninput = e => {
+    camsee = +e.target.value; PB.store.set("pb-camsee", camsee); seeThrough();
+    box.querySelector(".pb-thmcam span").textContent = `${camsee}%`;
+  };
   const q = s => box.querySelector(s), list = q(".pb-thmlist");
   const now = () => {
     q(".pb-thmnow").textContent = theme.source === "list" ? `Using ${theme.name}.`

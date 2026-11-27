@@ -2,6 +2,19 @@
 
 All changes to the Printer Buddy web UI, newest first.
 
+################################2026-11-26 sterling m cameras/overlay-see-through################################
+
+## Settings → Theme: how see-through the camera overlay is
+
+A "Camera overlay see-through" slider (0 to 100%, in steps of 5) under the themes sets how much of the camera picture shows through the camera overlay bar and the camera switcher, on the printer page and in Quick View. It's saved on this device and applies as it moves; it starts at 18%, the same as before. *Why:* the dark bar can cover the part of the print you want to watch.
+
+Lines changed:
+- `index.html` — 200, 242 the overlay and switcher backgrounds use the setting
+- `core/extras/theme.js` — 16–18 read and apply the setting at load; 64 the slider; 67–70 save and apply it as it moves
+- `core/extras/extras.css` — 58–59 the slider's layout
+
+################################end of entry################################
+
 ################################2026-11-26 sterling m themes/list################################
 
 ## Settings → Theme: pick a theme from the theme list
